@@ -1,0 +1,373 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String          @id @default(nanoid(11))
+  name             String?
+  email            String          @unique
+  emailVerified    DateTime?
+  image            String?
+  bio              String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  stripeCustomerId String?
+  plan             UserPlan        @default(FREE)
+  resendContactId  String?
+  passwordHash     String?
+  role             UserRole        @default(GLANEUR)
+  language         Language        @default(ENGLISH)
+  accounts         Account[]
+  agendas          Agenda[]
+  announcements    Announcement[]
+  comments         Comment[]
+  farms            Farm[]
+  favorites        Favorite[]
+  feedbacks        Feedback[]
+  field            Field[]
+  glanages         Glanage[]
+  likes            Like[]
+  notifications    Notification[]
+  participations   Participation[]
+  reviews          Review[]
+  sessions         Session[]
+  statistics       Statistics[]
+
+  @@map("users")
+}
+
+// model Profile avatarUrl String?
+model Farm {
+  id          String   @id @default(nanoid(11))
+  ownerId     String
+  name        String
+  slug        String   @default(nanoid(6))
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  city        String?
+  contactInfo String?
+  latitude    Float?
+  longitude   Float?
+  postal_code String?
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  fields      Field[]
+
+  @@index([slug])
+  @@map("farms")
+}
+
+// @unique @default(dbgenerated("(lower(name))"))
+model Review {
+  id        String   @id @default(nanoid(11))
+  userId    String
+  rating    Int
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  glanageId String
+  glanage   Glanage  @relation(fields: [glanageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Comment {
+  id             String       @id @default(nanoid(11))
+  userId         String
+  announcementId String
+  content        String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  announcement   Announcement @relation(fields: [announcementId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@map("comments")
+}
+
+model Like {
+  id             String       @id @default(nanoid(11))
+  userId         String
+  announcementId String
+  createdAt      DateTime     @default(now())
+  announcement   Announcement @relation(fields: [announcementId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@map("likes")
+}
+
+model Favorite {
+  id             String       @id @default(nanoid(11))
+  userId         String
+  announcementId String
+  createdAt      DateTime     @default(now())
+  announcement   Announcement @relation(fields: [announcementId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@map("favorites")
+}
+
+model Feedback {
+  id        String   @id @default(nanoid(11))
+  message   String
+  email     String?
+  userId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@map("feedbacks")
+}
+
+model Agenda {
+  id             String        @id @default(nanoid(11))
+  userId         String
+  announcementId String
+  startDate      DateTime
+  endDate        DateTime
+  title          String
+  description    String?
+  status         AgendaStatus  @default(PENDING)
+  notificationId String?       @unique
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  announcement   Announcement  @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  notification   Notification? @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("agendas")
+}
+
+model Notification {
+  id        String           @id @default(nanoid(11))
+  userId    String
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  agendaId  Int?             @unique
+  agenda    Agenda?
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Field {
+  id            String          @id @default(nanoid(11))
+  farmId        String?
+  name          String
+  slug          String          @unique @default(nanoid(6))
+  description   String?
+  isAvailable   Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now())
+  city          String
+  cropTypeId    String
+  latitude      Float
+  longitude     Float
+  postal_code   String
+  qrCode        String?
+  ownerId       String
+  announcements Announcement[]
+  cropType      CropType        @relation(fields: [cropTypeId], references: [id])
+  farm          Farm?           @relation(fields: [farmId], references: [id])
+  owner         User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  glanagePeriod GlanagePeriod[]
+
+  @@index([slug])
+  @@map("fields")
+}
+
+model CropType {
+  id           String         @id @default(nanoid(11))
+  name         String         @unique
+  type         CropCategory
+  season       CropSeason
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  announcement Announcement[]
+  fields       Field[]
+
+  @@map("crop_types")
+}
+
+model Statistics {
+  id                 String   @id @default(nanoid(11))
+  userId             String
+  totalGlanages      Int      @default(0)
+  totalFoodSaved     Float    @default(0)
+  totalFields        Int      @default(0)
+  totalAnnouncements Int      @default(0)
+  lastUpdated        DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id])
+
+  @@map("statistics")
+}
+
+model Announcement {
+  id                String                       @id @default(nanoid(11))
+  fieldId           String
+  title             String
+  slug              String                       @unique @default(nanoid(6))
+  description       String
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+  isPublished       Boolean                      @default(true)
+  cropTypeId        String
+  quantityAvailable Int?
+  ownerId           String
+  agendas           Agenda[]
+  cropType          CropType                     @relation(fields: [cropTypeId], references: [id])
+  field             Field                        @relation(fields: [fieldId], references: [id])
+  owner             User                         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  comments          Comment[]
+  favorites         Favorite[]
+  glanages          Glanage[]
+  likes             Like[]
+  participations    Participation[]
+  glanagePeriods    AnnouncementGlanagePeriods[]
+
+  @@index([slug])
+  @@index([fieldId, cropTypeId])
+  @@map("announcements")
+}
+
+model GlanagePeriod {
+  id            String                       @id @default(nanoid(11))
+  fieldId       String
+  startDate     DateTime
+  endDate       DateTime
+  status        GlanagePeriodStatus          @default(AVAILABLE)
+  field         Field                        @relation(fields: [fieldId], references: [id])
+  announcements AnnouncementGlanagePeriods[]
+
+  @@map("glanage_periods")
+}
+
+model Glanage {
+  id             String                 @id @default(nanoid(11))
+  userId         String
+  announcementId String
+  status         GlanageStatus          @default(PENDING)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  announcement   Announcement           @relation(fields: [announcementId], references: [id])
+  user           User                   @relation(fields: [userId], references: [id])
+  reviews        Review[]
+  participations GlanageParticipation[]
+
+  @@unique([userId, announcementId])
+  @@map("glanages")
+}
+
+model Participation {
+  id             String                 @id @default(nanoid(11))
+  userId         String
+  announcementId String
+  status         ParticipationStatus    @default(CONFIRMED)
+  createdAt      DateTime               @default(now())
+  announcement   Announcement           @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  glanages       GlanageParticipation[]
+
+  @@unique([userId, announcementId])
+  @@map("participations")
+}
+
+model AnnouncementGlanagePeriods {
+  announcementId  String
+  glanagePeriodId String
+
+  announcement  Announcement  @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  glanagePeriod GlanagePeriod @relation(fields: [glanagePeriodId], references: [id], onDelete: Cascade)
+
+  @@id([announcementId, glanagePeriodId])
+  @@map("announcement_glanage_periods")
+}
+
+model GlanageParticipation {
+  glanageId       String
+  participationId String
+
+  glanage       Glanage       @relation(fields: [glanageId], references: [id], onDelete: Cascade)
+  participation Participation @relation(fields: [participationId], references: [id], onDelete: Cascade)
+
+  @@id([glanageId, participationId])
+  @@map("glanage_participations")
+}
+
+enum ParticipationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  ATTENDED
+  NO_SHOW
+}
+
+enum UserPlan {
+  FREE
+  PREMIUM
+}
+
+enum UserRole {
+  AGRICULTEUR
+  GLANEUR
+  ADMIN
+}
+
+enum GlanageStatus {
+  PENDING
+  ACCEPTED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  NEW_ANNOUNCEMENT
+  RESERVATION_REQUEST
+  FIELD_UPDATED
+  GLANAGE_ACCEPTED
+}
+
+enum Language {
+  ENGLISH
+  FRENCH
+  DUTCH
+}
+
+enum GlanagePeriodStatus {
+  AVAILABLE
+  NOT_AVAILABLE
+  PENDING
+  CLOSED
+}
+
+enum CropCategory {
+  VEGETABLE
+  FRUIT
+}
+
+enum CropSeason {
+  SPRING
+  SUMMER
+  FALL
+  WINTER
+  YEAR_ROUND
+}
+
+enum AgendaStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
