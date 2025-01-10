@@ -10,7 +10,6 @@ import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 import PlausibleProvider from "next-plausible";
 import type { ReactNode } from "react";
-import "./code-theme.scss";
 import "./globals.scss";
 import { Providers } from "./providers";
 
