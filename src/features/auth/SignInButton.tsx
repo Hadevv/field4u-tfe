@@ -1,11 +1,12 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useIsClient } from "@/hooks/useIsClient";
 import type { VariantProps } from "class-variance-authority";
 import Link from "next/link";
 import { UserDropdown } from "./UserDropdown";
+import { displayName } from "@/lib/format/displayName";
 
 const useHref = () => {
   const isClient = useIsClient();
@@ -43,14 +44,15 @@ export const LoggedInButton = ({
 }) => {
   return (
     <UserDropdown>
-      <button className="group size-9 rounded-full">
-        <Avatar className="mr-2 size-full group-active:scale-95">
+      <Button variant="outline" size="sm">
+        <Avatar className="mr-2 size-6 bg-card">
           <AvatarFallback className="bg-card">
             {user.email.slice(0, 1).toUpperCase()}
           </AvatarFallback>
           {user.image && <AvatarImage src={user.image} />}
         </Avatar>
-      </button>
+        <span className="max-lg:hidden">{displayName(user)}</span>
+      </Button>
     </UserDropdown>
   );
 };

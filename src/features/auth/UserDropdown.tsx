@@ -35,7 +35,7 @@ export const UserDropdown = ({ children }: PropsWithChildren) => {
         <DropdownMenuItem asChild>
           <Link href="/account">
             <Settings className="mr-2 size-4" />
-            Settings
+            My account
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
