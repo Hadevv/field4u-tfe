@@ -30,7 +30,7 @@ const getTags = (
 };
 
 export default async function RoutePage(props: PageParams<{}>) {
-  const activeTags = getTags(props.searchParams.tag);
+  const activeTags = getTags((await props.searchParams).tag);
   const tags = await getPostsTags();
   const posts = await getPosts(activeTags);
 

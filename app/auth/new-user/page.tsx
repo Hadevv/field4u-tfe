@@ -14,10 +14,10 @@ import { redirect } from "next/navigation";
 /**
  * This page is show when a user loggin. You can add an onboarding process here.
  */
-export default function NewUserPage(props: PageParams) {
+export default async function NewUserPage(props: PageParams) {
   const callbackUrl =
-    typeof props.searchParams.callbackUrl === "string"
-      ? props.searchParams.callbackUrl
+    typeof (await props.searchParams).callbackUrl === "string"
+      ? (await props.searchParams).callbackUrl
       : "/";
 
   redirect(callbackUrl);

@@ -24,9 +24,8 @@ import {
   getPosts,
 } from "../../../../src/features/posts/post-manager";
 
-export async function generateMetadata({
-  params,
-}: PostParams): Promise<Metadata> {
+export async function generateMetadata(props: PostParams): Promise<Metadata> {
+  const params = await props.params;
   const post = await getCurrentPost(params.slug);
 
   if (!post) {
@@ -53,7 +52,7 @@ export async function generateStaticParams() {
 }
 
 export default async function RoutePage(props: PostParams) {
-  const post = await getCurrentPost(props.params.slug);
+  const post = await getCurrentPost((await props.params).slug);
 
   if (!post) {
     notFound();

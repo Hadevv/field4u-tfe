@@ -7,11 +7,11 @@ import { redirect } from "next/navigation";
 
 export default async function RoutePage(props: PageParams<{}>) {
   const token =
-    typeof props.searchParams.token === "string"
-      ? props.searchParams.token
+    typeof (await props.searchParams).token === "string"
+      ? (await props.searchParams).token
       : null;
 
-  const success = props.searchParams.success === "true";
+  const success = (await props.searchParams).success === "true";
 
   if (success) {
     return (

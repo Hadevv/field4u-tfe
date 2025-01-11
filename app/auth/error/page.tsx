@@ -19,7 +19,7 @@ import Link from "next/link";
 import { getError } from "./auth-error-mapping";
 
 export default async function AuthErrorPage(props: PageParams<{}>) {
-  const { errorMessage, error } = getError(props.searchParams.error);
+  const { errorMessage, error } = getError((await props.searchParams).error);
 
   return (
     <div className="flex h-full flex-col">
