@@ -1,12 +1,14 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { requiredAuth } from "@/lib/auth/helper";
 import type { LayoutParams } from "@/types/next";
 import { VerifyEmailButton } from "./verify-email/VerifyEmailButton";
+import { requiredAuth, isAdmin } from "@/lib/auth/helper";
 
 export default async function RouteLayout(props: LayoutParams<{}>) {
   const user = await requiredAuth();
 
   const isEmailNotVerified = user.email && !user.emailVerified;
+
+  const isAdminUser = await isAdmin().catch(() => false);
   return (
     <>
       {isEmailNotVerified ? (
@@ -18,6 +20,11 @@ export default async function RouteLayout(props: LayoutParams<{}>) {
           <VerifyEmailButton />
         </Alert>
       ) : null}
+      {isAdminUser ? (
+        <div className="admin-banner">Welcome Admin!</div>
+      ) : (
+        <div className="user-banner">Welcome User!</div>
+      )}
       {props.children}
     </>
   );
