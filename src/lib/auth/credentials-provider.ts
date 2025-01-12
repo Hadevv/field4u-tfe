@@ -1,3 +1,4 @@
+import { UserRole } from './../../../node_modules/.prisma/client/index.d';
 import crypto from "crypto";
 import { nanoid } from "nanoid";
 import type { NextAuthConfig } from "next-auth";
@@ -54,6 +55,7 @@ export const getCredentialsProvider = () => {
           email: user.email,
           name: user.name,
           image: user.image,
+          role: user.role as UserRole,
         };
       } else {
         return null;
