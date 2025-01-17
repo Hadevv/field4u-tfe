@@ -16,7 +16,8 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "postinstall": "prisma generate",
     "clean": "next lint --fix && tsc --noEmit && prettier --write .",
-    "seed": "tsx prisma/seeding/seed.ts"
+    "seed": "tsx prisma/seeding/seed.ts",
+    "knip": "knip"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
@@ -112,6 +113,7 @@
     "eslint-plugin-react-hooks": "5.1.0",
     "eslint-plugin-tailwindcss": "^3.17.5",
     "globals": "^15.14.0",
+    "knip": "^5.42.2",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prisma": "^6.2.1",
