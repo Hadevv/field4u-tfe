@@ -7,7 +7,7 @@ export class AuthError extends Error {
     super(message);
   }
 }
-
+// verifie dans la session si l'utilisateur est authentifié
 export const auth = async () => {
   const session = await baseAuth();
 
@@ -18,7 +18,7 @@ export const auth = async () => {
 
   return null;
 };
-
+// verifie si authentifié et retourne l'utilisateur
 export const requiredAuth = async () => {
   const user = await auth();
 
@@ -28,7 +28,7 @@ export const requiredAuth = async () => {
 
   return user;
 };
-
+// verifie le role de l'utilisateur authentifié et retourne l'utilisateur
 export const requiredRole = async (role: UserRole) => {
   const user = await requiredAuth();
 
@@ -39,7 +39,9 @@ export const requiredRole = async (role: UserRole) => {
   return user;
 };
 
-// 🔑 Add these functions to check for specific roles
+// verifie si l'utilisateur est admin
 export const isAdmin = async () => requiredRole(UserRole.ADMIN);
+// verifie si l'utilisateur est agriculteur
 export const isFarmer = async () => requiredRole(UserRole.AGRICULTEUR);
+// verifie si l'utilisateur est glaneur
 export const isGleaner = async () => requiredRole(UserRole.GLANEUR);
