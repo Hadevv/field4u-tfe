@@ -42,6 +42,6 @@ export const requiredRole = async (role: UserRole) => {
 // verifie si l'utilisateur est admin
 export const isAdmin = async () => requiredRole(UserRole.ADMIN);
 // verifie si l'utilisateur est agriculteur
-export const isFarmer = async () => requiredRole(UserRole.AGRICULTEUR);
+export const isFarmer = async () => requiredRole(UserRole.FARMER);
 // verifie si l'utilisateur est glaneur
-export const isGleaner = async () => requiredRole(UserRole.GLANEUR);
+export const isGleaner = async () => requiredRole(UserRole.GLEANER);

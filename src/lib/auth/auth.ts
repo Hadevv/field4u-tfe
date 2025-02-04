@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { User } from "@prisma/client";
 import type { Session } from "next-auth";

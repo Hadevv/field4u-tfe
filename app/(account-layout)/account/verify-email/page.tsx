@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
@@ -6,10 +7,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function RoutePage(props: PageParams<{}>) {
-  const token =
-    typeof (await props.searchParams).token === "string"
-      ? (await props.searchParams).token
-      : null;
+  const tokenParam = (await props.searchParams).token;
+  const token = Array.isArray(tokenParam) ? tokenParam[0] : tokenParam;
 
   const success = (await props.searchParams).success === "true";
 

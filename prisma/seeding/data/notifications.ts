@@ -15,7 +15,7 @@ export const createNotifications = (userIds: string[]) => [
   },
   {
     userId: userIds[4],
-    type: NotificationType.GLANAGE_ACCEPTED,
+    type: NotificationType.GLEANING_ACCEPTED,
     message: "Votre demande de glanage a été acceptée",
     isRead: false,
   },

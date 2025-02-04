@@ -5,11 +5,10 @@ import {
   setupStripeCustomer,
 } from "@/lib/auth/auth-config-setup";
 import {
-  hashStringWithSalt,
+  hashPassword,
   validatePassword,
 } from "@/lib/auth/credentials-provider";
 import { ActionError, action } from "@/lib/backend/safe-actions";
-import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { LoginCredentialsFormScheme } from "./signup.schema";
 
@@ -25,7 +24,7 @@ export const signUpAction = action
     try {
       const userData = {
         email,
-        passwordHash: hashStringWithSalt(password, env.NEXTAUTH_SECRET),
+        passwordHash: await hashPassword(password),
         name,
       };
 

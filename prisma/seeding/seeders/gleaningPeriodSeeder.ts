@@ -17,9 +17,9 @@ export async function seedGlanagePeriods(ctx: Context) {
   ];
   
   const createdGlanagePeriods = await Promise.all(
-    glanagePeriods.map(period => ctx.prisma.glanagePeriod.create({ data: period }))
+    glanagePeriods.map(period => ctx.prisma.gleaningPeriod.create({ data: period }))
   );
   
-  ctx.created.glanagePeriods = createdGlanagePeriods;
+  ctx.created.gleaningPeriods = createdGlanagePeriods;
   return createdGlanagePeriods;
 }

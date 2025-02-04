@@ -9,10 +9,10 @@ import { seedUsers } from './seeders/userSeeder';
 import { seedCropTypes } from './seeders/cropTypeSeeder';
 import { seedFarms } from './seeders/farmSeeder';
 import { seedFields } from './seeders/fieldSeeder';
-import { seedGlanagePeriods } from './seeders/glanagePeriodSeeder';
+import { seedGlanagePeriods } from './seeders/gleaningPeriodSeeder';
 import { seedAnnouncements } from './seeders/announcementSeeder';
 import { seedParticipations } from './seeders/participationSeeder';
-import { seedGlanages } from './seeders/glanageSeeder';
+import { seedGleanings } from './seeders/gleaningSeeder';
 // import { seedGlanageParticipations } from './seeders/glanageParticipationSeeder';
 // import { seedAnnouncementGlanagePeriods } from './seeders/announcementGlanagePeriodSeeder';
 import { seedReviews } from './seeders/reviewSeeder';
@@ -40,10 +40,10 @@ async function main() {
       farms: [],
       cropTypes: [],
       fields: [],
-      glanagePeriods: [],
+      gleaningPeriods: [],
       announcements: [],
       participations: [],
-      glanages: [],
+      gleanings: [],
     //   glanageParticipations: [],
     //   announcementGlanagePeriods: [],
       reviews: [],
@@ -57,18 +57,18 @@ async function main() {
     },
     created: {
       users: [],
-    //   accounts: [],
-    //   sessions: [],
-    //   verificationTokens: [],
+      //   accounts: [],
+      //   sessions: [],
+      //   verificationTokens: [],
       farms: [],
       cropTypes: [],
       fields: [],
-      glanagePeriods: [],
+      gleaningPeriods: [],
       announcements: [],
       participations: [],
-      glanages: [],
-    //   glanageParticipations: [],
-    //   announcementGlanagePeriods: [],
+      gleanings: [],
+      //   glanageParticipations: [],
+      //   announcementGlanagePeriods: [],
       reviews: [],
       statistics: [],
       feedbacks: [],
@@ -77,6 +77,7 @@ async function main() {
       comments: [],
       likes: [],
       favorites: [],
+      glanages: undefined
     },
   };
 
@@ -92,7 +93,7 @@ async function main() {
     await seedGlanagePeriods(context);
     await seedAnnouncements(context);
     await seedParticipations(context);
-    await seedGlanages(context);
+    await seedGleanings(context);
     // await seedGlanageParticipations(context);
     // await seedAnnouncementGlanagePeriods(context);
     await seedReviews(context);

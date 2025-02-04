@@ -1,4 +1,4 @@
-export const createGlanages = (userIds: string[], announcementIds: string[]) => [
+export const createGleanings = (userIds: string[], announcementIds: string[]) => [
   {
     userId: userIds[1],
     announcementId: announcementIds[0],

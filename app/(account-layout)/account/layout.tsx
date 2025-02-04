@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { LayoutParams } from "@/types/next";
 import { VerifyEmailButton } from "./verify-email/VerifyEmailButton";

@@ -1,5 +1,5 @@
-import { UserRole } from './../../../node_modules/.prisma/client/index.d';
-import crypto from "crypto";
+import { UserRole } from "@prisma/client";
+import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
 import type { NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -7,6 +7,8 @@ import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { env } from "../env";
 import { prisma } from "../prisma";
+import { AUTH_COOKIE_NAME } from "./auth.const";
+
 
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
@@ -14,16 +16,13 @@ export const validatePassword = (password: string) => {
   return PASSWORD_REGEX.test(password);
 };
 
-export const hashStringWithSalt = (string: string, salt: string) => {
-  const hash = crypto.createHash("sha256");
+export const hashPassword = async (password: string) => {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
+};
 
-  const saltedString = salt + string;
-
-  hash.update(saltedString);
-
-  const hashedString = hash.digest("hex");
-
-  return hashedString;
+export const comparePassword = async (password: string, hash: string) => {
+  return await bcrypt.compare(password, hash);
 };
 
 export const getCredentialsProvider = () => {
@@ -34,81 +33,56 @@ export const getCredentialsProvider = () => {
       password: { label: "Password", type: "password" },
     },
     async authorize(credentials) {
-      if (!credentials.email || !credentials.password) return null;
+      if (!credentials?.email || !credentials?.password) return null;
 
-      // Add logic here to look up the user from the credentials supplied
-      const passwordHash = hashStringWithSalt(
-        String(credentials.password),
-        env.NEXTAUTH_SECRET,
-      );
-
-      const user = await prisma.user.findFirst({
-        where: {
-          email: credentials.email,
-          passwordHash: passwordHash,
-        },
+      const email = String(credentials.email);
+      const password = String(credentials.password);
+    
+      const user = await prisma.user.findUnique({
+        where: { email },
       });
+    
+      if (!user) return null;
+    
+      const passwordMatch = await comparePassword(password, user.passwordHash as string);
+      if (!passwordMatch) return null;
 
-      if (user) {
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role as UserRole,
-        };
-      } else {
-        return null;
-      }
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        role: user.role as UserRole,
+      };
     },
   });
 };
 
-const tokenName =
-  env.NODE_ENV === "development"
-    ? "authjs.session-token"
-    : "__Secure-authjs.session-token";
-
 type SignInCallback = NonNullable<NextAuthConfig["events"]>["signIn"];
-
 type JwtOverride = NonNullable<NextAuthConfig["jwt"]>;
 
 export const credentialsSignInCallback =
   (request: NextRequest | undefined): SignInCallback =>
   async ({ user }) => {
-    if (!request) {
-      return;
-    }
-
-    if (request.method !== "POST") {
-      return;
-    }
+    if (!request || request.method !== "POST") return;
 
     const currentUrl = request.url;
-
-    if (!currentUrl.includes("credentials")) {
-      return;
-    }
-
-    if (!currentUrl.includes("callback")) {
-      return;
-    }
+    if (!currentUrl.includes("credentials") || !currentUrl.includes("callback")) return;
 
     const uuid = nanoid();
-    // + 7 days
     const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
     await prisma.session.create({
       data: {
         sessionToken: uuid,
         userId: user.id ?? "",
-        // expires in 2 weeks
         expires: expireAt,
       },
     });
 
     const cookieList = await cookies();
 
-    cookieList.set(tokenName, uuid, {
+    cookieList.set(AUTH_COOKIE_NAME, uuid, {
       expires: expireAt,
       path: "/",
       sameSite: "lax",
@@ -119,7 +93,7 @@ export const credentialsSignInCallback =
     return;
   };
 
-// This override cancel JWT strategy for password. (it's the default one)
+// Désactive la stratégie JWT par défaut
 export const credentialsOverrideJwt: JwtOverride = {
   encode() {
     return "";
