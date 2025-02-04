@@ -1,12 +1,12 @@
 "use server";
 
 import {
-  hashStringWithSalt,
+  hashPassword,
+  comparePassword,
   validatePassword,
 } from "@/lib/auth/credentials-provider";
 import { requiredAuth } from "@/lib/auth/helper";
 import { ActionError, authAction } from "@/lib/backend/safe-actions";
-import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import {
   EditPasswordFormSchema,
@@ -49,10 +49,14 @@ export const editPasswordAction = authAction
       throw new ActionError("Passwords do not match");
     }
 
-    if (
-      hashStringWithSalt(input.currentPassword, env.NEXTAUTH_SECRET) !==
-      passwordHash
-    ) {
+    if (!passwordHash) {
+      throw new ActionError("Password hash not found");
+    }
+    const passwordMatch = await comparePassword(
+      input.currentPassword,
+      passwordHash,
+    );
+    if (!passwordMatch) {
       throw new ActionError("Invalid current password");
     }
 
@@ -62,15 +66,14 @@ export const editPasswordAction = authAction
       );
     }
 
+    const newHashedPassword = await hashPassword(input.newPassword);
+
     const updatedUser = await prisma.user.update({
       where: {
         id: ctx.user.id,
       },
       data: {
-        passwordHash: hashStringWithSalt(
-          input.newPassword,
-          env.NEXTAUTH_SECRET,
-        ),
+        passwordHash: newHashedPassword,
       },
       select: {
         id: true,
