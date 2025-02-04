@@ -20,8 +20,8 @@ model User {
   deletedAt        DateTime?       @map("deleted_at")
   stripeCustomerId String?         @map("stripe_customer_id")
   plan             UserPlan        @default(FREE)
-  resendContactId  String?         @map("resend_contact_id") @unique
-  passwordHash     String?         @map("password_hash") @unique
+  resendContactId  String?         @map("resend_contact_id")
+  passwordHash     String?         @map("password_hash") //Nullable car j'utilise OAuth
   role             UserRole        @default(GLEANER)
   language         Language        @default(FRENCH)
   accounts         Account[]
@@ -202,7 +202,7 @@ model CropType {
 model Statistics {
   id                 String   @id @default(nanoid(21))
   userId             String   @unique @map("user_id")
-  totalGlanages      Int      @default(0) @map("total_glanages")
+  totalGleanings      Int     @default(0) @map("total_gleanings")
   totalFoodSaved     Float    @default(0) @map("total_food_saved")
   totalFields        Int      @default(0) @map("total_fields")
   totalAnnouncements Int      @default(0) @map("total_announcements")
