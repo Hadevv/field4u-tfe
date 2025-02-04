@@ -7,11 +7,11 @@ Ce dossier contient les seeders pour initialiser la base de données avec des do
 ```
 prisma/
   ├── seeders/
-  │   ├── data/           # Données statiques pour chaque modèle
-  │   ├── seeders/        # Logique de seeding pour chaque modèle
-  │   ├── types.ts        # Types TypeScript
-  │   └── cleanDatabase.ts # Utilitaire de nettoyage
-  └── seed.ts             # Point d'entrée principal
+     ├── data/           # Données statiques pour chaque modèle
+     ├── seeders/        # Logique de seeding pour chaque modèle
+     ├── types.ts        # Types TypeScript
+     └── cleanDatabase.ts # Utilitaire de nettoyage
+     └──  seed.ts             # Point d'entrée principal
 ```
 
 ### Comment utiliser

@@ -1,6 +1,6 @@
 import { Context } from '../types';
 
-export async function seedGlanages(ctx: Context) {
+export async function seedGleanings(ctx: Context) {
   console.log('🌱 Seeding glanages...');
   
   const glanages = [
@@ -24,10 +24,10 @@ export async function seedGlanages(ctx: Context) {
     },
   ];
   
-  const createdGlanages = await Promise.all(
-    glanages.map(glanage => ctx.prisma.glanage.create({ data: glanage }))
+  const createdGleanings = await Promise.all(
+    glanages.map(gleanings => ctx.prisma.gleaning.create({ data: gleanings }))
   );
   
-  ctx.created.glanages = createdGlanages;
-  return createdGlanages;
+  ctx.created.gleanings = createdGleanings;
+  return createdGleanings;
 }

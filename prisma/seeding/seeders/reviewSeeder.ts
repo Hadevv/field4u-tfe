@@ -6,13 +6,13 @@ export async function seedReviews(ctx: Context) {
   const reviews = [
     {
       userId: ctx.created.users[1].id,
-      glanageId: ctx.created.glanages[0].id,
+      gleaningId: ctx.created.gleanings[0].id,
       rating: 5,
       content: 'Excellent accueil et très bonne organisation du glanage',
     },
     {
       userId: ctx.created.users[4].id,
-      glanageId: ctx.created.glanages[1].id,
+      gleaningId: ctx.created.gleanings[1].id,
       rating: 4,
       content: 'Belle expérience de glanage, fruits de qualité',
     },

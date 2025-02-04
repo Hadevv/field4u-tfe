@@ -9,10 +9,10 @@ export type Context = {
     farms: Prisma.FarmCreateInput[];
     cropTypes: Prisma.CropTypeCreateInput[];
     fields: Prisma.FieldCreateInput[];
-    glanagePeriods: Prisma.GlanagePeriodCreateInput[];
+    gleaningPeriods: Prisma.GleaningPeriodCreateInput[];
     announcements: Prisma.AnnouncementCreateInput[];
     participations: Prisma.ParticipationCreateInput[];
-    glanages: Prisma.GlanageCreateInput[];
+    gleanings: Prisma.GleaningCreateInput[];
     reviews: Prisma.ReviewCreateInput[];
     statistics: Prisma.StatisticsCreateInput[];
     feedbacks: Prisma.FeedbackCreateInput[];
@@ -23,14 +23,15 @@ export type Context = {
     favorites: Prisma.FavoriteCreateInput[];
   };
   created: {
+    glanages: any;
     users: any[];
     farms: any[];
     cropTypes: any[];
     fields: any[];
-    glanagePeriods: any[];
+    gleaningPeriods: any[];
     announcements: any[];
     participations: any[];
-    glanages: any[];
+    gleanings: any[];
     reviews: any[];
     statistics: any[];
     feedbacks: any[];

@@ -5,7 +5,7 @@ export async function seedStatistics(ctx: Context) {
   
   const statistics = ctx.created.users.map(user => ({
     userId: user.id,
-    totalGlanages: 0,
+    totalGleanings: 0,
     totalFoodSaved: 0,
     totalFields: 0,
     totalAnnouncements: 0,

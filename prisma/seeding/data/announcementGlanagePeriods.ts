@@ -1,13 +1,13 @@
 export const createAnnouncementGlanagePeriods = (
   announcementIds: string[],
-  glanagePeriodIds: string[]
+  gleaningsPeriodIds: string[]
 ) => [
   {
     announcementId: announcementIds[0],
-    glanagePeriodId: glanagePeriodIds[0],
+    gleaningPeriodId: gleaningsPeriodIds[0],
   },
   {
     announcementId: announcementIds[1],
-    glanagePeriodId: glanagePeriodIds[1],
+    gleaningPeriodId: gleaningsPeriodIds[1],
   },
 ];

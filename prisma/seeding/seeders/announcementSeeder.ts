@@ -11,9 +11,9 @@ export async function seedAnnouncements(ctx: Context) {
       cropTypeId: ctx.created.cropTypes[0].id,
       ownerId: ctx.created.users[0].id,
       quantityAvailable: 500,
-      glanagePeriods: {
+      gleaningPeriods: {
         create: {
-          glanagePeriodId: ctx.created.glanagePeriods[0].id,
+          gleaningPeriodId: ctx.created.gleaningPeriods[0].id,
         },
       },
     },
@@ -24,9 +24,9 @@ export async function seedAnnouncements(ctx: Context) {
       cropTypeId: ctx.created.cropTypes[2].id,
       ownerId: ctx.created.users[3].id,
       quantityAvailable: 300,
-      glanagePeriods: {
+      gleaningPeriods: {
         create: {
-          glanagePeriodId: ctx.created.glanagePeriods[1].id,
+          gleaningPeriodId: ctx.created.gleaningPeriods[1].id,
         },
       },
     },
