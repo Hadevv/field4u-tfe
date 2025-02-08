@@ -11,6 +11,7 @@ export const users = [
     language: Language.FRENCH,
     passwordHash,
     bio: 'Agriculteur bio depuis 20 ans dans la région de Namur',
+    onboardingCompleted: true,
   },
   {
     email: 'marie.gleaner@example.be',
@@ -19,6 +20,7 @@ export const users = [
     language: Language.FRENCH,
     passwordHash,
     bio: 'Passionnée par la réduction du gaspillage alimentaire',
+    onboardingCompleted: true,
   },
   {
     email: 'admin@glean.be',
@@ -26,6 +28,7 @@ export const users = [
     role: UserRole.ADMIN,
     language: Language.ENGLISH,
     passwordHash,
+    onboardingCompleted: true,
   },
   {
     email: 'farmer.pierre@example.be',
@@ -34,6 +37,7 @@ export const users = [
     language: Language.FRENCH,
     passwordHash,
     bio: 'Ferme familiale depuis trois générations',
+    onboardingCompleted: false,
   },
   {
     email: 'sophie.gleaner@example.be',
@@ -42,5 +46,6 @@ export const users = [
     language: Language.DUTCH,
     passwordHash,
     bio: 'Engagée dans la lutte contre le gaspillage alimentaire',
+    onboardingCompleted: true,
   },
 ];

@@ -15,6 +15,7 @@ model User {
   emailVerified    DateTime?       @map("email_verified")
   image            String?
   bio              String?
+  onboardingCompleted Boolean @default(false)
   createdAt        DateTime        @default(now()) @map("created_at")
   updatedAt        DateTime        @updatedAt @map("updated_at")
   deletedAt        DateTime?       @map("deleted_at")
@@ -38,7 +39,7 @@ model User {
   participations   Participation[]
   reviews          Review[]
   sessions         Session[]
-  statistics       Statistics? // Relation 1-1 ou 1-N ? (1-N pour historique)
+  statistics       Statistic? // Relation 1-1 ou 1-N ? (1-N pour historique)
 
   @@index([createdAt])
   @@index([email])
@@ -70,6 +71,7 @@ model Review {
   userId     String   @map("user_id")
   rating     Int      // Limiter à 1-5 (ex: avec Zod)
   content    String?
+  images     String[] @default([])// URL des images
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
   gleaningId String   @map("gleaning_id")
@@ -199,7 +201,7 @@ model CropType {
   @@map("crop_types")
 }
 
-model Statistics {
+model Statistic {
   id                 String   @id @default(nanoid(21))
   userId             String   @unique @map("user_id")
   totalGleanings      Int     @default(0) @map("total_gleanings")
@@ -218,6 +220,7 @@ model Announcement {
   title             String
   slug              String                        @unique @default(nanoid(6))
   description       String
+  images            String[]                     @default([]) // URL des images
   createdAt         DateTime                      @default(now()) @map("created_at")
   updatedAt         DateTime                      @updatedAt @map("updated_at")
   isPublished       Boolean                       @default(true) @map("is_published")
@@ -233,7 +236,7 @@ model Announcement {
   gleanings         Gleaning[]
   likes             Like[]
   participations    Participation[]
-  gleaningPeriods   AnnouncementGleaningPeriods[]
+  gleaningPeriods   AnnouncementGleaningPeriod[]
 
   @@index([slug])
   @@index([fieldId, cropTypeId])
@@ -247,7 +250,7 @@ model GleaningPeriod {
   endDate       DateTime                      @map("end_date")
   status        GleaningPeriodStatus          @default(AVAILABLE)
   field         Field                         @relation(fields: [fieldId], references: [id])
-  announcements AnnouncementGleaningPeriods[]
+  announcements AnnouncementGleaningPeriod[]
 
   @@map("gleaning_periods")
 }
@@ -282,7 +285,7 @@ model Participation {
   @@map("participations")
 }
 
-model AnnouncementGleaningPeriods {
+model AnnouncementGleaningPeriod {
   announcementId   String @map("announcement_id")
   gleaningPeriodId String @map("gleaning_period_id")
 

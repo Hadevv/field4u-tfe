@@ -1,4 +1,5 @@
 import { Context } from '../types';
+// import { createAnnouncements } from '../data/announcements';
 
 export async function seedAnnouncements(ctx: Context) {
   console.log('🌱 Seeding announcements...');

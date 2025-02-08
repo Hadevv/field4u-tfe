@@ -12,7 +12,7 @@ export async function seedStatistics(ctx: Context) {
   }));
   
   const createdStatistics = await Promise.all(
-    statistics.map(stat => ctx.prisma.statistics.create({ data: stat }))
+    statistics.map(stat => ctx.prisma.statistic.create({ data: stat }))
   );
   
   ctx.created.statistics = createdStatistics;
