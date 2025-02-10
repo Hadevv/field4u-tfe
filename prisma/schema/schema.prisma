@@ -284,7 +284,7 @@ model Participation {
   @@unique([userId, announcementId])
   @@map("participations")
 }
-
+// table de liaison entre les annonces et les périodes de glanage
 model AnnouncementGleaningPeriod {
   announcementId   String @map("announcement_id")
   gleaningPeriodId String @map("gleaning_period_id")

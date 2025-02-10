@@ -20,7 +20,7 @@ export default async function NewUserPage(props: PageParams) {
       ? (await props.searchParams).callbackUrl
       : "/";
 
-  redirect(callbackUrl);
+  redirect(callbackUrl as string);
 
   return (
     <>
