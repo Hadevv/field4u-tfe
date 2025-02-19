@@ -1,4 +1,6 @@
-import { LogoSvg } from "@/components/svg/LogoSvg";
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { SiteConfig } from "@/site-config";
+import Image from "next/image";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HeaderBase } from "@/features/layout/HeaderBase";
@@ -24,7 +26,12 @@ export default async function AuthSignInPage(props: PageParams<{}>) {
       <div className="flex flex-1 items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="flex flex-col items-center justify-center gap-2">
-            <LogoSvg />
+            <Image
+              src={SiteConfig.appIcon}
+              alt="app logo"
+              width={32}
+              height={32}
+            />
             <CardTitle>Sign in to your account</CardTitle>
           </CardHeader>
           <CardContent className="mt-8">
