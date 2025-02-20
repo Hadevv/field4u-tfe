@@ -36,12 +36,12 @@ export const editPasswordAction = authAction
   .schema(EditPasswordFormSchema)
   .action(async ({ parsedInput: input, ctx }) => {
     const user = await requiredAuth();
-    const { passwordHash } = await prisma.user.findUniqueOrThrow({
+    const { hashedPassword } = await prisma.user.findUniqueOrThrow({
       where: {
         id: user.id,
       },
       select: {
-        passwordHash: true,
+        hashedPassword: true,
       },
     });
 
@@ -49,12 +49,12 @@ export const editPasswordAction = authAction
       throw new ActionError("Passwords do not match");
     }
 
-    if (!passwordHash) {
+    if (!hashedPassword) {
       throw new ActionError("Password hash not found");
     }
     const passwordMatch = await comparePassword(
       input.currentPassword,
-      passwordHash,
+      hashedPassword,
     );
     if (!passwordMatch) {
       throw new ActionError("Invalid current password");
@@ -73,7 +73,7 @@ export const editPasswordAction = authAction
         id: ctx.user.id,
       },
       data: {
-        passwordHash: newHashedPassword,
+        hashedPassword: newHashedPassword,
       },
       select: {
         id: true,

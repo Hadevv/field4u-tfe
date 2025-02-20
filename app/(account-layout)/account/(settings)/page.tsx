@@ -12,7 +12,7 @@ export default async function EditProfilePage() {
   const hasPassword = await prisma.user.count({
     where: {
       id: user.id,
-      passwordHash: {
+      hashedPassword: {
         not: null,
       },
     },

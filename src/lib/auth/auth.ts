@@ -6,7 +6,10 @@ import { env } from "../env";
 import { prisma } from "../prisma";
 import { setupResendCustomer, setupStripeCustomer } from "./auth-config-setup";
 import { getNextAuthConfigProviders } from "./getNextAuthConfigProviders";
-import { credentialsOverrideJwt, credentialsSignInCallback } from "./credentials-provider";
+import {
+  credentialsOverrideJwt,
+  credentialsSignInCallback,
+} from "./credentials-provider";
 
 export const { handlers, auth: baseAuth } = NextAuth((req) => ({
   pages: {
@@ -33,7 +36,7 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
 
       if (!typedParams.user) return typedParams.session;
 
-      typedParams.user.passwordHash = null;
+      typedParams.user.hashedPassword = null;
 
       return typedParams.session;
     },

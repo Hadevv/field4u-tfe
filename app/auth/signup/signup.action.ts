@@ -24,7 +24,7 @@ export const signUpAction = action
     try {
       const userData = {
         email,
-        passwordHash: await hashPassword(password),
+        hashedPassword: await hashPassword(password),
         name,
       };
 
