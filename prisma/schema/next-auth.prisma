@@ -3,8 +3,8 @@
 // See : https://authjs.dev/getting-started/adapters/prisma#naming-conventions
 
 model Account {
-    id                    String  @id @default(nanoid(21))
-    userId                String
+    id                    String  @id @default(nanoid(21)) @db.Char(21)
+    userId                String  @db.Char(21)
     type                  String
     provider              String
     providerAccountId     String
@@ -33,9 +33,9 @@ model VerificationToken {
 }
 
 model Session {
-    id           String   @id @default(nanoid(21))
+    id           String   @id @default(nanoid(21)) @db.Char(21)
     sessionToken String   @unique @map("session_token")
-    userId       String   @map("user_id")
+    userId       String   @map("user_id") @db.Char(21)
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     createdAt    DateTime @default(now()) @map("created_at")
