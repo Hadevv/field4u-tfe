@@ -1,6 +1,6 @@
 export const createAnnouncementGlanagePeriods = (
   announcementIds: string[],
-  gleaningsPeriodIds: string[]
+  gleaningsPeriodIds: string[],
 ) => [
   {
     announcementId: announcementIds[0],

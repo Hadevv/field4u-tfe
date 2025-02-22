@@ -365,6 +365,7 @@ enum NotificationType {
   GLEANING_ACCEPTED
   NEW_REVIEW
   GLEANING_REMINDER
+  GLEANING_CANCELLED
 }
 
 enum Language {

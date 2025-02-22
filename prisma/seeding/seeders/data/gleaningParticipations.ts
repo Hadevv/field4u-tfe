@@ -1,4 +1,7 @@
-export const createGleaningParticipations = (gleaningIds: string[], participationIds: string[]) => [
+export const createGleaningParticipations = (
+  gleaningIds: string[],
+  participationIds: string[],
+) => [
   {
     glanageId: gleaningIds[0],
     participationId: participationIds[0],

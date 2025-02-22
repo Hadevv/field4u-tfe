@@ -16,7 +16,8 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "postinstall": "prisma generate",
     "clean": "next lint --fix && tsc --noEmit && prettier --write .",
-    "seed": "tsx prisma/seeding/seed.ts",
+    "seed": "tsx prisma/seeding/seed.ts seed",
+    "faker": "tsx prisma/seeding/seed.ts faker",
     "knip": "knip",
     "prepare": "husky install",
     "lint-staged": "lint-staged"
@@ -101,6 +102,7 @@
     "@eslint/compat": "^1.2.5",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
+    "@faker-js/faker": "^9.5.0",
     "@next/eslint-plugin-next": "15.1.4",
     "@tailwindcss/typography": "^0.5.16",
     "@types/canvas-confetti": "^1.9.0",

@@ -242,6 +242,9 @@ devDependencies:
   '@eslint/js':
     specifier: ^9.18.0
     version: 9.18.0
+  '@faker-js/faker':
+    specifier: ^9.5.0
+    version: 9.5.0
   '@next/eslint-plugin-next':
     specifier: 15.1.4
     version: 15.1.4
@@ -1109,6 +1112,11 @@ packages:
     dependencies:
       '@eslint/core': 0.10.0
       levn: 0.4.1
+    dev: true
+
+  /@faker-js/faker@9.5.0:
+    resolution: {integrity: sha512-3qbjLv+fzuuCg3umxc9/7YjrEXNaKwHgmig949nfyaTx8eL4FAsvFbu+1JcFUj1YAXofhaDn6JdEUBTYuk0Ssw==}
+    engines: {node: '>=18.0.0', npm: '>=9.0.0'}
     dev: true
 
   /@floating-ui/core@1.6.9:
