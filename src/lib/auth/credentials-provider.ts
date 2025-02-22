@@ -9,7 +9,6 @@ import { env } from "../env";
 import { prisma } from "../prisma";
 import { AUTH_COOKIE_NAME } from "./auth.const";
 
-
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 export const validatePassword = (password: string) => {
@@ -37,14 +36,17 @@ export const getCredentialsProvider = () => {
 
       const email = String(credentials.email);
       const password = String(credentials.password);
-    
+
       const user = await prisma.user.findUnique({
         where: { email },
       });
-    
+
       if (!user) return null;
-    
-      const passwordMatch = await comparePassword(password, user.passwordHash as string);
+
+      const passwordMatch = await comparePassword(
+        password,
+        user.hashedPassword as string,
+      );
       if (!passwordMatch) return null;
 
       return {
@@ -67,7 +69,8 @@ export const credentialsSignInCallback =
     if (!request || request.method !== "POST") return;
 
     const currentUrl = request.url;
-    if (!currentUrl.includes("credentials") || !currentUrl.includes("callback")) return;
+    if (!currentUrl.includes("credentials") || !currentUrl.includes("callback"))
+      return;
 
     const uuid = nanoid();
     const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);

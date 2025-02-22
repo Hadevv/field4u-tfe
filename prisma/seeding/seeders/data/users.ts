@@ -1,0 +1,51 @@
+import { UserRole, Language } from "@prisma/client";
+import bcrypt from "bcrypt";
+
+const hashedPassword = bcrypt.hashSync("password123", 10);
+
+export const users = [
+  {
+    email: "farmer.jean@example.be",
+    name: "Jean Dupont",
+    role: UserRole.FARMER,
+    language: Language.FRENCH,
+    hashedPassword,
+    bio: "Agriculteur bio depuis 20 ans dans la région de Namur",
+    onboardingCompleted: true,
+  },
+  {
+    email: "marie.gleaner@example.be",
+    name: "Marie Lambert",
+    role: UserRole.GLEANER,
+    language: Language.FRENCH,
+    hashedPassword,
+    bio: "Passionnée par la réduction du gaspillage alimentaire",
+    onboardingCompleted: true,
+  },
+  {
+    email: "admin@glean.be",
+    name: "Admin User",
+    role: UserRole.ADMIN,
+    language: Language.ENGLISH,
+    hashedPassword,
+    onboardingCompleted: true,
+  },
+  {
+    email: "farmer.pierre@example.be",
+    name: "Pierre Dubois",
+    role: UserRole.FARMER,
+    language: Language.FRENCH,
+    hashedPassword,
+    bio: "Ferme familiale depuis trois générations",
+    onboardingCompleted: false,
+  },
+  {
+    email: "sophie.gleaner@example.be",
+    name: "Sophie Van den Berg",
+    role: UserRole.GLEANER,
+    language: Language.DUTCH,
+    hashedPassword,
+    bio: "Engagée dans la lutte contre le gaspillage alimentaire",
+    onboardingCompleted: true,
+  },
+];

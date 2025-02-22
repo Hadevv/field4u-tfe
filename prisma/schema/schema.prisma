@@ -8,38 +8,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// -- Contraintes CHECK pour les tables
+// ALTER TABLE "reviews" ADD CONSTRAINT rating_range CHECK (rating BETWEEN 1 AND 5);
+// ALTER TABLE "gleanings" ADD CONSTRAINT quantity_non_negative CHECK (quantity_available >= 0);
+// ALTER TABLE "gleaning_periods" ADD CONSTRAINT valid_date_range CHECK (start_date < end_date);
+// ALTER TABLE "fields" ADD CONSTRAINT ownership_check CHECK (
+//     (farm_id IS NOT NULL AND owner_id IS NULL) 
+//     OR 
+//     (farm_id IS NULL AND owner_id IS NOT NULL)
+// );
 model User {
-  id               String          @id @default(nanoid(21))
-  name             String?
-  email            String          @unique
-  emailVerified    DateTime?       @map("email_verified")
-  image            String?
-  bio              String?
-  onboardingCompleted Boolean @default(false)
-  createdAt        DateTime        @default(now()) @map("created_at")
-  updatedAt        DateTime        @updatedAt @map("updated_at")
-  deletedAt        DateTime?       @map("deleted_at")
-  stripeCustomerId String?         @map("stripe_customer_id")
-  plan             UserPlan        @default(FREE)
-  resendContactId  String?         @map("resend_contact_id")
-  passwordHash     String?         @map("password_hash") //Nullable car j'utilise OAuth
-  role             UserRole        @default(GLEANER)
-  language         Language        @default(FRENCH)
-  accounts         Account[]
-  agendas          Agenda[]
-  announcements    Announcement[]
-  comments         Comment[]
-  farms            Farm[]
-  favorites        Favorite[]
-  feedbacks        Feedback[]
-  fields           Field[]
-  gleanings        Gleaning[]
-  likes            Like[]
-  notifications    Notification[]
-  participations   Participation[]
-  reviews          Review[]
-  sessions         Session[]
-  statistics       Statistic? // Relation 1-1 ou 1-N ? (1-N pour historique)
+  id                  String          @id @default(nanoid(21)) @db.Char(21)
+  name                String?         @db.VarChar(100)
+  email               String          @unique @db.VarChar(254)
+  emailVerified       DateTime?       @map("email_verified")
+  image               String?         @db.VarChar(500)
+  bio                 String?         @db.VarChar(500)
+  onboardingCompleted Boolean         @default(false) @map("onboarding_completed")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+  deletedAt           DateTime?       @map("deleted_at")
+  stripeCustomerId    String?         @map("stripe_customer_id") @db.VarChar(255)
+  plan                UserPlan        @default(FREE)
+  resendContactId     String?         @map("resend_contact_id") @db.VarChar(255)
+  hashedPassword      String?         @map("password_hash") @db.VarChar(255) //Nullable car j'utilise OAuth
+  acceptedRules       Boolean         @default(false) @map("accepted_rules")
+  role                UserRole        @default(GLEANER)
+  language            Language        @default(FRENCH)
+  accounts            Account[]
+  agendas             Agenda[]
+  announcements       Announcement[]
+  comments            Comment[]
+  farms               Farm[]
+  favorites           Favorite[]
+  feedbacks           Feedback[]
+  fields              Field[]
+  gleanings           Gleaning[]
+  likes               Like[]
+  notifications       Notification[]
+  participations      Participation[]
+  reviews             Review[]
+  sessions            Session[]
+  statistics          Statistic[] // Relation 1-N
 
   @@index([createdAt])
   @@index([email])
@@ -47,45 +57,48 @@ model User {
 }
 
 model Farm {
-  id          String   @id @default(nanoid(21))
-  ownerId     String   @map("owner_id")
-  name        String
-  slug        String   @unique @default(nanoid(6))
-  description String?
+  id          String   @id @default(nanoid(21)) @db.Char(21)
+  ownerId     String   @map("owner_id") @db.Char(21) // Propriétaire direct (individu ou ferme)
+  name        String   @db.VarChar(255)
+  slug        String   @unique @default(nanoid(6)) @db.Char(6) // Slug pour URL 
+  description String?  @db.VarChar(500)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-  city        String?
-  contactInfo String?  @map("contact_info")
+  city        String?  @db.VarChar(100)
+  contactInfo String?  @map("contact_info") @db.VarChar(255)
   latitude    Float?
   longitude   Float?
-  postalCode  String?  @map("postal_code")
+  postalCode  String?  @map("postal_code") @db.VarChar(10)
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   fields      Field[]
 
+  @@index([city, postalCode])
   @@index([slug])
   @@map("farms")
 }
 
 model Review {
-  id         String   @id @default(nanoid(21))
-  userId     String   @map("user_id")
-  rating     Int      // Limiter à 1-5 (ex: avec Zod)
-  content    String?
-  images     String[] @default([])// URL des images
+  id         String   @id @default(nanoid(21)) @db.Char(21)
+  userId     String?  @map("user_id") @db.Char(21)
+  rating     Int      @db.SmallInt // Gérer coté SQL car prisma ne gere pas le CHECK
+  content    String?  @db.VarChar(500)
+  images     String[] @default([]) @db.VarChar(255) // URL des images 
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
-  gleaningId String   @map("gleaning_id")
+  gleaningId String   @map("gleaning_id") @db.Char(21)
   gleaning   Gleaning @relation(fields: [gleaningId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  //CHECK SQL : Rating est limiter à 1-5
 
   @@map("reviews")
 }
 
 model Comment {
-  id             String       @id @default(nanoid(21))
-  userId         String       @map("user_id")
-  announcementId String       @map("announcement_id")
-  content        String
+  id             String       @id @default(nanoid(21)) @db.Char(21)
+  userId         String       @map("user_id") @db.Char(21)
+  announcementId String       @map("announcement_id") @db.Char(21)
+  content        String       @db.VarChar(1000)
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
   announcement   Announcement @relation(fields: [announcementId], references: [id])
@@ -95,9 +108,9 @@ model Comment {
 }
 
 model Like {
-  id             String       @id @default(nanoid(21))
-  userId         String       @map("user_id")
-  announcementId String       @map("announcement_id")
+  id             String       @id @default(nanoid(21)) @db.Char(21)
+  userId         String       @map("user_id") @db.Char(21)
+  announcementId String       @map("announcement_id") @db.Char(21)
   createdAt      DateTime     @default(now()) @map("created_at")
   announcement   Announcement @relation(fields: [announcementId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
@@ -106,9 +119,9 @@ model Like {
 }
 
 model Favorite {
-  id             String       @id @default(nanoid(21))
-  userId         String       @map("user_id")
-  announcementId String       @map("announcement_id")
+  id             String       @id @default(nanoid(21)) @db.Char(21)
+  userId         String       @map("user_id") @db.Char(21)
+  announcementId String       @map("announcement_id") @db.Char(21)
   createdAt      DateTime     @default(now()) @map("created_at")
   announcement   Announcement @relation(fields: [announcementId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
@@ -117,10 +130,10 @@ model Favorite {
 }
 
 model Feedback {
-  id        String   @id @default(nanoid(21))
-  message   String
-  email     String?
-  userId    String?  @map("user_id")
+  id        String   @id @default(nanoid(21)) @db.Char(21)
+  message   String   @db.VarChar(1000)
+  email     String?  @db.VarChar(254)
+  userId    String?  @map("user_id") @db.Char(21)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   user      User?    @relation(fields: [userId], references: [id])
@@ -129,15 +142,15 @@ model Feedback {
 }
 
 model Agenda {
-  id             String        @id @default(nanoid(21))
-  userId         String        @map("user_id")
-  announcementId String        @map("announcement_id")
+  id             String        @id @default(nanoid(21)) @db.Char(21)
+  userId         String        @map("user_id") @db.Char(21)
+  announcementId String        @map("announcement_id") @db.Char(21)
   startDate      DateTime      @map("start_date")
   endDate        DateTime      @map("end_date")
-  title          String
-  description    String?
+  title          String        @db.VarChar(255)
+  description    String?       @db.VarChar(500)
   status         AgendaStatus  @default(PENDING)
-  notificationId String?       @unique @map("notification_id")
+  notificationId String?       @unique @map("notification_id") @db.Char(21)
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
   announcement   Announcement  @relation(fields: [announcementId], references: [id], onDelete: Cascade)
@@ -148,14 +161,14 @@ model Agenda {
 }
 
 model Notification {
-  id        String           @id @default(nanoid(21))
-  userId    String           @map("user_id")
+  id        String           @id @default(nanoid(21)) @db.Char(21)
+  userId    String           @map("user_id") @db.Char(21)
   type      NotificationType
-  message   String
+  message   String           @db.VarChar(255)
   isRead    Boolean          @default(false) @map("is_read")
   createdAt DateTime         @default(now()) @map("created_at")
   updatedAt DateTime         @updatedAt @map("updated_at")
-  agendaId  String?          @unique @map("agenda_id")
+  agendaId  String?          @unique @map("agenda_id") @db.Char(21)
   agenda    Agenda?
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -163,34 +176,37 @@ model Notification {
 }
 
 model Field {
-  id             String           @id @default(nanoid(21))
-  farmId         String?          @map("farm_id") // Lien optionnel à une ferme
-  name           String
-  slug           String           @unique @default(nanoid(6))
-  description    String?
+  id             String           @id @default(nanoid(21)) @db.Char(21)
+  farmId         String?          @map("farm_id") @db.Char(21) // Lien optionnel à une ferme
+  name           String           @db.VarChar(100)
+  slug           String           @unique @default(nanoid(6)) @db.Char(6)
+  description    String?          @db.VarChar(500)
   isAvailable    Boolean          @default(true) @map("is_available")
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
-  city           String
-  cropTypeId     String           @map("crop_type_id")
+  city           String           @db.VarChar(100)
+  cropTypeId     String           @map("crop_type_id") @db.Char(21)
   latitude       Float
   longitude      Float
-  postalCode     String           @map("postal_code")
-  qrCode         String?          @map("qr_code_url")
-  ownerId        String?          @map("owner_id")  // Propriétaire direct (individu ou ferme)
+  postalCode     String           @map("postal_code") @db.VarChar(10)
+  qrCode         String?          @map("qr_code_url") @db.VarChar(255)
+  ownerId        String?          @map("owner_id") @db.Char(21) // Propriétaire direct (individu ou ferme)
   announcement   Announcement[]
   cropType       CropType         @relation(fields: [cropTypeId], references: [id])
   farm           Farm?            @relation(fields: [farmId], references: [id], onDelete: Cascade)
   owner          User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   gleaningPeriod GleaningPeriod[]
 
+  //CHECK SQL : Un champ doit être lié à une ferme OU à un utilisateur, pas les deux
+
+  @@index([latitude, longitude])
   @@index([slug])
   @@map("fields")
 }
 
 model CropType {
-  id           String         @id @default(nanoid(21))
-  name         String         @unique
+  id           String         @id @default(nanoid(21)) @db.Char(21)
+  name         String         @unique @db.VarChar(100)
   category     CropCategory
   season       CropSeason
   createdAt    DateTime       @default(now()) @map("created_at")
@@ -202,9 +218,9 @@ model CropType {
 }
 
 model Statistic {
-  id                 String   @id @default(nanoid(21))
-  userId             String   @unique @map("user_id")
-  totalGleanings      Int     @default(0) @map("total_gleanings")
+  id                 String   @id @default(nanoid(21)) @db.Char(21)
+  userId             String   @map("user_id") @db.Char(21)
+  totalGleanings     Int      @default(0) @map("total_gleanings")
   totalFoodSaved     Float    @default(0) @map("total_food_saved")
   totalFields        Int      @default(0) @map("total_fields")
   totalAnnouncements Int      @default(0) @map("total_announcements")
@@ -215,22 +231,22 @@ model Statistic {
 }
 
 model Announcement {
-  id                String                        @id @default(nanoid(21))
-  fieldId           String                        @map("field_id")
-  title             String
-  slug              String                        @unique @default(nanoid(6))
-  description       String
-  images            String[]                     @default([]) // URL des images
-  createdAt         DateTime                      @default(now()) @map("created_at")
-  updatedAt         DateTime                      @updatedAt @map("updated_at")
-  isPublished       Boolean                       @default(true) @map("is_published")
-  cropTypeId        String                        @map("crop_type_id")
-  quantityAvailable Int?                          @map("quantity_available")
-  ownerId           String                        @map("owner_id")
+  id                String                       @id @default(nanoid(21)) @db.Char(21)
+  fieldId           String                       @map("field_id") @db.Char(21)
+  title             String                       @db.VarChar(255)
+  slug              String                       @unique @default(nanoid(6)) @db.Char(6)
+  description       String                       @db.VarChar(2000)
+  images            String[]                     @default([]) @db.VarChar(255) // URL des images
+  createdAt         DateTime                     @default(now()) @map("created_at")
+  updatedAt         DateTime                     @updatedAt @map("updated_at")
+  isPublished       Boolean                      @default(true) @map("is_published")
+  cropTypeId        String                       @map("crop_type_id") @db.Char(21)
+  quantityAvailable Int?                         @map("quantity_available")
+  ownerId           String                       @map("owner_id") @db.Char(21)
   agendas           Agenda[]
-  cropType          CropType                      @relation(fields: [cropTypeId], references: [id])
-  field             Field                         @relation(fields: [fieldId], references: [id])
-  owner             User                          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  cropType          CropType                     @relation(fields: [cropTypeId], references: [id])
+  field             Field                        @relation(fields: [fieldId], references: [id])
+  owner             User                         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   comments          Comment[]
   favorites         Favorite[]
   gleanings         Gleaning[]
@@ -238,27 +254,31 @@ model Announcement {
   participations    Participation[]
   gleaningPeriods   AnnouncementGleaningPeriod[]
 
+  //CHECK SQL : Éviter les valeurs négatives pour quantity_available
+
   @@index([slug])
   @@index([fieldId, cropTypeId])
   @@map("announcements")
 }
 
 model GleaningPeriod {
-  id            String                        @id @default(nanoid(21))
-  fieldId       String                        @map("field_id")
-  startDate     DateTime                      @map("start_date")
-  endDate       DateTime                      @map("end_date")
-  status        GleaningPeriodStatus          @default(AVAILABLE)
-  field         Field                         @relation(fields: [fieldId], references: [id])
+  id            String                       @id @default(nanoid(21)) @db.Char(21)
+  fieldId       String                       @map("field_id") @db.Char(21)
+  startDate     DateTime                     @map("start_date")
+  endDate       DateTime                     @map("end_date")
+  status        GleaningPeriodStatus         @default(AVAILABLE)
+  field         Field                        @relation(fields: [fieldId], references: [id])
   announcements AnnouncementGleaningPeriod[]
+
+  //CHECK SQL : Vérifier que startDate < endDate via une contrainte SQL
 
   @@map("gleaning_periods")
 }
 
 model Gleaning {
-  id             String                  @id @default(nanoid(21))
-  userId         String                  @map("user_id")
-  announcementId String                  @map("announcement_id")
+  id             String                  @id @default(nanoid(21)) @db.Char(21)
+  userId         String                  @map("user_id") @db.Char(21)
+  announcementId String                  @map("announcement_id") @db.Char(21)
   status         GleaningStatus          @default(PENDING)
   createdAt      DateTime                @default(now()) @map("created_at")
   updatedAt      DateTime                @updatedAt @map("updated_at")
@@ -272,9 +292,9 @@ model Gleaning {
 }
 
 model Participation {
-  id                     String                  @id @default(nanoid(21))
-  userId                 String                  @map("user_id")
-  announcementId         String                  @map("announcement_id")
+  id                     String                  @id @default(nanoid(21)) @db.Char(21)
+  userId                 String                  @map("user_id") @db.Char(21)
+  announcementId         String                  @map("announcement_id") @db.Char(21)
   status                 ParticipationStatus     @default(CONFIRMED)
   createdAt              DateTime                @default(now()) @map("created_at")
   announcement           Announcement            @relation(fields: [announcementId], references: [id], onDelete: Cascade)
@@ -284,26 +304,31 @@ model Participation {
   @@unique([userId, announcementId])
   @@map("participations")
 }
+
 // table de liaison entre les annonces et les périodes de glanage
 model AnnouncementGleaningPeriod {
-  announcementId   String @map("announcement_id")
-  gleaningPeriodId String @map("gleaning_period_id")
+  announcementId   String @map("announcement_id") @db.Char(21)
+  gleaningPeriodId String @map("gleaning_period_id") @db.Char(21)
 
   announcement   Announcement   @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   gleaningPeriod GleaningPeriod @relation(fields: [gleaningPeriodId], references: [id], onDelete: Cascade)
 
   @@id([announcementId, gleaningPeriodId])
+  @@index([announcementId])
+  @@index([gleaningPeriodId])
   @@map("announcement_gleaning_periods")
 }
 
 model GleaningParticipation {
-  gleaningId      String @map("gleaning_id")
-  participationId String @map("participation_id")
+  gleaningId      String @map("gleaning_id") @db.Char(21)
+  participationId String @map("participation_id") @db.Char(21)
 
   gleaning      Gleaning      @relation(fields: [gleaningId], references: [id], onDelete: Cascade)
   participation Participation @relation(fields: [participationId], references: [id], onDelete: Cascade)
 
   @@id([gleaningId, participationId])
+  @@index([gleaningId])
+  @@index([participationId])
   @@map("gleaning_participations")
 }
 
@@ -338,6 +363,9 @@ enum NotificationType {
   RESERVATION_REQUEST
   FIELD_UPDATED
   GLEANING_ACCEPTED
+  NEW_REVIEW
+  GLEANING_REMINDER
+  GLEANING_CANCELLED
 }
 
 enum Language {

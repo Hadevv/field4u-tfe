@@ -1,6 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { Prisma, PrismaClient } from '@prisma/client';
+import {
+  Prisma,
+  PrismaClient,
+  User,
+  Farm,
+  CropType,
+  Field,
+  GleaningPeriod,
+  Announcement,
+  Participation,
+  Gleaning,
+  Review,
+  Statistic,
+  Feedback,
+  Notification,
+  Agenda,
+  Comment,
+  Like,
+  Favorite,
+} from "@prisma/client";
 
 export type Context = {
   prisma: PrismaClient;
@@ -14,7 +31,7 @@ export type Context = {
     participations: Prisma.ParticipationCreateInput[];
     gleanings: Prisma.GleaningCreateInput[];
     reviews: Prisma.ReviewCreateInput[];
-    statistics: Prisma.StatisticsCreateInput[];
+    statistics: Prisma.StatisticCreateInput[];
     feedbacks: Prisma.FeedbackCreateInput[];
     notifications: Prisma.NotificationCreateInput[];
     agendas: Prisma.AgendaCreateInput[];
@@ -23,22 +40,21 @@ export type Context = {
     favorites: Prisma.FavoriteCreateInput[];
   };
   created: {
-    glanages: any;
-    users: any[];
-    farms: any[];
-    cropTypes: any[];
-    fields: any[];
-    gleaningPeriods: any[];
-    announcements: any[];
-    participations: any[];
-    gleanings: any[];
-    reviews: any[];
-    statistics: any[];
-    feedbacks: any[];
-    notifications: any[];
-    agendas: any[];
-    comments: any[];
-    likes: any[];
-    favorites: any[];
+    users: User[];
+    farms: Farm[];
+    cropTypes: CropType[];
+    fields: Field[];
+    gleaningPeriods: GleaningPeriod[];
+    announcements: Announcement[];
+    participations: Participation[];
+    gleanings: Gleaning[];
+    reviews: Review[];
+    statistics: Statistic[];
+    feedbacks: Feedback[];
+    notifications: Notification[];
+    agendas: Agenda[];
+    comments: Comment[];
+    likes: Like[];
+    favorites: Favorite[];
   };
 };

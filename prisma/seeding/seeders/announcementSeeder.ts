@@ -1,13 +1,14 @@
-import { Context } from '../types';
-// import { createAnnouncements } from '../data/announcements';
+import { Context } from "../types";
+// import { createAnnouncements } from './data/announcements';
 
 export async function seedAnnouncements(ctx: Context) {
-  console.log('🌱 Seeding announcements...');
-  
+  console.log("🌱 Seeding announcements...");
+
   const announcements = [
     {
-      title: 'Glanage de pommes de terre',
-      description: 'Venez glaner des pommes de terre bio après la récolte principale',
+      title: "Glanage de pommes de terre",
+      description:
+        "Venez glaner des pommes de terre bio après la récolte principale",
       fieldId: ctx.created.fields[0].id,
       cropTypeId: ctx.created.cropTypes[0].id,
       ownerId: ctx.created.users[0].id,
@@ -19,8 +20,8 @@ export async function seedAnnouncements(ctx: Context) {
       },
     },
     {
-      title: 'Pommes à glaner',
-      description: 'Pommes non récoltées disponibles pour le glanage',
+      title: "Pommes à glaner",
+      description: "Pommes non récoltées disponibles pour le glanage",
       fieldId: ctx.created.fields[1].id,
       cropTypeId: ctx.created.cropTypes[2].id,
       ownerId: ctx.created.users[3].id,
@@ -32,11 +33,13 @@ export async function seedAnnouncements(ctx: Context) {
       },
     },
   ];
-  
+
   const createdAnnouncements = await Promise.all(
-    announcements.map(announcement => ctx.prisma.announcement.create({ data: announcement }))
+    announcements.map((announcement) =>
+      ctx.prisma.announcement.create({ data: announcement }),
+    ),
   );
-  
+
   ctx.created.announcements = createdAnnouncements;
   return createdAnnouncements;
 }
