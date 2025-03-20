@@ -1,2 +1,2 @@
 -- CreateExtension
-CREATE EXTENSION IF NOT EXISTS "Postgis";
+CREATE EXTENSION IF NOT EXISTS "postgis";

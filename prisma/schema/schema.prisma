@@ -7,7 +7,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  extensions = [Postgis]
+  extensions = [postgis]
 }
 
 // -- Contraintes CHECK pour les tables
