@@ -1,11 +1,13 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["prismaSchemaFolder"]
+  previewFeatures = ["prismaSchemaFolder", "postgresqlExtensions"]
+
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  extensions = [Postgis]
 }
 
 // -- Contraintes CHECK pour les tables
@@ -54,21 +56,21 @@ model User {
 }
 
 model Farm {
-  id          String   @id @default(nanoid(21)) @db.Char(21)
-  ownerId     String   @map("owner_id") @db.Char(21) // Propriétaire direct (individu ou ferme)
-  name        String   @db.VarChar(255)
-  slug        String   @unique @default(nanoid(6)) @db.Char(6) // Slug pour URL 
-  description String?  @db.VarChar(500)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  city        String?  @db.VarChar(100)
-  contactInfo String?  @map("contact_info") @db.VarChar(255)
-  location    Unsupported("geography(Point, 4326)") @map("location") // Champ spatial PostGIS
-  postalCode  String?  @map("postal_code") @db.VarChar(10)
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id          String                                @id @default(nanoid(21)) @db.Char(21)
+  ownerId     String                                @map("owner_id") @db.Char(21) // Propriétaire direct (individu ou ferme)
+  name        String                                @db.VarChar(255)
+  slug        String                                @unique @default(nanoid(6)) @db.Char(6) // Slug pour URL 
+  description String?                               @db.VarChar(500)
+  createdAt   DateTime                              @default(now()) @map("created_at")
+  updatedAt   DateTime                              @updatedAt @map("updated_at")
+  city        String?                               @db.VarChar(100)
+  contactInfo String?                               @map("contact_info") @db.VarChar(255)
+  latitude    Float?
+  longitude   Float?
+  postalCode  String?                               @map("postal_code") @db.VarChar(10)
+  owner       User                                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   fields      Field[]
 
-  @@index([location], type: Gist) // Index spacial PostGIS
   @@index([city, postalCode])
   @@index([slug])
   @@map("farms")
@@ -139,23 +141,23 @@ model Notification {
 }
 
 model Field {
-  id           String         @id @default(nanoid(21)) @db.Char(21)
-  farmId       String?        @map("farm_id") @db.Char(21) // Lien optionnel à une fermes
-  name         String?        @db.VarChar(100) // Nom donné par l’agriculteur (ex : "Champ du Nord")
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  city         String         @db.VarChar(100)
-  surface      Float?         @map("surface") // Surface du champ en hectares (optionnel)
-  postalCode   String         @map("postal_code") @db.VarChar(10)
-  ownerId      String?        @map("owner_id") @db.Char(21) // Propriétaire direct (individu ou ferme)
-  location    Unsupported("geography(Point, 4326)") @map("location") // Champ spatial PostGIS
+  id           String                                @id @default(nanoid(21)) @db.Char(21)
+  farmId       String?                               @map("farm_id") @db.Char(21) // Lien optionnel à une fermes
+  name         String?                               @db.VarChar(100) // Nom donné par l’agriculteur (ex : "Champ du Nord")
+  createdAt    DateTime                              @default(now()) @map("created_at")
+  updatedAt    DateTime                              @updatedAt @map("updated_at")
+  city         String                                @db.VarChar(100)
+  surface      Float?                                @map("surface") // Surface du champ en hectares (optionnel)
+  postalCode   String                                @map("postal_code") @db.VarChar(10)
+  ownerId      String?                               @map("owner_id") @db.Char(21) // Propriétaire direct (individu ou ferme)
+  latitude     Float
+  longitude    Float
   announcement Announcement[]
-  farm         Farm?          @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  owner        User?          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  farm         Farm?                                 @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  owner        User?                                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   //CHECK SQL : Un champ doit être lié à une ferme OU à un utilisateur, pas les deux
-  @@index([location], type: Gist) // Index spatial pour recherches rapides
-  @@unique([farmId, ownerId])
+  @@index([latitude, longitude])
   @@map("fields")
 }
 
