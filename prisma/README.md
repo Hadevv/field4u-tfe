@@ -1,61 +1,118 @@
-## Structure des Seeders
+# Guide de la Base de Données
 
-Ce dossier contient les seeders pour initialiser la base de données avec des données de test réalistes.
+## Configuration initiale
 
-### Organisation des fichiers
+1. Installer les dépendances :
 
-```
-prisma/
-  ├── seeders/
-     ├── data/           # Données statiques pour chaque modèle
-     ├── seeders/        # Logique de seeding pour chaque modèle
-     ├── types.ts        # Types TypeScript
-     └── cleanDatabase.ts # Utilitaire de nettoyage
-     └──  seed.ts             # Point d'entrée principal
+```bash
+pnpm install
 ```
 
-### Comment utiliser
+2. Configurer les variables d'environnement :
+   Créer un fichier `.env` avec :
 
-1. Pour lancer les seeders :
-   ```bash
-   npm run seed
-   ```
+```
+DATABASE_URL="postgresql://user:password@localhost:5432/glean?schema=public"
+```
 
-2. Pour ajouter de nouvelles données :
-   - Ajoutez vos données dans le fichier approprié dans `seeders/data/`
-   - Les fichiers sont organisés par modèle (users.ts, farms.ts, etc.)
-   - Suivez le format existant pour maintenir la cohérence
+J'utilise Neon Serverless Postgres qui est 100% free [https://neon.tech/](https://neon.tech/)
 
-3. Pour ajouter un nouveau type de données :
-   - Créez un nouveau fichier dans `seeders/data/`
-   - Créez un nouveau seeder dans `seeders/seeders/`
-   - Ajoutez le type dans `types.ts`
-   - Importez et ajoutez le seeder dans `seed.ts`
+3. Créer la base de données :
 
-### Ordre de seeding
+```bash
+pnpm prisma db push
+```
 
-Les données sont créées dans cet ordre pour respecter les dépendances :
+## 🌱 Seeding de la base de données
 
-1. Users
-2. CropTypes
-3. Farms
-4. Fields
-5. GlanagePeriods
-6. Announcements
-7. Participations
-8. Glanages
-9. Reviews
-10. Statistics
-11. Comments
-12. Likes
-13. Favorites
-14. Feedbacks
-15. Notifications
-16. Agendas
+Pour remplir la base de données avec des données de test :
 
-### Notes importantes
+```bash
+pnpm run seed
+```
 
-- Toutes les données sont nettoyées avant le seeding
-- Les relations sont gérées automatiquement
-- Les mots de passe de test sont tous "password123"
-- Les données sont adaptées au contexte belge
+## 👤 Comptes par défaut
+
+Un compte administrateur est créé automatiquement :
+
+- Email : admin@glean.be
+- Mot de passe : password123
+
+Tous les comptes générés utilisent le même mot de passe : password123
+
+## 📊 Structure des données
+
+Le seeder génère :
+
+- 100 utilisateurs (50% agriculteurs, 50% glaneurs)
+- Des fermes pour chaque agriculteur
+- 1-3 champs par ferme
+- Des annonces pour chaque champ
+- Des périodes de glanage
+- Des participations
+- Des avis
+- Des likes et favoris
+- Des notifications
+- Des statistiques
+
+## 🔍 Commandes Prisma utiles
+
+1. Voir la base de données :
+
+```bash
+pnpm prisma studio
+```
+
+2. Réinitialiser la base de données :
+
+```bash
+pnpm prisma migrate reset
+```
+
+3. Mettre à jour le schéma :
+
+```bash
+pnpm prisma generate
+```
+
+## 🏗️ Structure des tables principales
+
+### Users
+
+- Rôles : ADMIN, FARMER, GLEANER
+- Plans : FREE, PREMIUM
+- Langues : FRENCH, DUTCH, ENGLISH
+
+### Farms
+
+- Liées à un agriculteur
+- Contient les informations de localisation
+- Peut avoir plusieurs champs
+
+### Fields
+
+- Liés à une ferme
+- Contient les coordonnées GPS
+- Support pour les données géographiques (PostGIS)
+
+### Announcements
+
+- Liées à un champ
+- Contient les informations de glanage
+- Système de slug pour les URLs
+
+### Gleanings
+
+- Gestion des sessions de glanage
+- Statuts : PENDING, ACCEPTED, COMPLETED, CANCELLED
+
+### Participations
+
+- Liaison entre glaneurs et sessions
+- Statuts : PENDING, CONFIRMED, CANCELLED, ATTENDED, NO_SHOW
+
+## 🔒 Sécurité
+
+- Mots de passe hashés avec bcrypt
+- Validation des données avec Prisma
+- Contraintes SQL pour l'intégrité des données

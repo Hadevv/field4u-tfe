@@ -16,8 +16,7 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "postinstall": "prisma generate",
     "clean": "next lint --fix && tsc --noEmit && prettier --write .",
-    "seed": "tsx prisma/seeding/seed.ts seed",
-    "faker": "tsx prisma/seeding/seed.ts faker",
+    "seed": "tsx prisma/seed/seed.ts",
     "knip": "knip",
     "prepare": "husky install",
     "lint-staged": "lint-staged"
