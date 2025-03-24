@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Form,
   FormControl,
@@ -13,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SubmitButton } from "@/features/form/SubmitButton";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   FarmFormSchema,
@@ -21,7 +18,11 @@ import {
 } from "../../../app/auth/onboarding/onboarding.schema";
 import { createFarmAction } from "../../../app/auth/onboarding/onboarding.action";
 
-export const OnboardingFarmerForm = () => {
+export const OnboardingFarmerForm = ({
+  onSubmit,
+}: {
+  onSubmit: () => void;
+}) => {
   const form = useZodForm({
     schema: FarmFormSchema,
     defaultValues: {
@@ -32,18 +33,16 @@ export const OnboardingFarmerForm = () => {
       contactInfo: "",
     },
   });
-  const router = useRouter();
 
   const createFarmMutation = useMutation({
     mutationFn: async (values: FarmFormType) => {
       const result = await createFarmAction(values);
+      onSubmit();
 
       if (!result || result.serverError) {
         toast.error("Failed to create farm");
         throw new Error("Failed to create farm");
       }
-
-      router.push("/dashboard");
     },
   });
 

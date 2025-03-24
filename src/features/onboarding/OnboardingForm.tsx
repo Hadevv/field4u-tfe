@@ -8,6 +8,7 @@ import { UserRole } from "@prisma/client";
 import { OnboardingRoleStep } from "./OnboardingRoleStep";
 import { OnboardingFarmerForm } from "./OnboardingFarmerForm";
 import { OnboardingGleanerForm } from "./OnboardingGleanerForm";
+import { OnboardingRulesStep } from "./OnboardingRulesStep";
 
 export default function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -16,6 +17,10 @@ export default function OnboardingForm() {
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
     setCurrentStep(2);
+  };
+
+  const handleFormSubmit = () => {
+    setCurrentStep(3);
   };
 
   return (
@@ -40,11 +45,15 @@ export default function OnboardingForm() {
               </button>
 
               {selectedRole === "FARMER" ? (
-                <OnboardingFarmerForm />
+                <OnboardingFarmerForm onSubmit={handleFormSubmit} />
               ) : (
-                <OnboardingGleanerForm />
+                <OnboardingGleanerForm onSubmit={handleFormSubmit} />
               )}
             </div>
+          )}
+
+          {currentStep === 3 && selectedRole && (
+            <OnboardingRulesStep role={selectedRole} />
           )}
         </CardContent>
       </Card>

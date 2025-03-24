@@ -1,5 +1,13 @@
-"use client";
-
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useZodForm } from "@/components/ui/form";
+import { GleanerFormSchema } from "../../../app/auth/onboarding/onboarding.schema";
+import { createGleanerAction } from "../../../app/auth/onboarding/onboarding.action";
+import { BelgianPostalSearch } from "@/features/form/BelgianPostalSearch";
+import { logger } from "@/lib/logger";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { SubmitButton } from "@/features/form/SubmitButton";
 import {
   Form,
   FormControl,
@@ -7,66 +15,129 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  useZodForm,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SubmitButton } from "@/features/form/SubmitButton";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
-import {
-  GleanerFormType,
-  GleanerFormSchema,
-} from "../../../app/auth/onboarding/onboarding.schema";
-import { createGleanerAction } from "../../../app/auth/onboarding/onboarding.action";
+import { Loader2 } from "lucide-react";
+import { useWatch } from "react-hook-form";
 
-export function OnboardingGleanerForm() {
-  const router = useRouter();
+export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [isGeolocating, setIsGeolocating] = useState(false);
+  const [geoData, setGeoData] = useState<{
+    city: string;
+    postalCode: string;
+  } | null>(null);
+
   const form = useZodForm({
     schema: GleanerFormSchema,
     defaultValues: {
-      name: "",
       bio: "",
       city: "",
       postalCode: "",
       acceptTerms: false,
+      acceptGeolocation: false,
     },
   });
 
-  const createGleanerMutation = useMutation({
-    mutationFn: async (values: GleanerFormType) => {
-      const result = await createGleanerAction(values);
-      if (!result || result.serverError) {
-        toast.error("Failed to create gleaner");
-        throw new Error("Failed to create gleaner");
+  const acceptGeolocation = useWatch({
+    control: form.control,
+    name: "acceptGeolocation",
+  });
+
+  const handleGeolocation = useCallback(async () => {
+    setIsGeolocating(true);
+    setGeoError(null);
+
+    try {
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+          });
+        },
+      );
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${position.coords.latitude}&lon=${position.coords.longitude}&accept-language=fr`,
+      );
+
+      if (!response.ok) throw new Error("Échec de la géolocalisation");
+
+      const data = await response.json();
+      const city =
+        data.address.city || data.address.town || data.address.village;
+      const postalCode = data.address.postcode
+        ?.substring(0, 4)
+        .padStart(4, "0");
+
+      if (city && postalCode) {
+        const normalizedCity = city
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+        setGeoData({
+          city: normalizedCity,
+          postalCode: postalCode,
+        });
       }
-      router.push("/dashboard");
-    },
-  });
-  return (
-    <Form
-      form={form}
-      onSubmit={async (values) => createGleanerMutation.mutateAsync(values)}
-      className="space-y-6"
-    >
-      <div className="grid gap-4 md:grid-cols-2">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom de l'équipe/organisation</FormLabel>
-              <FormControl>
-                <Input placeholder="Les Glaneurs Solidaires" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    } catch (error) {
+      logger.error("Geolocation error", error);
+      setGeoError(error instanceof Error ? error.message : "Erreur inconnue");
+    } finally {
+      setIsGeolocating(false);
+    }
+  }, []);
 
+  useEffect(() => {
+    if (acceptGeolocation && !geoData) {
+      handleGeolocation();
+    } else if (!acceptGeolocation) {
+      setGeoData(null);
+      form.resetField("city");
+      form.resetField("postalCode");
+    }
+  }, [acceptGeolocation, geoData, handleGeolocation]);
+
+  useEffect(() => {
+    if (geoData) {
+      form.setValue("city", geoData.city, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      form.setValue("postalCode", geoData.postalCode, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      form.trigger(["city", "postalCode"]);
+    }
+  }, [geoData]);
+
+  const geoOptions = useMemo(() => {
+    return geoData
+      ? [
+          {
+            column_1: geoData.postalCode,
+            column_2: geoData.city,
+            recordid: `geo-${geoData.postalCode}`,
+          },
+        ]
+      : [];
+  }, [geoData]);
+
+  const handleSubmit = async (values: typeof GleanerFormSchema._type) => {
+    try {
+      await createGleanerAction(values);
+      onSubmit();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erreur inconnue");
+    }
+  };
+
+  return (
+    <Form form={form} onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
         <FormField
           control={form.control}
           name="city"
@@ -74,7 +145,14 @@ export function OnboardingGleanerForm() {
             <FormItem>
               <FormLabel>Ville principale</FormLabel>
               <FormControl>
-                <Input placeholder="Votre ville d'activité" {...field} />
+                <BelgianPostalSearch
+                  searchType="city"
+                  value={field.value}
+                  onChange={({ city }) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  options={geoOptions}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -88,7 +166,16 @@ export function OnboardingGleanerForm() {
             <FormItem>
               <FormLabel>Code postal</FormLabel>
               <FormControl>
-                <Input placeholder="XXXXX" {...field} pattern="\d{5}" />
+                <BelgianPostalSearch
+                  searchType="postal"
+                  value={field.value}
+                  onChange={({ postalCode }) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
+                  options={geoOptions}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -116,13 +203,53 @@ export function OnboardingGleanerForm() {
 
       <FormField
         control={form.control}
+        name="acceptGeolocation"
+        render={({ field }) => (
+          <FormItem className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
+            <FormControl>
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked);
+                  setGeoError(null);
+                }}
+                disabled={isGeolocating}
+              />
+            </FormControl>
+            <div className="space-y-1 leading-none">
+              <FormLabel>
+                {isGeolocating ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    Détection en cours...
+                  </span>
+                ) : (
+                  "Détection automatique de ma position"
+                )}
+              </FormLabel>
+              {geoError && (
+                <p className="text-sm text-destructive">{geoError}</p>
+              )}
+              <p className="text-sm text-muted-foreground">
+                Pour des résultats plus précis
+              </p>
+            </div>
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="acceptTerms"
         render={({ field }) => (
           <FormItem className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
             <FormControl>
               <Checkbox
                 checked={field.value}
-                onCheckedChange={field.onChange}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked);
+                  form.setValue("termsAcceptedAt", checked ? new Date() : null);
+                }}
               />
             </FormControl>
             <div className="space-y-1 leading-none">
@@ -151,13 +278,12 @@ export function OnboardingGleanerForm() {
       />
 
       <SubmitButton className="w-full">
-        Finaliser mon profil glaneur
+        {form.formState.isSubmitting ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          "continuer"
+        )}
       </SubmitButton>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Vous pourrez modifier ces informations et ajouter des membres
-        ultérieurement
-      </p>
     </Form>
   );
 }

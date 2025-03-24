@@ -57,7 +57,6 @@ export const createGleanerAction = authAction
       await prisma.user.update({
         where: { id: userId },
         data: {
-          name: input.name,
           bio: input.bio,
           role: "GLEANER",
           onboardingCompleted: true,
@@ -70,3 +69,25 @@ export const createGleanerAction = authAction
       throw new ActionError("Failed to complete onboarding");
     }
   });
+
+export const acceptRulesAction = authAction.action(async ({ ctx }) => {
+  const userId = ctx.user.id;
+
+  if (!userId) {
+    throw new ActionError("Unauthorized");
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        acceptedRules: true,
+      },
+    });
+
+    return { message: "Rules accepted" };
+  } catch (error) {
+    console.error(error);
+    throw new ActionError("Failed to accept rules");
+  }
+});

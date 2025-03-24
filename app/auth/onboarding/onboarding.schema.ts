@@ -16,16 +16,17 @@ export const FarmFormSchema = z.object({
 });
 
 export const GleanerFormSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  bio: z
+  bio: z.string().max(500).optional(),
+  city: z.string().min(2, "Veuillez sélectionner une commune valide"),
+  postalCode: z
     .string()
-    .max(300, "La bio ne doit pas dépasser 300 caractères")
-    .optional(),
-  city: z.string().min(2, "Ville requise"),
-  postalCode: z.string().regex(/^\d{5}$/, "Code postal invalide"),
+    .length(4, "Code postal belge invalide (4 chiffres requis)")
+    .refine((val) => /^[1-9]\d{3}$/.test(val), "Code postal invalide"),
   acceptTerms: z
     .boolean()
-    .refine((v) => v, "Vous devez accepter les conditions"),
+    .refine((v) => v, "Vous devez accepter les conditions pour continuer"),
+  acceptGeolocation: z.boolean().optional(),
+  termsAcceptedAt: z.date().nullable().optional(),
 });
 
 export type GleanerFormType = z.infer<typeof GleanerFormSchema>;

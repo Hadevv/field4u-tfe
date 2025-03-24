@@ -1,8 +1,7 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { UserRole } from "@prisma/client";
+import { Users } from "lucide-react";
+import { Tractor } from "lucide-react";
 
 type Props = {
   onSelect: (role: UserRole) => void;
@@ -21,7 +20,7 @@ export function OnboardingRoleStep({ onSelect }: Props) {
       </header>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {/* Carte Agriculteur */}
+        {/* carte agriculteur */}
         <article
           role="button"
           onClick={() => onSelect("FARMER")}
@@ -30,18 +29,18 @@ export function OnboardingRoleStep({ onSelect }: Props) {
           <Card className="h-full hover:shadow-lg hover:ring-2 hover:ring-primary">
             <CardContent className="pb-4 pt-6">
               <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="text-6xl"></div>
-                <h3 className="text-xl font-semibold">Agricole</h3>
+                <Tractor />
+                <h3 className="text-xl font-semibold">Agriculteur</h3>
                 <p className="text-muted-foreground">
-                  Je cultive des denrées et souhaite :
+                  Vous avez un champ, un verger ou un potager ? Je partage mes
+                  récoltes
                 </p>
-                <ul className="list-inside list-disc space-y-1 text-left text-sm"></ul>
               </div>
             </CardContent>
           </Card>
         </article>
 
-        {/* Carte Glaneur */}
+        {/* carte glaneur */}
         <article
           role="button"
           onClick={() => onSelect("GLEANER")}
@@ -50,19 +49,14 @@ export function OnboardingRoleStep({ onSelect }: Props) {
           <Card className="h-full hover:shadow-lg hover:ring-2 hover:ring-primary">
             <CardContent className="pb-4 pt-6">
               <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="text-6xl">👥</div>
-                <h3 className="text-xl font-semibold">Équipe de Glanage</h3>
-                <p className="text-muted-foreground">Nous sommes prêts à :</p>
-                <ul className="list-inside list-disc space-y-1 text-left text-sm">
-                  <li>Récupérer des surplus agricoles</li>
-                  <li>Transformer des denrées en partenariat</li>
-                  <li>Sensibiliser contre le gaspillage</li>
-                </ul>
+                <Users />
+                <h3 className="text-xl font-semibold">Glaneur</h3>
+                <p className="text-muted-foreground">
+                  Vous souhaitez récupérer des produits frais ? Je glane des
+                  produits
+                </p>
               </div>
             </CardContent>
-            <CardFooter className="justify-center border-t p-4">
-              <Button className="w-full">Choisir ce rôle</Button>
-            </CardFooter>
           </Card>
         </article>
       </div>
