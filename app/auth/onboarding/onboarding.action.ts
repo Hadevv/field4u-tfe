@@ -1,7 +1,11 @@
 "use server";
 
 import { authAction, ActionError } from "@/lib/backend/safe-actions";
-import { FarmFormSchema, GleanerFormSchema } from "./onboarding.schema";
+import {
+  FarmFormSchema,
+  GleanerFormSchema,
+  RulesSchema,
+} from "./onboarding.schema";
 import { prisma } from "@/lib/prisma";
 
 export const createFarmAction = authAction
@@ -17,9 +21,11 @@ export const createFarmAction = authAction
       const user = await prisma.user.update({
         where: { id: userId },
         data: {
-          name: input.name,
           bio: input.description,
           role: "FARMER",
+          city: input.city,
+          postalCode: input.postalCode,
+          termsAcceptedAt: input.termsAcceptedAt,
           onboardingCompleted: true,
         },
       });
@@ -59,6 +65,10 @@ export const createGleanerAction = authAction
         data: {
           bio: input.bio,
           role: "GLEANER",
+          city: input.city,
+          postalCode: input.postalCode,
+          termsAcceptedAt: input.termsAcceptedAt,
+          acceptGeolocation: input.acceptGeolocation,
           onboardingCompleted: true,
         },
       });
@@ -70,24 +80,26 @@ export const createGleanerAction = authAction
     }
   });
 
-export const acceptRulesAction = authAction.action(async ({ ctx }) => {
-  const userId = ctx.user.id;
+export const acceptRulesAction = authAction
+  .schema(RulesSchema)
+  .action(async ({ ctx }) => {
+    const userId = ctx.user.id;
 
-  if (!userId) {
-    throw new ActionError("Unauthorized");
-  }
+    if (!userId) {
+      throw new ActionError("Unauthorized");
+    }
 
-  try {
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        acceptedRules: true,
-      },
-    });
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          rulesAcceptedAt: new Date(),
+        },
+      });
 
-    return { message: "Rules accepted" };
-  } catch (error) {
-    console.error(error);
-    throw new ActionError("Failed to accept rules");
-  }
-});
+      return { message: "Rules accepted" };
+    } catch (error) {
+      console.error(error);
+      throw new ActionError("Failed to accept rules");
+    }
+  });

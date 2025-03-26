@@ -4,7 +4,7 @@ import type { PageParams } from "@/types/next";
 import { redirect } from "next/navigation";
 import { requiredAuth } from "@/lib/auth/helper";
 import { logger } from "@/lib/logger";
-import OnboardingForm from "@/features/onboarding/OnboardingForm";
+import OnboardingForm from "./_components/OnboardingForm";
 
 /**
  * This page is shown when a user logs in. You can add an onboarding process here.
