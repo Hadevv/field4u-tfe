@@ -63,9 +63,13 @@ async function seedUsers() {
       language: Language.FRENCH,
       hashedPassword,
       onboardingCompleted: true,
-      acceptedRules: true,
+      rulesAcceptedAt: new Date(),
+      termsAcceptedAt: new Date(),
+      acceptGeolocation: true,
       plan: UserPlan.PREMIUM,
       bio: "Administrateur de la plateforme Glean",
+      city: faker.location.city(),
+      postalCode: faker.location.zipCode("#####"),
     },
   });
 
@@ -96,11 +100,15 @@ async function seedUsers() {
               "Membre actif·ve de la communauté anti-gaspi",
             ]),
       onboardingCompleted: faker.datatype.boolean({ probability: 0.9 }),
-      acceptedRules: true,
+      termsAcceptedAt: new Date(),
+      rulesAcceptedAt: new Date(),
+      acceptGeolocation: faker.datatype.boolean({ probability: 0.6 }),
       plan:
         role === UserRole.FARMER
           ? faker.helpers.arrayElement([UserPlan.FREE, UserPlan.PREMIUM])
           : UserPlan.FREE,
+      city: faker.location.city(),
+      postalCode: faker.location.zipCode("#####"),
     });
   }
 
