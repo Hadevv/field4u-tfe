@@ -17,7 +17,7 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
     signOut: "/auth/signout",
     error: "/auth/error",
     verifyRequest: "/auth/verify-request",
-    newUser: "/auth/new-user",
+    onboarding: "/auth/onboarding",
   },
   adapter: PrismaAdapter(prisma),
   providers: getNextAuthConfigProviders(),

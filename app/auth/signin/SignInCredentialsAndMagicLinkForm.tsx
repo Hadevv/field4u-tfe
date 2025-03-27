@@ -16,6 +16,7 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useLocalStorage } from "react-use";
 import { z } from "zod";
+import { getSession } from "next-auth/react";
 
 const LoginCredentialsFormScheme = z.object({
   email: z.string().email(),
@@ -35,17 +36,22 @@ export const SignInCredentialsAndMagicLinkForm = () => {
   );
 
   async function onSubmit(values: LoginCredentialsFormType) {
-    if (isUsingCredentials) {
-      await signIn("credentials", {
-        email: values.email,
-        password: values.password,
-        callbackUrl: searchParams.get("callbackUrl") ?? undefined,
-      });
+    const result = await signIn(isUsingCredentials ? "credentials" : "resend", {
+      email: values.email,
+      password: values.password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      console.error(result.error);
+      return;
+    }
+
+    const session = await getSession();
+    if (session?.user?.onboardingCompleted) {
+      window.location.href = searchParams.get("callbackUrl") ?? "/";
     } else {
-      await signIn("resend", {
-        email: values.email,
-        callbackUrl: searchParams.get("callbackUrl") ?? undefined,
-      });
+      window.location.href = "/auth/onboarding";
     }
   }
 

@@ -55,6 +55,7 @@ export const getCredentialsProvider = () => {
         name: user.name,
         image: user.image,
         role: user.role as UserRole,
+        onboardingCompleted: user.onboardingCompleted,
       };
     },
   });
