@@ -1,9 +1,12 @@
 import { AuthButton } from "../auth/AuthButton";
 import { HeaderBase } from "./HeaderBase";
+import { auth } from "@/lib/auth/helper";
 
-export function Header() {
+export async function Header() {
+  const user = await auth();
+
   return (
-    <HeaderBase>
+    <HeaderBase isAuthenticated={!!user}>
       <AuthButton />
     </HeaderBase>
   );

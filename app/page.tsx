@@ -1,15 +1,20 @@
 import { Footer } from "@/features/layout/Footer";
 import { Header } from "@/features/layout/Header";
+import { HeroSection } from "@/features/landing/HeroSection";
+import { InfoSection } from "@/features/landing/InfoSection";
+import { RulesSection } from "@/features/landing/RulesSection";
+import { CommunitySection } from "@/features/landing/CommunitySection";
+
 export default function HomePage() {
-
   return (
-    <div className="relative flex h-fit flex-col bg-background text-foreground">
+    <div className="relative flex min-h-screen flex-col bg-background text-foreground antialiased">
       <Header />
-      <div className="mt-16 min-h-screen"></div>
-
-      {/* 🔑 Add this to check for specific roles */}
-      
-
+      <main className="flex-1">
+        <HeroSection />
+        <InfoSection />
+        <RulesSection />
+        <CommunitySection />
+      </main>
       <Footer />
     </div>
   );

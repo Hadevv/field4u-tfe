@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { TailwindIndicator } from "@/components/utils/TailwindIndicator";
 import { FloatingLegalFooter } from "@/features/legal/FloatingLegalFooter";
 import { NextTopLoader } from "@/features/page/NextTopLoader";

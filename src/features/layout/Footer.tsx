@@ -6,7 +6,7 @@ import Link from "next/link";
 export const Footer = () => {
   return (
     <footer className="bg-card">
-      <Layout className="mt-18 py-24">
+      <Layout className="mt-18 mx-auto max-w-6xl py-24">
         <LayoutContent className="flex justify-between max-lg:flex-col">
           <div className="flex flex-col gap-4">
             <div className="space-y-1">
