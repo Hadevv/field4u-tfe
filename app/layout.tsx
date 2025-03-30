@@ -13,6 +13,7 @@ import PlausibleProvider from "next-plausible";
 import type { ReactNode } from "react";
 import "./globals.scss";
 import { Providers } from "./providers";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 export const metadata: Metadata = {
   title: SiteConfig.title,
@@ -38,17 +39,19 @@ export default function RootLayout({
             GeistSans.variable,
           )}
         >
-          <Providers>
-            <NextTopLoader
-              delay={100}
-              showSpinner={false}
-              color="hsl(var(--primary))"
-            />
-            {children}
-            {modal}
-            <TailwindIndicator />
-            <FloatingLegalFooter />
-          </Providers>
+          <NuqsAdapter>
+            <Providers>
+              <NextTopLoader
+                delay={100}
+                showSpinner={false}
+                color="hsl(var(--primary))"
+              />
+              {children}
+              {modal}
+              <TailwindIndicator />
+              <FloatingLegalFooter />
+            </Providers>
+          </NuqsAdapter>
         </body>
       </html>
     </>
