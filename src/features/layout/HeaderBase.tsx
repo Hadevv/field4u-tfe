@@ -35,7 +35,7 @@ export function HeaderBase({ children, isAuthenticated }: HeaderBaseProps) {
 
             <nav className="hidden items-center space-x-2 md:flex">
               <Button asChild variant="ghost" className="gap-2">
-                <Link href="/explorer">
+                <Link href="/announcements/">
                   <MapPin className="size-4" />
                   Explorer la carte
                 </Link>
