@@ -37,7 +37,7 @@ export function HeroSection() {
                 className="text-base transition-colors hover:bg-primary/90"
                 asChild
               >
-                <Link href="/explorer">Commencez à Glaner !</Link>
+                <Link href="/announcements/">Commencez à Glaner !</Link>
               </Button>
               {session.data?.user ? (
                 <Button

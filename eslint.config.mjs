@@ -3,7 +3,6 @@ import { FlatCompat } from "@eslint/eslintrc";
 import pluginJs from "@eslint/js";
 import hooksPlugin from "eslint-plugin-react-hooks";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
-import tailwind from "eslint-plugin-tailwindcss";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -17,7 +16,6 @@ export default [
   // Typescript
   ...tseslint.configs.recommended,
   // Tailwind
-  ...tailwind.configs["flat/recommended"],
   // React
   ...fixupConfigRules(pluginReactConfig),
   {
