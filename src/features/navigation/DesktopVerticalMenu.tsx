@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, cloneElement } from "react";
-import { DASHBOARD_LINKS } from "../../../app/(dashboard-layout)/dashboard-links";
+import { DASHBOARD_LINKS } from "../../../app/admin/dashboard-links";
 import type { NavigationLinkGroups } from "./navigation.type";
 
 const useCurrentPath = (links: NavigationLinkGroups[]) => {
@@ -67,7 +67,7 @@ export const DesktopVerticalMenu = ({
                   href={link.url}
                 >
                   {cloneElement(link.icon, {
-                    className: "h-4 w-4",
+                    
                   })}
                   <span className="flex h-8 items-center gap-2 rounded-md px-2 text-sm">
                     {link.title}
