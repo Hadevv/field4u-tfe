@@ -28,9 +28,9 @@ export function LikeButton({ announcementId, initialLiked }: LikeButtonProps) {
     onSuccess: (data) => {
       setIsLiked(data.liked);
       if (data.liked) {
-        toast.success("Annonce mis un likes");
+        toast.success("Annonce likée");
       } else {
-        toast.success("Annonce retirée un likes");
+        toast.success("Annonce retirée des likes");
       }
     },
     onError: (error) => {
