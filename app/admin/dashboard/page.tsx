@@ -44,7 +44,7 @@ export default async function RoutePage(props: PageParams<{}>) {
             <CardContent className="flex gap-2">
               <Link
                 className={buttonVariants({ size: "sm", variant: "outline" })}
-                href="/dashboard/posts/new"
+                href="/admin/dashboard/posts/new"
               >
                 New post
               </Link>

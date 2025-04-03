@@ -28,9 +28,9 @@ export function LikeButton({ announcementId, initialLiked }: LikeButtonProps) {
     onSuccess: (data) => {
       setIsLiked(data.liked);
       if (data.liked) {
-        toast.success("Annonce ajoutée à vos favoris");
+        toast.success("Annonce mis un likes");
       } else {
-        toast.success("Annonce retirée de vos favoris");
+        toast.success("Annonce retirée un likes");
       }
     },
     onError: (error) => {
@@ -57,7 +57,7 @@ export function LikeButton({ announcementId, initialLiked }: LikeButtonProps) {
         )}
       />
       <span className="sr-only">
-        {isLiked ? "Retirer des favoris" : "Ajouter aux favoris"}
+        {isLiked ? "Retirer des likes" : "Ajouter aux likes"}
       </span>
     </Button>
   );

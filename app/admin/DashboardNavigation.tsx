@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/features/auth/AuthButton";
@@ -12,18 +14,29 @@ import {
   LayoutTitle,
 } from "@/features/page/layout";
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
-import { auth } from "@/lib/auth/helper";
 import { SiteConfig } from "@/site-config";
 import Image from "next/image";
 import Link from "next/link";
-import type { PropsWithChildren } from "react";
 import { DesktopVerticalMenu } from "../../src/features/navigation/DesktopVerticalMenu";
 import { MobileDropdownMenu } from "../../src/features/navigation/MobileDropdownMenu";
 import { DASHBOARD_LINKS } from "./dashboard-links";
 
-export const DashboardNavigation = async (props: PropsWithChildren) => {
-  const user = await auth();
+type UserData = {
+  id: string;
+  name?: string | null;
+  email: string;
+  image?: string | null;
+};
 
+type DashboardNavigationProps = {
+  children: React.ReactNode;
+  user: UserData | null;
+};
+
+export function DashboardNavigation({
+  children,
+  user,
+}: DashboardNavigationProps) {
   return (
     <div className="flex h-full flex-col lg:flex-row lg:overflow-hidden">
       {/* Desktop ONLY Navigation bar */}
@@ -96,7 +109,7 @@ export const DashboardNavigation = async (props: PropsWithChildren) => {
         {/* Content of the page */}
         <main className="py-4 lg:max-h-[calc(100vh_-_64px)] lg:flex-1 lg:overflow-auto lg:py-8">
           {user ? (
-            props.children
+            children
           ) : (
             <Layout>
               <LayoutHeader>
@@ -118,4 +131,4 @@ export const DashboardNavigation = async (props: PropsWithChildren) => {
       </div>
     </div>
   );
-};
+}

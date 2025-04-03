@@ -27,7 +27,7 @@ export const createVerifyEmailAction = authAction
       to: ctx.user.email,
       subject: "Verify your email",
       react: VerifyEmail({
-        url: `${getServerUrl()}/account/verify-email?token=${verificationToken.token}`,
+        url: `${getServerUrl()}/profile/verify-email?token=${verificationToken.token}`,
       }),
     });
   });

@@ -7,12 +7,12 @@ export const DASHBOARD_LINKS: NavigationLinkGroups[] = [
       {
         title: "Dashboard",
         icon: <LayoutDashboard />,
-        url: "/dashboard",
+        url: "/admin/dashboard",
       },
       {
         title: "Settings",
         icon: <Settings />,
-        url: "/settings",
+        url: "/admin/settings",
       },
     ],
   },
@@ -22,7 +22,7 @@ export const DASHBOARD_LINKS: NavigationLinkGroups[] = [
       {
         title: "Users",
         icon: <User2 />,
-        url: "/users",
+        url: "/admin/users",
       },
     ],
   },

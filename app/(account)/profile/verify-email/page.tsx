@@ -19,7 +19,7 @@ export default async function RoutePage(props: PageParams<{}>) {
           <CardTitle>Email verified</CardTitle>
         </CardHeader>
         <CardFooter>
-          <Link className={buttonVariants()} href="/account">
+          <Link className={buttonVariants()} href="/profile">
             Account
           </Link>
         </CardFooter>
@@ -34,7 +34,7 @@ export default async function RoutePage(props: PageParams<{}>) {
           <CardTitle>Invalid Token</CardTitle>
         </CardHeader>
         <CardFooter>
-          <Link className={buttonVariants()} href="/account">
+          <Link className={buttonVariants()} href="/profile">
             Account
           </Link>
         </CardFooter>
@@ -57,7 +57,7 @@ export default async function RoutePage(props: PageParams<{}>) {
           <CardTitle>Invalid token</CardTitle>
         </CardHeader>
         <CardFooter>
-          <Link className={buttonVariants()} href="/account">
+          <Link className={buttonVariants()} href="/profile">
             Account
           </Link>
         </CardFooter>
@@ -78,7 +78,7 @@ export default async function RoutePage(props: PageParams<{}>) {
           <CardTitle>User not found</CardTitle>
         </CardHeader>
         <CardFooter>
-          <Link className={buttonVariants()} href="/account">
+          <Link className={buttonVariants()} href="/profile">
             Account
           </Link>
         </CardFooter>
@@ -93,7 +93,7 @@ export default async function RoutePage(props: PageParams<{}>) {
           <CardTitle>Email verified.</CardTitle>
         </CardHeader>
         <CardFooter>
-          <Link className={buttonVariants()} href="/account">
+          <Link className={buttonVariants()} href="/profile">
             Account
           </Link>
         </CardFooter>
@@ -116,5 +116,5 @@ export default async function RoutePage(props: PageParams<{}>) {
     },
   });
 
-  redirect("/account/verify-email?success=true");
+  redirect("/profile/verify-email?success=true");
 }
