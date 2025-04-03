@@ -5,17 +5,17 @@ export const ACCOUNT_LINKS: NavigationLinkGroups[] = [
   {
     title: "PERSONAL INFORMATION",
     links: [
-      { url: "/account", title: "Profile", icon: <User2 /> },
+      { url: "/profile", title: "Profile", icon: <User2 /> },
       {
-        url: "/account/delete",
+        url: "/profile/delete",
         title: "Delete profile",
         icon: <AlertCircle />,
       },
-      { url: "/account/billing", title: "Billing", icon: <Coins /> },
+      { url: "/profile/billing", title: "Billing", icon: <Coins /> },
     ],
   },
   {
     title: "EMAIL SETTINGS",
-    links: [{ url: "/account/email", title: "Settings", icon: <Mail /> }],
+    links: [{ url: "/profile/email", title: "Settings", icon: <Mail /> }],
   },
 ];

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { enqueueDialog } from "@/features/dialogs-provider/DialogProvider";
+import { dialogManager } from "@/features/dialog-manager/dialog-manager-store";
 import { toast } from "sonner";
 import { deleteAccountAction } from "./delete-account.action";
 
@@ -27,8 +27,8 @@ export default function DeleteProfilePage() {
         <Button
           variant="destructive"
           onClick={() => {
-            enqueueDialog({
-              title: "Delete your profile",
+            dialogManager.add({
+              title: "Delete your profile", 
               description: "Are you sure you want to delete your profile?",
               action: {
                 label: "Delete",

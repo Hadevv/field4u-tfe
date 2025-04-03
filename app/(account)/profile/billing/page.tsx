@@ -36,7 +36,7 @@ export default async function DeleteProfilePage() {
 
   const stripeSession = await stripe.billingPortal.sessions.create({
     customer: user.stripeCustomerId,
-    return_url: `${getServerUrl()}/account/billing`,
+    return_url: `${getServerUrl()}/profile/billing`,
   });
 
   return (
