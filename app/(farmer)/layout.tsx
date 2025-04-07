@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { LayoutParams } from "@/types/next";
 import { FarmerNavigation } from "./FarmerNavigation";
-import { isFarmer } from "@/lib/auth/helper";
+import { isFarmer, auth } from "@/lib/auth/helper";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/helper";
 
-export default async function FarmerLayout(props: LayoutParams<{}>) {
+export default async function FarmerLayout(
+  props: LayoutParams<Record<string, never>>,
+) {
   // Vérifier que l'utilisateur est bien un agriculteur
   try {
     await isFarmer();
@@ -18,7 +18,7 @@ export default async function FarmerLayout(props: LayoutParams<{}>) {
   const user = await auth();
 
   if (!user) {
-    redirect("/auth/login");
+    redirect("/auth/signin");
   }
 
   return (

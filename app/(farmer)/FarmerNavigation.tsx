@@ -1,6 +1,8 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { AuthButton } from "@/features/auth/AuthButton";
+import { AuthButtonClient } from "@/features/auth/AuthButtonClient";
 import { SignInButton } from "@/features/auth/SignInButton";
 import { UserDropdown } from "@/features/auth/UserDropdown";
 import { ContactFeedbackPopover } from "@/features/contact/feedback/ContactFeedbackPopover";
@@ -84,7 +86,7 @@ export function FarmerNavigation({
             <div className="flex flex-1 items-center justify-end space-x-4">
               {/* Mobile header */}
               <nav className="flex items-center space-x-1 lg:hidden">
-                <AuthButton />
+                <AuthButtonClient />
                 <ThemeToggle />
                 <MobileDropdownMenu links={FARMER_LINKS} />
               </nav>
