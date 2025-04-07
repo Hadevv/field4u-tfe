@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { LayoutParams } from "@/types/next";
 import { DashboardNavigation } from "./DashboardNavigation";
 import { isAdmin, auth } from "@/lib/auth/helper";
 import { redirect } from "next/navigation";
 
-export default async function RouteLayout(props: LayoutParams<{}>) {
+export default async function RouteLayout(
+  props: LayoutParams<Record<string, never>>,
+) {
   try {
     // Vérifier que l'utilisateur est bien un administrateur
     await isAdmin();
