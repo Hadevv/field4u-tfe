@@ -1,8 +1,6 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Farm } from "@prisma/client";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -27,79 +25,51 @@ import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { updateFarmAction } from "./update-farm.action";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-const FarmSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  description: z.string().optional(),
-  city: z.string().min(2, "La ville est requise"),
-  postalCode: z.string().min(4, "Le code postal est requis"),
-  contactInfo: z.string().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-});
+import { FarmSchema, FarmSchemaType } from "./farm.schema";
 
 type FarmFormProps = {
-  farm?: Farm;
+  farm: Farm;
 };
 
 export function FarmForm({ farm }: FarmFormProps) {
   const router = useRouter();
-  const isEditing = !!farm;
 
   const form = useZodForm({
     schema: FarmSchema,
     defaultValues: {
-      name: farm?.name || "",
-      description: farm?.description || "",
-      city: farm?.city || "",
-      postalCode: farm?.postalCode || "",
-      contactInfo: farm?.contactInfo || "",
-      latitude: farm?.latitude || undefined,
-      longitude: farm?.longitude || undefined,
+      name: farm.name,
+      description: farm.description || "",
+      city: farm.city || "",
+      postalCode: farm.postalCode || "",
+      contactInfo: farm.contactInfo || "",
+      latitude: farm.latitude || undefined,
+      longitude: farm.longitude || undefined,
     },
   });
 
   const updateFarmMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof FarmSchema>) => {
-      return resolveActionResult(
-        updateFarmAction({
-          id: farm?.id,
-          ...values,
-        }),
-      );
+    mutationFn: async (values: FarmSchemaType) => {
+      return resolveActionResult(updateFarmAction(values));
     },
     onError: (error) => {
       toast.error(error.message);
     },
     onSuccess: () => {
-      toast.success(
-        isEditing ? "Exploitation mise à jour" : "Exploitation créée",
-      );
-      if (!isEditing) {
-        router.push("/farm/details");
-      }
+      toast.success("Exploitation mise à jour");
       router.refresh();
     },
-  });
-
-  const onSubmit = form.handleSubmit((data) => {
-    updateFarmMutation.mutate(data);
   });
 
   return (
     <Card className="border-green-100">
       <CardHeader>
-        <CardTitle>
-          {isEditing ? "Modifier l'exploitation" : "Créer une exploitation"}
-        </CardTitle>
+        <CardTitle>Modifier l'exploitation</CardTitle>
         <CardDescription>
-          {isEditing
-            ? "Modifiez les informations de votre exploitation agricole"
-            : "Renseignez les informations de base de votre exploitation"}
+          Modifiez les informations de votre exploitation agricole
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form form={form} onSubmit={onSubmit}>
+        <Form form={form} onSubmit={(data) => updateFarmMutation.mutate(data)}>
           <div className="grid gap-6 sm:grid-cols-2">
             <FormField
               control={form.control}
@@ -196,9 +166,7 @@ export function FarmForm({ farm }: FarmFormProps) {
               >
                 {updateFarmMutation.isPending
                   ? "Enregistrement..."
-                  : isEditing
-                    ? "Mettre à jour"
-                    : "Créer l'exploitation"}
+                  : "Mettre à jour"}
               </Button>
             </div>
           </div>
