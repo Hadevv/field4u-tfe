@@ -14,14 +14,14 @@ export const deleteFieldAction = authAction
   .action(async ({ parsedInput: input, ctx }) => {
     const user = ctx.user;
 
-    // Vérification du rôle
+    // verification du rôle
     if (user.role !== UserRole.FARMER) {
       throw new Error(
         "Vous devez être agriculteur pour effectuer cette action",
       );
     }
 
-    // Récupération du champ pour vérifier qu'il appartient bien à l'utilisateur
+    // recupération du champ pour vérifier qu'il appartient bien à l'utilisateur
     const field = await prisma.field.findUnique({
       where: { id: input.fieldId },
       include: {
@@ -33,7 +33,7 @@ export const deleteFieldAction = authAction
       throw new Error("Champ non trouvé");
     }
 
-    // Vérifier que le champ appartient à l'utilisateur ou à une de ses exploitations
+    // verifier que le champ appartient à l'utilisateur ou à une de ses exploitations
     const isOwner = field.ownerId === user.id;
     const isFarmOwner = field.farm && field.farm.ownerId === user.id;
 
@@ -41,12 +41,12 @@ export const deleteFieldAction = authAction
       throw new Error("Vous n'êtes pas autorisé à supprimer ce champ");
     }
 
-    // Supprimer toutes les annonces liées au champ
+    // supprimer toutes les annonces liées au champ
     await prisma.announcement.deleteMany({
       where: { fieldId: field.id },
     });
 
-    // Supprimer le champ
+    // supprimer le champ
     await prisma.field.delete({
       where: { id: field.id },
     });

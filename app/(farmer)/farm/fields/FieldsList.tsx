@@ -1,143 +1,131 @@
 import { prisma } from "@/lib/prisma";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { MapPin, FileText, Pencil, Trash2, Leaf } from "lucide-react";
-import Link from "next/link";
 import { DeleteFieldButton } from "./DeleteFieldButton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { formatDistance } from "date-fns";
+import { fr } from "date-fns/locale";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type FieldsListProps = {
   userId: string;
-  farmIds: string[];
+  farmId: string;
 };
 
-export async function FieldsList({ userId, farmIds }: FieldsListProps) {
+export async function FieldsList({ userId, farmId }: FieldsListProps) {
+  // Récupérer tous les champs appartenant à l'utilisateur
+  // ou à des fermes dont l'utilisateur est propriétaire
   const fields = await prisma.field.findMany({
     where: {
-      OR: [{ farmId: { in: farmIds } }, { ownerId: userId }],
-    },
-    include: {
-      farm: true,
-      announcement: {
-        where: {
-          isPublished: true,
-        },
-        take: 3,
-      },
+      OR: [{ ownerId: userId }, { farmId: farmId }],
     },
     orderBy: {
       createdAt: "desc",
     },
+    include: {
+      farm: {
+        select: {
+          name: true,
+        },
+      },
+      announcement: {
+        select: {
+          id: true,
+        },
+      },
+    },
   });
 
-  if (fields.length === 0) {
-    return (
-      <div className="rounded-lg border p-8 text-center">
-        <MapPin className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h2 className="mt-4 text-xl font-semibold">Aucun champ enregistré</h2>
-        <p className="mt-2 text-muted-foreground">
-          Commencez par ajouter un champ pour pouvoir créer des annonces de
-          glanage.
-        </p>
-        <div className="mt-6">
-          <Button asChild>
-            <Link href="/farm/fields/new">
-              <MapPin className="mr-2 h-4 w-4" />
-              Ajouter un champ
-            </Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {fields.map((field) => (
-        <Card key={field.id} className="flex flex-col">
-          <CardHeader className="pb-2">
-            <div className="flex justify-between">
-              <CardTitle className="flex items-start gap-2">
-                <MapPin className="mt-1 h-4 w-4 flex-shrink-0 text-green-600" />
-                <span className="line-clamp-1">
-                  {field.name || `Champ à ${field.city}`}
-                </span>
-              </CardTitle>
-
-              {field.farm && (
-                <span className="text-xs text-muted-foreground">
-                  {field.farm.name}
-                </span>
-              )}
-            </div>
-            <CardDescription>
-              {field.city}, {field.postalCode}
-              {field.surface && ` - ${field.surface.toFixed(2)} hectares`}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="flex-grow pb-2">
-            {field.announcement.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Annonces liées:</p>
-                <ul className="space-y-1">
-                  {field.announcement.map((announcement) => (
-                    <li
-                      key={announcement.id}
-                      className="flex items-center text-sm"
-                    >
-                      <Leaf className="mr-2 h-3.5 w-3.5 text-green-600" />
+    <div className="border rounded-lg overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-green-50">
+            <TableHead>Nom</TableHead>
+            <TableHead>Localisation</TableHead>
+            <TableHead>Surface</TableHead>
+            <TableHead>Annonces</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {fields.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="h-24 text-center">
+                Aucun champ trouvé. Ajoutez votre premier champ pour commencer.
+              </TableCell>
+            </TableRow>
+          ) : (
+            fields.map((field) => (
+              <TableRow key={field.id}>
+                <TableCell className="font-medium">
+                  <div className="flex flex-col">
+                    <span>{field.name || "Champ sans nom"}</span>
+                    <span className="text-xs text-muted-foreground">
+                      Ajouté il y a{" "}
+                      {formatDistance(new Date(field.createdAt), new Date(), {
+                        addSuffix: false,
+                        locale: fr,
+                      })}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span>
+                      {field.city}, {field.postalCode}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Lat: {field.latitude.toFixed(4)}, Long:{" "}
+                      {field.longitude.toFixed(4)}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {field.surface ? `${field.surface} hectares` : "-"}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      field.announcement.length > 0 ? "default" : "outline"
+                    }
+                    className={
+                      field.announcement.length > 0
+                        ? "bg-green-100 text-green-800 hover:bg-green-200"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {field.announcement.length} annonce
+                    {field.announcement.length !== 1 ? "s" : ""}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" asChild className="h-8">
                       <Link
-                        href={`/farm/announcements/${announcement.id}`}
-                        className="line-clamp-1 text-gray-700 hover:text-green-700 hover:underline"
+                        href={`/farm/announcements/new?fieldId=${field.id}`}
                       >
-                        {announcement.title}
+                        Créer une annonce
                       </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Aucune annonce liée à ce champ
-              </p>
-            )}
-          </CardContent>
-
-          <CardFooter className="flex justify-between border-t pt-4">
-            <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/farm/fields/${field.id}`}>
-                  <Pencil className="mr-2 h-3.5 w-3.5" />
-                  Modifier
-                </Link>
-              </Button>
-
-              <DeleteFieldButton
-                fieldId={field.id}
-                fieldName={field.name || `Champ à ${field.city}`}
-              />
-            </div>
-
-            <Button
-              asChild
-              size="sm"
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Link href={`/farm/announcements/new?fieldId=${field.id}`}>
-                <FileText className="mr-2 h-3.5 w-3.5" />
-                Créer annonce
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+                    </Button>
+                    <DeleteFieldButton
+                      fieldId={field.id}
+                      hasAnnouncements={field.announcement.length > 0}
+                    />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
