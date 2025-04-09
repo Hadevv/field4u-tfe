@@ -14,14 +14,14 @@ export const deleteAnnouncementAction = authAction
   .action(async ({ parsedInput: input, ctx }) => {
     const user = ctx.user;
 
-    // Vérification du rôle
+    // vérification du role
     if (user.role !== UserRole.FARMER) {
       throw new Error(
         "Vous devez être agriculteur pour effectuer cette action",
       );
     }
 
-    // Récupération de l'annonce pour vérifier qu'elle appartient bien à l'utilisateur
+    // récupération de lannonce pour vérifier qu'elle appartient bien à l'utilisateur
     const announcement = await prisma.announcement.findUnique({
       where: { id: input.announcementId },
       include: {
@@ -37,32 +37,32 @@ export const deleteAnnouncementAction = authAction
       throw new Error("Vous n'êtes pas autorisé à supprimer cette annonce");
     }
 
-    // Supprimer d'abord les associations
+    // supprimer d'abord les associations
     await prisma.announcementGleaningPeriod.deleteMany({
       where: { announcementId: announcement.id },
     });
 
-    // Supprimer le glanage et les participations si existants
+    // supprimer le glanage et les participations si existants
     if (announcement.gleaning.length > 0) {
       const gleaningId = announcement.gleaning[0].id;
 
-      // Supprimer les participations
+      // supprimer les participations
       await prisma.participation.deleteMany({
         where: { gleaningId },
       });
 
-      // Supprimer les avis
+      // supprimer les avis
       await prisma.review.deleteMany({
         where: { gleaningId },
       });
 
-      // Supprimer le glanage
+      // supprimer le glanage
       await prisma.gleaning.delete({
         where: { id: gleaningId },
       });
     }
 
-    // Supprimer les favoris et likes
+    // supprimer les favoris et likes
     await prisma.favorite.deleteMany({
       where: { announcementId: announcement.id },
     });
@@ -71,7 +71,7 @@ export const deleteAnnouncementAction = authAction
       where: { announcementId: announcement.id },
     });
 
-    // Supprimer l'annonce
+    // supprimer l'annonce
     await prisma.announcement.delete({
       where: { id: announcement.id },
     });

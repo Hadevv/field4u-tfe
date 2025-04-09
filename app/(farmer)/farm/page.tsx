@@ -7,14 +7,8 @@ import {
   LayoutDescription,
   LayoutContent,
 } from "@/features/page/layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { FileText, MapPin, Plus, Sprout, Tractor } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, MapPin, Plus, Tractor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -150,16 +144,11 @@ export default async function FarmerDashboardPage() {
 }
 
 async function FarmCard({ userId }: { userId: string }) {
-  const farms = await prisma.farm.findMany({
-    where: { ownerId: userId },
-    take: 1,
-  });
-
-  const farmCount = await prisma.farm.count({
+  const farm = await prisma.farm.findFirst({
     where: { ownerId: userId },
   });
 
-  const hasFarm = farmCount > 0;
+  const hasFarm = !!farm;
 
   return (
     <Card>
@@ -170,15 +159,13 @@ async function FarmCard({ userId }: { userId: string }) {
       <CardContent>
         {hasFarm ? (
           <>
-            <p className="font-medium">{farms[0].name}</p>
+            <p className="font-medium">{farm.name}</p>
             <p className="text-sm text-muted-foreground">
-              {farms[0].city || "Aucune ville"}
+              {farm.city || "Aucune ville"}
             </p>
             <div className="mt-4">
               <Button asChild variant="default" className="w-full">
-                <Link href={`/farm/details/${farms[0].id}`}>
-                  Gérer mon exploitation
-                </Link>
+                <Link href="/farm/details">Gérer mon exploitation</Link>
               </Button>
             </div>
           </>
@@ -189,7 +176,7 @@ async function FarmCard({ userId }: { userId: string }) {
             </p>
             <div className="mt-4">
               <Button asChild variant="default" className="w-full">
-                <Link href="/farm/details/new">Créer mon exploitation</Link>
+                <Link href="/farm/details">Créer mon exploitation</Link>
               </Button>
             </div>
           </>
@@ -216,16 +203,14 @@ function FarmCardSkeleton() {
 }
 
 async function FieldsCard({ userId }: { userId: string }) {
-  const farms = await prisma.farm.findMany({
+  const farm = await prisma.farm.findFirst({
     where: { ownerId: userId },
     select: { id: true },
   });
 
-  const farmIds = farms.map((farm) => farm.id);
-
   const fieldCount = await prisma.field.count({
     where: {
-      OR: [{ farmId: { in: farmIds } }, { ownerId: userId }],
+      OR: [{ ownerId: userId }, { farmId: farm?.id }],
     },
   });
 

@@ -15,14 +15,14 @@ export const toggleAnnouncementStatusAction = authAction
   .action(async ({ parsedInput: input, ctx }) => {
     const user = ctx.user;
 
-    // Vérification du rôle
+    // vérification du rôle
     if (user.role !== UserRole.FARMER) {
       throw new Error(
         "Vous devez être agriculteur pour effectuer cette action",
       );
     }
 
-    // Récupération de l'annonce pour vérifier qu'elle appartient bien à l'utilisateur
+    // récupération de l'annonce pour vérifier qu'elle appartient bien à l'utilisateur
     const announcement = await prisma.announcement.findUnique({
       where: { id: input.announcementId },
     });
@@ -35,7 +35,7 @@ export const toggleAnnouncementStatusAction = authAction
       throw new Error("Vous n'êtes pas autorisé à modifier cette annonce");
     }
 
-    // Mise à jour du statut
+    // mise à jour du statut
     const updatedAnnouncement = await prisma.announcement.update({
       where: { id: announcement.id },
       data: {

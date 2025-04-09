@@ -20,12 +20,12 @@ export default async function FieldsPage() {
 
   if (!user) return null;
 
-  const farms = await prisma.farm.findMany({
+  const farm = await prisma.farm.findFirst({
     where: { ownerId: user.id },
     select: { id: true },
   });
 
-  const hasFarm = farms.length > 0;
+  const hasFarm = !!farm;
 
   return (
     <Layout>
@@ -46,7 +46,7 @@ export default async function FieldsPage() {
           </Button>
         ) : (
           <Button asChild variant="outline">
-            <Link href="/farm/details/new">
+            <Link href="/farm/details">
               <Plus className="mr-2 h-4 w-4" />
               Créer d'abord une exploitation
             </Link>
@@ -57,10 +57,7 @@ export default async function FieldsPage() {
       <LayoutContent>
         {hasFarm ? (
           <Suspense fallback={<FieldsListSkeleton />}>
-            <FieldsList
-              userId={user.id}
-              farmIds={farms.map((farm) => farm.id)}
-            />
+            <FieldsList userId={user.id} farmId={farm.id} />
           </Suspense>
         ) : (
           <div className="rounded-lg border p-8">
@@ -73,7 +70,7 @@ export default async function FieldsPage() {
             </p>
             <div className="mt-6">
               <Button asChild>
-                <Link href="/farm/details/new">
+                <Link href="/farm/details">
                   <Plus className="mr-2 h-4 w-4" />
                   Créer mon exploitation
                 </Link>

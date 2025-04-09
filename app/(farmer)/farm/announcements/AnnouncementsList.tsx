@@ -22,7 +22,6 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DeleteAnnouncementButton } from "./DeleteAnnouncementButton";
-import { Switch } from "@/components/ui/switch";
 import { ToggleAnnouncementStatus } from "./ToggleAnnouncementStatus";
 
 type AnnouncementsListProps = {
