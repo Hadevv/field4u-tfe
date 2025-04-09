@@ -16,11 +16,10 @@ import {
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
 import { SiteConfig } from "@/site-config";
 import Link from "next/link";
-import { Sprout } from "lucide-react";
 import { FARMER_LINKS } from "./farmer-links";
 import { DesktopVerticalMenu } from "../../src/features/navigation/DesktopVerticalMenu";
 import { MobileDropdownMenu } from "../../src/features/navigation/MobileDropdownMenu";
-
+import Image from "next/image";
 type UserData = {
   id: string;
   name?: string | null;
@@ -31,21 +30,21 @@ type UserData = {
 type FarmerNavigationProps = {
   children: React.ReactNode;
   user: UserData | null;
-  userRole?: string;
 };
 
-export function FarmerNavigation({
-  children,
-  user,
-  userRole,
-}: FarmerNavigationProps) {
+export function FarmerNavigation({ children, user }: FarmerNavigationProps) {
   return (
     <div className="flex h-full flex-col lg:flex-row lg:overflow-hidden">
       {/* Desktop ONLY Navigation bar */}
       <div className="flex size-full max-w-[240px] flex-col border-r border-border px-2 py-4 max-lg:hidden">
         <div className="flex items-center gap-2">
-          <Sprout className="h-6 w-6 text-green-600" />
-          <Link href="/" className="text-xl font-bold text-green-700">
+          <Image
+            src={SiteConfig.appIcon}
+            alt="app logo"
+            width={24}
+            height={24}
+          />
+          <Link href="/" className="text-xl font-bold">
             {SiteConfig.title}
           </Link>
         </div>
@@ -74,13 +73,15 @@ export function FarmerNavigation({
         <header className="w-full border-b bg-background max-lg:sticky max-lg:top-0 max-lg:z-40">
           <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
             <div className="flex items-center gap-2 lg:hidden">
-              <Sprout className="h-6 w-6 text-green-600" />
-              <Link href="/farm" className="text-lg font-bold text-green-700">
+              <Image
+                src={SiteConfig.appIcon}
+                alt="app logo"
+                width={32}
+                height={32}
+              />
+              <Link href="/" className="text-lg font-bold">
                 {SiteConfig.title}
               </Link>
-              <span className="text-sm text-muted-foreground">
-                Espace Agriculteur
-              </span>
             </div>
 
             <div className="flex flex-1 items-center justify-end space-x-4">

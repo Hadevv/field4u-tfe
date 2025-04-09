@@ -1,13 +1,5 @@
 import type { NavigationLinkGroups } from "@/features/navigation/navigation.type";
-import {
-  Tractor,
-  FileText,
-  MapPin,
-  Calendar,
-  Sprout,
-  BarChart3,
-  Settings,
-} from "lucide-react";
+import { Tractor, FileText, MapPin, BarChart3 } from "lucide-react";
 
 export const FARMER_LINKS: NavigationLinkGroups[] = [
   {
@@ -43,24 +35,9 @@ export const FARMER_LINKS: NavigationLinkGroups[] = [
         url: "/farm/announcements",
       },
       {
-        title: "Calendrier",
-        icon: <Calendar />,
-        url: "/farm/calendar",
-      },
-      {
-        title: "Cultures",
-        icon: <Sprout />,
-        url: "/farm/crops",
-      },
-    ],
-  },
-  {
-    title: "Paramètres",
-    links: [
-      {
-        title: "Préférences",
-        icon: <Settings />,
-        url: "/farm/settings",
+        title: "Nouvelle annonce",
+        icon: <FileText />,
+        url: "/farm/announcements/new",
       },
     ],
   },

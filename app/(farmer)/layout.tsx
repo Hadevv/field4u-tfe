@@ -7,23 +7,19 @@ import { redirect } from "next/navigation";
 export default async function FarmerLayout(
   props: LayoutParams<Record<string, never>>,
 ) {
-  // Vérifier que l'utilisateur est bien un agriculteur
+  // verifier que l'utilisateur est bien un agriculteur
   try {
     await isFarmer();
   } catch (error) {
     redirect("/");
   }
 
-  // Récupérer les infos de l'utilisateur pour les passer au composant client
+  // recupérer les infos de l'utilisateur pour les passer au composant client
   const user = await auth();
 
   if (!user) {
     redirect("/auth/signin");
   }
 
-  return (
-    <FarmerNavigation user={user} userRole={user.role}>
-      {props.children}
-    </FarmerNavigation>
-  );
+  return <FarmerNavigation user={user}>{props.children}</FarmerNavigation>;
 }
