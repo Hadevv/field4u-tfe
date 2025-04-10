@@ -17,7 +17,7 @@ export function OnboardingRulesStep({ role }: OnboardingRulesStepProps) {
     try {
       await acceptRulesAction({ rulesAcceptedAt: new Date() });
       toast.success("Rules accepted successfully");
-      router.push("/dashboard");
+      router.push("/");
     } catch (error) {
       toast.error("Failed to accept rules");
     }

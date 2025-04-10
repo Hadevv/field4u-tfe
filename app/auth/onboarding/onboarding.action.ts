@@ -7,6 +7,7 @@ import {
   RulesSchema,
 } from "./onboarding.schema";
 import { prisma } from "@/lib/prisma";
+import { generateSlug } from "@/lib/format/id";
 
 export const createFarmAction = authAction
   .schema(FarmFormSchema)
@@ -33,6 +34,7 @@ export const createFarmAction = authAction
       await prisma.farm.create({
         data: {
           name: input.name,
+          slug: generateSlug(input.name),
           city: input.city,
           postalCode: input.postalCode,
           description: input.description,

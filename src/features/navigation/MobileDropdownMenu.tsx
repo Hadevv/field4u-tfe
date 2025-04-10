@@ -13,7 +13,7 @@ import { Typography } from "@/components/ui/typography";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { Fragment, cloneElement, useState } from "react";
-import { DASHBOARD_LINKS } from "../../../app/(dashboard-layout)/dashboard-links";
+import { DASHBOARD_LINKS } from "../../../app/admin/dashboard-links";
 import type { NavigationLinkGroups } from "./navigation.type";
 
 export const MobileDropdownMenu = ({
@@ -55,7 +55,6 @@ export const MobileDropdownMenu = ({
                   onClick={() => setOpen(false)}
                 >
                   {cloneElement(link.icon, {
-                    className: "h-4 w-4",
                   })}
                   <span>{link.title}</span>
                 </Typography>

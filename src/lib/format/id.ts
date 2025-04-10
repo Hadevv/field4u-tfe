@@ -9,7 +9,12 @@ export const formatId = (id: string) => {
 
 export const generateSlug = (value: string) => {
   const id = customAlphabet("1234567890abcdef", 10);
-  return [formatId(value), id(4)].join("-");
+  let slug = value.toLowerCase();
+  slug = slug.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  slug = slug.replace(/[^a-z0-9]+/g, "-");
+  slug = slug.replace(/^-+|-+$/g, "");
+  slug = slug.substring(0, 50);
+  return `${slug}-${id(6)}`;
 };
 
 export const getNameFromEmail = (email: string) => {

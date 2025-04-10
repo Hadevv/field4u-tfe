@@ -12,16 +12,17 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { Typography } from "@/components/ui/typography";
 import { useMutation } from "@tanstack/react-query";
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, Tractor } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import type { PropsWithChildren } from "react";
 
 export const UserDropdown = ({ children }: PropsWithChildren) => {
   const logout = useMutation({
-    mutationFn: () => signOut(),
+    mutationFn: () => signOut({ callbackUrl: "/" }),
   });
   const session = useSession();
+  const userRole = session.data?.user?.role;
 
   return (
     <DropdownMenu>
@@ -33,18 +34,35 @@ export const UserDropdown = ({ children }: PropsWithChildren) => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/account">
+          <Link href="/profile">
             <Settings className="mr-2 size-4" />
-            My account
+            Mon compte
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard">
-            <LayoutDashboard className="mr-2 size-4" />
-            Dashboard
-          </Link>
-        </DropdownMenuItem>
+
+        {userRole === "ADMIN" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/admin/dashboard">
+                <LayoutDashboard className="mr-2 size-4" />
+                Dashboard
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+
+        {userRole === "FARMER" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/farm">
+                <Tractor className="mr-2 size-4" />
+                Mon exploitation
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
 
         <DropdownMenuSeparator />
 
@@ -61,7 +79,7 @@ export const UserDropdown = ({ children }: PropsWithChildren) => {
             ) : (
               <LogOut className="mr-2 size-4" />
             )}
-            <span>Logout</span>
+            <span>Déconnexion</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

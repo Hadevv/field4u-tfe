@@ -28,7 +28,7 @@ export default function SubscribtionFailedEmail() {
         <Text className="text-lg leading-6">
           <Link
             className="text-sky-500 hover:underline"
-            href={`${getServerUrl()}/account/billing`}
+            href={`${getServerUrl()}/profile/billing`}
           >
             Click to Update Payment and Keep Using ${SiteConfig.title}
           </Link>

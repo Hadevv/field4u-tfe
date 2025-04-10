@@ -17,7 +17,7 @@ export default async function AuthSignInPage(props: PageParams<{}>) {
   const user = await auth();
 
   if (user) {
-    redirect("/account");
+    redirect("/profile");
   }
 
   return (
