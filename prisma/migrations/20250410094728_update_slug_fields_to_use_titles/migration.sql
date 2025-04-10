@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "announcements" ALTER COLUMN "slug" SET DATA TYPE VARCHAR(100);
+
+-- AlterTable
+ALTER TABLE "farms" ALTER COLUMN "slug" SET DATA TYPE VARCHAR(100);
