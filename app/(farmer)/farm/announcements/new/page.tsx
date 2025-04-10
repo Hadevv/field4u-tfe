@@ -7,7 +7,6 @@ import {
   LayoutTitle,
 } from "@/features/page/layout";
 import { AnnouncementForm } from "../AnnouncementForm";
-import { PageParams } from "@/types/next";
 import { prisma } from "@/lib/prisma";
 import { isFarmer, requiredAuth } from "@/lib/auth/helper";
 import { notFound } from "next/navigation";
@@ -28,6 +27,9 @@ export default async function CreateAnnouncementPage({
   } catch (error) {
     notFound();
   }
+
+  const params = await searchParams;
+  const fieldId = params.fieldId;
 
   const [fields, cropTypes, farm] = await Promise.all([
     prisma.field.findMany({
@@ -79,7 +81,7 @@ export default async function CreateAnnouncementPage({
 
       <LayoutContent>
         <AnnouncementForm
-          defaultFieldId={searchParams.fieldId}
+          defaultFieldId={fieldId}
           fields={fields.map((field) => ({
             id: field.id,
             label: field.name || `Champ à ${field.city}`,

@@ -47,6 +47,7 @@ import { FieldForm } from "../fields/FieldForm";
 import { Badge } from "@/components/ui/badge";
 import { DateRange } from "react-day-picker";
 import { DateRangePicker } from "./DateRangePicker";
+import { FilesDropzone } from "@/features/upload/FilesDropzone";
 
 type OptionType = {
   id: string;
@@ -85,7 +86,6 @@ export function AnnouncementForm({
 }: AnnouncementFormProps) {
   const router = useRouter();
   const isEditing = !!announcement;
-  const [images, setImages] = useState<string[]>([]);
   const [showFieldDialog, setShowFieldDialog] = useState(false);
 
   const form = useZodForm({
@@ -115,12 +115,28 @@ export function AnnouncementForm({
 
   const createMutation = useMutation({
     mutationFn: async (data: AnnouncementSchemaType) => {
-      return resolveActionResult(
-        createAnnouncementAction({
-          ...data,
-          images,
-        }),
-      );
+      // recupérer les fichiers à envoyer directement
+      const formData = new FormData();
+
+      // si nous avons des fichiers en attente, les ajouter au FormData
+      // Récupérer tous les fichiers des prévisualisations du FilesDropzone
+      const fileElements = document.querySelectorAll("#file-upload");
+      if (fileElements.length > 0) {
+        const fileInput = fileElements[0] as HTMLInputElement;
+        if (fileInput.files && fileInput.files.length > 0) {
+          Array.from(fileInput.files).forEach((file) => {
+            formData.append("files", file);
+          });
+        }
+      }
+
+      // creer les données à envoyer
+      const submitData = {
+        ...data,
+        imageFiles: formData.has("files") ? formData : undefined,
+      };
+
+      return resolveActionResult(createAnnouncementAction(submitData));
     },
     onSuccess: () => {
       toast.success(
@@ -416,7 +432,28 @@ export function AnnouncementForm({
                   Ajoutez des photos de la culture à glaner pour donner une
                   meilleure idée aux glaneurs
                 </p>
-                {/* TODO: ajouter un upload d'images */}
+                <FormField
+                  control={form.control}
+                  name="images"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <FilesDropzone
+                          value={field.value}
+                          onChange={field.onChange}
+                          maxFiles={3}
+                          maxSizeMB={2}
+                          acceptedFileTypes={[
+                            "image/jpeg",
+                            "image/png",
+                            "image/jpg",
+                          ]}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="flex justify-end gap-4 pt-4">
