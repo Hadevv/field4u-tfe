@@ -1,21 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { prisma } from "@/lib/prisma";
 import { AnnouncementList } from "./_components/AnnouncementList";
 import { AnnouncementMap } from "./_components/AnnouncementMap";
 import { Announcement, MapAnnouncement } from "./_components/types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Map, List } from "lucide-react";
 import { SearchWizard } from "./_components/SearchWizard";
 import { auth } from "@/lib/auth/helper";
-import {
-  addDays,
-  startOfDay,
-  endOfDay,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-} from "date-fns";
 import type { PageParams } from "@/types/next";
 import { Prisma } from "@prisma/client";
 import { AnnouncementTabs } from "./_components/AnnouncementTabs";
@@ -33,10 +21,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AnnouncementsPage(props: PageParams) {
-  // Récupérer les paramètres de recherche
   const searchParams = await props.searchParams;
+  const user = await auth();
+  const currentDate = new Date();
 
-  // Construire l'objet de filtres
   const filters: SearchFilters = {
     query: typeof searchParams.q === "string" ? searchParams.q : null,
     cropTypeId:
@@ -50,94 +38,111 @@ export default async function AnnouncementsPage(props: PageParams) {
       : null) as PeriodFilter,
   };
 
-  // Récupérer l'utilisateur connecté pour vérifier les likes
-  const user = await auth();
-
-  // Construire la requête Prisma avec les filtres
   const baseQuery = buildSearchQuery(filters);
   const periodQuery = buildPeriodQuery(filters.period || null);
 
-  const where: Prisma.AnnouncementWhereInput = {
-    ...baseQuery,
-    ...periodQuery,
-  };
+  let combinedQuery: Prisma.AnnouncementWhereInput;
 
-  // Récupération des types de cultures pour les filtres
-  const cropTypes = await prisma.cropType.findMany({
-    select: {
-      id: true,
-      name: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
-
-  // Récupération des annonces depuis la base de données avec les filtres appliqués
-  const announcements = await prisma.announcement.findMany({
-    where,
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      slug: true,
-      images: true,
-      isPublished: true,
-      createdAt: true,
-      cropType: {
-        select: {
-          id: true,
-          name: true,
-          category: true,
-        },
-      },
-      field: {
-        select: {
-          id: true,
-          city: true,
-          postalCode: true,
-          latitude: true,
-          longitude: true,
-        },
-      },
+  if (periodQuery.gleaningPeriods) {
+    combinedQuery = {
+      ...baseQuery,
+      ...periodQuery,
+    };
+  } else {
+    combinedQuery = {
+      ...baseQuery,
       gleaningPeriods: {
-        select: {
+        some: {
           gleaningPeriod: {
-            select: {
-              id: true,
-              startDate: true,
-              endDate: true,
-              status: true,
+            endDate: {
+              gte: currentDate,
             },
           },
         },
       },
-      owner: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-        },
+    };
+  }
+
+  const [cropTypes, announcements] = await Promise.all([
+    prisma.cropType.findMany({
+      select: {
+        id: true,
+        name: true,
       },
-      likes: user
-        ? {
-            where: {
-              userId: user.id,
+      orderBy: {
+        name: "asc",
+      },
+    }),
+    prisma.announcement.findMany({
+      where: combinedQuery,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        slug: true,
+        images: true,
+        isPublished: true,
+        createdAt: true,
+        cropType: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+          },
+        },
+        field: {
+          select: {
+            id: true,
+            city: true,
+            postalCode: true,
+            latitude: true,
+            longitude: true,
+          },
+        },
+        gleaningPeriods: {
+          select: {
+            gleaningPeriod: {
+              select: {
+                id: true,
+                startDate: true,
+                endDate: true,
+                status: true,
+              },
             },
-            select: {
-              id: true,
-            },
-          }
-        : undefined,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 50,
+          },
+        },
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        likes: user
+          ? {
+              where: {
+                userId: user.id,
+              },
+              select: {
+                id: true,
+              },
+            }
+          : undefined,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 50,
+    }),
+  ]);
+
+  const upcomingAnnouncements = announcements.filter((announcement) => {
+    return announcement.gleaningPeriods.some((period) => {
+      return period.gleaningPeriod.endDate > currentDate;
+    });
   });
 
-  // transformation des données pour correspondre à notre type Announcement
-  const formattedAnnouncements: Announcement[] = announcements.map(
+  const formattedAnnouncements: Announcement[] = upcomingAnnouncements.map(
     (announcement) => ({
       ...announcement,
       gleaningPeriods: announcement.gleaningPeriods.map((period) => ({
@@ -150,8 +155,32 @@ export default async function AnnouncementsPage(props: PageParams) {
     }),
   );
 
-  // préparation des données pour la carte
-  const mapAnnouncements: MapAnnouncement[] = formattedAnnouncements.map(
+  const sortedAnnouncements = [...formattedAnnouncements].sort((a, b) => {
+    const aFuturePeriods = a.gleaningPeriods.filter(
+      (period) =>
+        period.startDate >= currentDate || period.endDate >= currentDate,
+    );
+
+    const bFuturePeriods = b.gleaningPeriods.filter(
+      (period) =>
+        period.startDate >= currentDate || period.endDate >= currentDate,
+    );
+
+    if (aFuturePeriods.length === 0) return 1;
+    if (bFuturePeriods.length === 0) return -1;
+
+    const aNextPeriod = aFuturePeriods.sort(
+      (p1, p2) => p1.startDate.getTime() - p2.startDate.getTime(),
+    )[0];
+
+    const bNextPeriod = bFuturePeriods.sort(
+      (p1, p2) => p1.startDate.getTime() - p2.startDate.getTime(),
+    )[0];
+
+    return aNextPeriod.startDate.getTime() - bNextPeriod.startDate.getTime();
+  });
+
+  const mapAnnouncements: MapAnnouncement[] = sortedAnnouncements.map(
     (announcement) => ({
       id: announcement.id,
       title: announcement.title,
@@ -162,26 +191,21 @@ export default async function AnnouncementsPage(props: PageParams) {
   );
 
   return (
-    <div className="container mx-auto py-6 space-y-4">
-      {/* Intégration du SearchWizard avec les filtres initiaux */}
+    <div className="container mx-auto pt-4">
       <SearchWizard cropTypes={cropTypes} initialFilters={filters} />
 
-      {/* Vue Mobile: Onglets pour basculer entre carte et liste */}
-      <div className="md:hidden">
+      <div className="md:hidden mt-2">
         <AnnouncementTabs
-          listContent={
-            <AnnouncementList announcements={formattedAnnouncements} />
-          }
+          listContent={<AnnouncementList announcements={sortedAnnouncements} />}
           mapContent={<AnnouncementMap announcements={mapAnnouncements} />}
         />
       </div>
 
-      {/* Vue Desktop: Affichage côte à côte */}
-      <div className="hidden md:grid md:grid-cols-12 gap-6">
-        <div className="md:col-span-4 lg:col-span-3">
-          <AnnouncementList announcements={formattedAnnouncements} />
+      <div className="hidden md:grid md:grid-cols-12 gap-4 mt-2">
+        <div className="md:col-span-6 lg:col-span-5">
+          <AnnouncementList announcements={sortedAnnouncements} />
         </div>
-        <div className="md:col-span-8 lg:col-span-9">
+        <div className="md:col-span-6 lg:col-span-7">
           <AnnouncementMap announcements={mapAnnouncements} />
         </div>
       </div>
