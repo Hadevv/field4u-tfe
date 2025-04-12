@@ -1,6 +1,6 @@
 "use client";
 
-import { LogoSvg } from "@/components/svg/LogoSvg";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { usePathname, useRouter } from "next/navigation";
 import { SignInProviders } from "../../../auth/signin/SignInProviders";
-
-export  function SignInDialog() {
+import { SiteConfig } from "@/site-config";
+export function SignInDialog() {
   const router = useRouter();
   const path = usePathname();
 
@@ -25,7 +25,12 @@ export  function SignInDialog() {
     >
       <DialogContent className="bg-card">
         <DialogHeader className="flex flex-col items-center justify-center gap-2">
-          <LogoSvg />
+          <Image
+            src={SiteConfig.appIcon}
+            alt="app logo"
+            width={100}
+            height={100}
+          />
           <DialogTitle>Sign in to your account</DialogTitle>
         </DialogHeader>
         <SignInProviders />

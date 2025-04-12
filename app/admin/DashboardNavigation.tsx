@@ -42,14 +42,13 @@ export function DashboardNavigation({
       {/* Desktop ONLY Navigation bar */}
       <div className="flex size-full max-w-[240px] flex-col border-r border-border px-2 py-4 max-lg:hidden">
         <div className="flex items-center gap-2">
-          <Image
-            src={SiteConfig.appIcon}
-            alt="app logo"
-            width={24}
-            height={24}
-          />
           <Link href="/" className="text-xl font-bold">
-            {SiteConfig.title}
+            <Image
+              src={SiteConfig.appIcon}
+              alt="app logo"
+              width={100}
+              height={100}
+            />
           </Link>
         </div>
         <div className="h-10" />
@@ -78,8 +77,8 @@ export function DashboardNavigation({
               <Image
                 src={SiteConfig.appIcon}
                 alt="app logo"
-                width={32}
-                height={32}
+                width={100}
+                height={100}
               />
               <Link href="/" className="text-lg font-bold ">
                 {SiteConfig.title}

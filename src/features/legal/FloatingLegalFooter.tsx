@@ -1,6 +1,6 @@
-import { SiteConfig } from "@/site-config";
 import Image from "next/image";
 import Link from "next/link";
+import favicon from "../../../app/favicon.ico";
 
 export const FloatingLegalFooter = () => {
   return (
@@ -17,7 +17,7 @@ export const FloatingLegalFooter = () => {
       >
         Terms
       </Link>
-      <Image src={SiteConfig.appIcon} width={12} height={12} alt="app icon" />
+      <Image src={favicon} width={20} height={20} alt="app icon" />
     </div>
   );
 };

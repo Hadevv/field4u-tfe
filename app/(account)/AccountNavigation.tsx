@@ -16,14 +16,13 @@ export const AccountNavigation = async (props: PropsWithChildren) => {
       <header className="w-full border-b bg-background max-lg:sticky max-lg:top-0 max-lg:z-40">
         <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
           <div className="flex items-center gap-2">
-            <Image
-              src={SiteConfig.appIcon}
-              alt="app logo"
-              width={32}
-              height={32}
-            />
             <Link href="/" className="text-lg font-bold ">
-              {SiteConfig.title}
+              <Image
+                src={SiteConfig.appIcon}
+                alt="app logo"
+                width={100}
+                height={100}
+              />
             </Link>
           </div>
 
