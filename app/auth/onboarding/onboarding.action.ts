@@ -15,7 +15,7 @@ export const createFarmAction = authAction
     const userId = ctx.user.id;
 
     if (!userId) {
-      throw new ActionError("Unauthorized");
+      throw new ActionError("non autorisé");
     }
 
     try {
@@ -45,10 +45,10 @@ export const createFarmAction = authAction
         },
       });
 
-      return { message: "Onboarding completed" };
+      return { message: "inscription terminée" };
     } catch (error) {
       console.error(error);
-      throw new ActionError("Failed to complete onboarding");
+      throw new ActionError("échec de l'inscription");
     }
   });
 
@@ -58,7 +58,7 @@ export const createGleanerAction = authAction
     const userId = ctx.user.id;
 
     if (!userId) {
-      throw new ActionError("Unauthorized");
+      throw new ActionError("non autorisé");
     }
 
     try {
@@ -75,10 +75,10 @@ export const createGleanerAction = authAction
         },
       });
 
-      return { message: "Onboarding completed" };
+      return { message: "inscription terminée" };
     } catch (error) {
       console.error(error);
-      throw new ActionError("Failed to complete onboarding");
+      throw new ActionError("échec de l'inscription");
     }
   });
 
@@ -88,7 +88,7 @@ export const acceptRulesAction = authAction
     const userId = ctx.user.id;
 
     if (!userId) {
-      throw new ActionError("Unauthorized");
+      throw new ActionError("non autorisé");
     }
 
     try {
@@ -99,9 +99,9 @@ export const acceptRulesAction = authAction
         },
       });
 
-      return { message: "Rules accepted" };
+      return { message: "règles acceptées" };
     } catch (error) {
       console.error(error);
-      throw new ActionError("Failed to accept rules");
+      throw new ActionError("échec de l'acceptation des règles");
     }
   });

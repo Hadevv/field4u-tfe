@@ -22,15 +22,15 @@ export default async function AuthSignInPage(props: PageParams<{}>) {
 
   return (
     <div className="flex h-full flex-col">
-      <HeaderBase />
+      <HeaderBase isAuthenticated={false} />
       <div className="flex flex-1 items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="flex flex-col items-center justify-center gap-2">
             <Image
               src={SiteConfig.appIcon}
               alt="app logo"
-              width={32}
-              height={32}
+              width={100}
+              height={100}
             />
             <CardTitle>Sign in to your account</CardTitle>
           </CardHeader>

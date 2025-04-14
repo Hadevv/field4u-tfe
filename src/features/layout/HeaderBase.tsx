@@ -27,10 +27,9 @@ export function HeaderBase({ children, isAuthenticated }: HeaderBaseProps) {
               <Image
                 src={SiteConfig.appIcon}
                 alt="app logo"
-                width={32}
-                height={32}
+                width={100}
+                height={100}
               />
-              <span className="text-base font-bold">{SiteConfig.title}</span>
             </Link>
 
             <nav className="hidden items-center space-x-2 md:flex">

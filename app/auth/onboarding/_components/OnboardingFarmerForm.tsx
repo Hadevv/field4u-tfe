@@ -20,6 +20,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
+// type trouvé dans le composant BelgianPostalSearch
+type PostalData = {
+  column_1: string;
+  column_2: string;
+  recordid: string;
+};
+
 export const OnboardingFarmerForm = ({
   onSubmit,
 }: {

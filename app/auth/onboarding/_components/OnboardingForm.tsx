@@ -26,7 +26,12 @@ export default function OnboardingForm() {
   return (
     <div className="flex min-h-screen flex-col items-center p-4">
       <div className="mb-8 flex items-center gap-3">
-        <Image src={SiteConfig.appIcon} alt="app logo" width={32} height={32} />
+        <Image
+          src={SiteConfig.appIcon}
+          alt="app logo"
+          width={100}
+          height={100}
+        />
       </div>
 
       <Card className="w-full max-w-lg shadow-lg">
