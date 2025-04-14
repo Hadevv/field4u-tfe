@@ -3,24 +3,58 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { PageParams } from "@/types/next";
 import { Metadata } from "next";
+import Link from "next/link";
 import {
   Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Hand,
-  Heart,
   Leaf,
-  Link2,
   MapPin,
-  MoreVertical,
+  MessageSquare,
   Package,
-  Share2,
   ShoppingBag,
-  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth/helper";
 import { JoinGleaningButton } from "./gleaning/_components/JoinGleaningButton";
+import {
+  getCurrentDate,
+  isFutureDate,
+  getGleaningStatusInfo,
+} from "../_components/types";
+import { Suspense } from "react";
+import { LikeButton } from "../_components/LikeButton";
+import { FavoriteButton } from "../_components/FavoriteButton";
+import { Badge } from "@/components/ui/badge";
+import { ShareButton } from "../_components/ShareButton";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
+const formatDate = (date: Date) => {
+  if (!date) return "";
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+  });
+};
+
+const calculateTimeRemaining = (date: Date) => {
+  if (!date) return "";
+  const now = getCurrentDate();
+  const diff = date.getTime() - now.getTime();
+
+  // convertir la différence en jours et heures
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+  if (days > 0) {
+    return `${days}j ${hours}h`;
+  }
+  return `${hours}h`;
+};
 
 export async function generateMetadata(
   props: PageParams<{ slug: string }>,
@@ -29,38 +63,24 @@ export async function generateMetadata(
 
   const announcement = await prisma.announcement.findUnique({
     where: { slug: params.slug },
-    select: {
-      title: true,
-      description: true,
-      cropType: {
-        select: {
-          name: true,
-        },
-      },
-    },
+    select: { title: true },
   });
 
   if (!announcement) {
     return {
-      title: "Annonce non trouvée | Field4U",
-      description: "L'annonce que vous recherchez n'existe pas.",
+      title: "annonce non trouvée | field4u",
     };
   }
 
   return {
-    title: `${announcement.title} | Field4U`,
-    description: announcement.description.substring(0, 160),
+    title: `${announcement.title} | field4u`,
+    description: "détails de l'annonce et inscription au glanage",
   };
 }
 
-export default async function AnnouncementPage(
-  props: PageParams<{ slug: string }>,
-) {
-  const params = await props.params;
-  const user = await auth();
-
+async function getAnnouncementData(slug: string, userId?: string) {
   const announcement = await prisma.announcement.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: {
       cropType: true,
       field: {
@@ -70,16 +90,17 @@ export default async function AnnouncementPage(
         },
       },
       owner: true,
-      gleaningPeriods: {
-        include: {
-          gleaningPeriod: true,
-        },
-      },
-      likes: user
+      likes: userId
         ? {
-            where: { userId: user.id },
+            where: { userId },
           }
         : false,
+      favorites: userId
+        ? {
+            where: { userId },
+          }
+        : false,
+      gleaning: true,
     },
   });
 
@@ -87,167 +108,234 @@ export default async function AnnouncementPage(
     notFound();
   }
 
+  // vérifier si l'utilisateur participe déjà au glanage
+  let userIsParticipant = false;
+
+  if (userId && announcement.gleaning) {
+    const participation = await prisma.participation.findUnique({
+      where: {
+        userId_gleaningId: {
+          userId,
+          gleaningId: announcement.gleaning.id,
+        },
+      },
+    });
+
+    userIsParticipant = !!participation;
+  }
+
+  return {
+    ...announcement,
+    userIsParticipant,
+  };
+}
+
+export default async function AnnouncementPage(
+  props: PageParams<{ slug: string }>,
+) {
+  const params = await props.params;
+  const user = await auth();
+
+  return <AnnouncementContent slug={params.slug} userId={user?.id} />;
+}
+
+async function AnnouncementContent({
+  slug,
+  userId,
+}: {
+  slug: string;
+  userId?: string;
+}) {
+  const announcement = await getAnnouncementData(slug, userId);
+
+  const statusInfo = getGleaningStatusInfo(
+    announcement.startDate,
+    announcement.endDate,
+    announcement.gleaning ? announcement.gleaning.status : undefined,
+  );
+
+  const hasMultipleImages =
+    announcement.images && announcement.images.length > 1;
+
   return (
-    <div className="bg-[#faf9f6] rounded-lg p-8">
-      {/* Header Section */}
+    <div className="rounded-lg p-6 shadow-sm">
+      {/* statut de l'annonce */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Badge
+            variant="outline"
+            className={`${statusInfo.color} mr-2 px-3 py-1`}
+          >
+            {statusInfo.label}
+          </Badge>
+        </div>
+
+        {announcement.startDate && announcement.endDate && (
+          <div className="text-xs text-muted-foreground flex items-center">
+            <Calendar className="h-3.5 w-3.5 mr-1" />
+            <span>
+              {isFutureDate(announcement.startDate)
+                ? `début dans ${calculateTimeRemaining(announcement.startDate)}`
+                : isFutureDate(announcement.endDate)
+                  ? "glanage en cours"
+                  : "glanage terminé"}
+            </span>
+            {isFutureDate(announcement.endDate) && (
+              <div className="ml-4 flex items-center text-muted-foreground">
+                <div className="w-3 h-3 bg-muted rounded-full mr-1"></div>
+                {isFutureDate(announcement.endDate) &&
+                  `fin dans ${calculateTimeRemaining(announcement.endDate)}`}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* section principale */}
       <div className="flex justify-between mb-2">
         <div>
-          <p className="text-primary mb-1">Explorez. Partagez. Récoltez.</p>
+          <p className="text-sm mb-1 text-muted-foreground">
+            explorez. partagez. récoltez.
+          </p>
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-secondary">
+            <h1 className="text-xl font-bold text-foreground">
               {announcement.title}
             </h1>
           </div>
         </div>
         <div>
-          <p className="text-right text-[#656565]">{announcement.owner.name}</p>
+          <p className="text-right text-muted-foreground font-medium">
+            {announcement.owner.name}
+          </p>
         </div>
       </div>
 
-      {/* Description and Images */}
+      {/* description et images */}
       <div className="flex mt-6 gap-8">
         <div className="w-1/2">
-          <p className="text-[#444141] mb-6">{announcement.description}</p>
+          <p className="text-muted-foreground mb-6">
+            {announcement.description}
+          </p>
 
-          {/* Information Section */}
+          {/* information section */}
           <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4">Informations</h3>
+            <h3 className="text-xl font-semibold mb-4">informations</h3>
             <div className="grid grid-cols-2 gap-y-6">
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-[#f5f3ee] flex items-center justify-center mr-3">
-                  <Hand className="w-4 h-4" />
-                </div>
-                <span className="text-sm">Pas d'outil fournis</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-[#f5f3ee] flex items-center justify-center mr-3">
-                  <Leaf className="w-4 h-4" />
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
+                  <Leaf className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <span className="text-sm">{announcement.cropType.name}</span>
               </div>
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-[#f5f3ee] flex items-center justify-center mr-3">
-                  <Link2 className="w-4 h-4" />
-                </div>
-                <span className="text-sm">Prendre sac</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-[#f5f3ee] flex items-center justify-center mr-3">
-                  <ShoppingBag className="w-4 h-4" />
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
+                  <ShoppingBag className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <span className="text-sm">
                   {announcement.quantityAvailable
-                    ? `${announcement.quantityAvailable} kg à glaner`
-                    : "Quantité non spécifiée"}
+                    ? `${announcement.quantityAvailable} tonnes à glaner`
+                    : "quantité non spécifiée"}
                 </span>
               </div>
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-[#f5f3ee] flex items-center justify-center mr-3">
-                  <Calendar className="w-4 h-4" />
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <span className="text-sm">
-                  {announcement.gleaningPeriods[0]?.gleaningPeriod.startDate.toLocaleDateString()}
+                  {announcement.startDate && formatDate(announcement.startDate)}
                 </span>
               </div>
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-[#f5f3ee] flex items-center justify-center mr-3">
-                  <MapPin className="w-4 h-4" />
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <span className="text-sm">
                   {announcement.field.postalCode} - {announcement.field.city}
                 </span>
               </div>
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-[#f5f3ee] flex items-center justify-center mr-3">
-                  <Package className="w-4 h-4" />
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
+                  <Package className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <span className="text-sm">bio pas de pesticide</span>
               </div>
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 mt-8">
-            <JoinGleaningButton
-              announcementId={announcement.id}
-              slug={announcement.slug}
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full bg-[#f5f3ee] border-none"
-            >
-              <Heart
-                className="w-4 h-4"
-                data-active={announcement.likes?.length > 0}
-              />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full bg-[#f5f3ee] border-none"
-            >
-              <Star className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full bg-[#f5f3ee] border-none"
-            >
-              <Share2 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full bg-[#f5f3ee] border-none"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </div>
         </div>
 
-        {/* Image Section */}
+        {/* image section */}
         <div className="w-1/2 relative">
-          <div className="relative h-[300px] rounded-lg overflow-hidden">
-            {announcement.images[0] && (
-              <Image
-                src={announcement.images[0]}
-                alt={announcement.title}
-                fill
-                className="object-cover"
-              />
-            )}
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="absolute -right-4 -bottom-4 w-32 h-32">
-            <Image
-              src={
-                announcement.images[1] ||
-                announcement.images[0] ||
-                "/placeholder.svg"
-              }
-              alt={announcement.cropType.name}
-              width={150}
-              height={150}
-              className="rounded-lg object-cover"
+          {hasMultipleImages ? (
+            <Carousel className="w-full">
+              <CarouselContent>
+                {announcement.images.map((image, index) => (
+                  <CarouselItem key={index}>
+                    <div className="relative h-[320px] rounded-lg overflow-hidden">
+                      <Image
+                        src={image}
+                        alt={`${announcement.title} - image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-background border-none shadow-sm" />
+              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-background border-none shadow-sm" />
+            </Carousel>
+          ) : (
+            <div className="relative h-[320px] rounded-lg overflow-hidden">
+              {announcement.images && announcement.images.length > 0 ? (
+                <Image
+                  src={announcement.images[0]}
+                  alt={announcement.title}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-muted">
+                  <Leaf className="w-12 h-12 text-muted-foreground/40" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* action buttons */}
+      <div className="flex justify-between items-center w-full mt-8">
+        <div className="flex gap-3">
+          <Suspense fallback={<Button disabled>chargement...</Button>}>
+            <JoinGleaningButton
+              announcementId={announcement.id}
+              slug={slug}
+              userIsParticipant={announcement.userIsParticipant}
             />
-          </div>
+          </Suspense>
+        </div>
+
+        <div className="flex gap-3">
+          <LikeButton
+            announcementId={announcement.id}
+            initialLiked={announcement.likes?.length > 0}
+          />
+
+          <FavoriteButton
+            announcementId={announcement.id}
+            initialFavorited={announcement.favorites?.length > 0}
+          />
+
+          <ShareButton title={announcement.title} slug={slug} />
+        </div>
+
+        <div className="flex gap-3">
+          <Button asChild>
+            <Link href={`/messages/user/${announcement.owner.id}`}>
+              <MessageSquare className="size-4" />
+              contacter le propriétaire
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

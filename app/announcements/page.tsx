@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { AnnouncementList } from "./_components/AnnouncementList";
 import { AnnouncementMap } from "./_components/AnnouncementMap";
-import { Announcement, MapAnnouncement } from "./_components/types";
+import {
+  Announcement,
+  MapAnnouncement,
+  getCurrentDate,
+  isPastDate,
+} from "./_components/types";
 import { SearchWizard } from "./_components/SearchWizard";
 import { auth } from "@/lib/auth/helper";
 import type { PageParams } from "@/types/next";
@@ -23,7 +28,7 @@ export const metadata: Metadata = {
 export default async function AnnouncementsPage(props: PageParams) {
   const searchParams = await props.searchParams;
   const user = await auth();
-  const currentDate = new Date();
+  const currentDate = getCurrentDate();
 
   const filters: SearchFilters = {
     query: typeof searchParams.q === "string" ? searchParams.q : null,
@@ -43,7 +48,7 @@ export default async function AnnouncementsPage(props: PageParams) {
 
   let combinedQuery: Prisma.AnnouncementWhereInput;
 
-  if (periodQuery.gleaningPeriods) {
+  if (Object.keys(periodQuery).length > 0) {
     combinedQuery = {
       ...baseQuery,
       ...periodQuery,
@@ -51,14 +56,8 @@ export default async function AnnouncementsPage(props: PageParams) {
   } else {
     combinedQuery = {
       ...baseQuery,
-      gleaningPeriods: {
-        some: {
-          gleaningPeriod: {
-            endDate: {
-              gte: currentDate,
-            },
-          },
-        },
+      endDate: {
+        gte: currentDate,
       },
     };
   }
@@ -83,6 +82,8 @@ export default async function AnnouncementsPage(props: PageParams) {
         images: true,
         isPublished: true,
         createdAt: true,
+        startDate: true,
+        endDate: true,
         cropType: {
           select: {
             id: true,
@@ -99,23 +100,17 @@ export default async function AnnouncementsPage(props: PageParams) {
             longitude: true,
           },
         },
-        gleaningPeriods: {
-          select: {
-            gleaningPeriod: {
-              select: {
-                id: true,
-                startDate: true,
-                endDate: true,
-                status: true,
-              },
-            },
-          },
-        },
         owner: {
           select: {
             id: true,
             name: true,
             image: true,
+          },
+        },
+        gleaning: {
+          select: {
+            id: true,
+            status: true,
           },
         },
         likes: user
@@ -136,48 +131,50 @@ export default async function AnnouncementsPage(props: PageParams) {
     }),
   ]);
 
-  const upcomingAnnouncements = announcements.filter((announcement) => {
-    return announcement.gleaningPeriods.some((period) => {
-      return period.gleaningPeriod.endDate > currentDate;
-    });
-  });
+  const upcomingAnnouncements = !filters.period
+    ? announcements.filter((announcement) => {
+        const isValid =
+          announcement.endDate && !isPastDate(announcement.endDate);
+        if (
+          announcement.startDate &&
+          announcement.startDate.toISOString().includes("2025-04-14")
+        ) {
+          console.log("Annonce spécifique:", {
+            title: announcement.title,
+            startDate: announcement.startDate?.toISOString(),
+            endDate: announcement.endDate?.toISOString(),
+            currentDate: currentDate.toISOString(),
+            isPast: isPastDate(announcement.endDate),
+            isValid,
+          });
+        }
+
+        return isValid;
+      })
+    : announcements;
 
   const formattedAnnouncements: Announcement[] = upcomingAnnouncements.map(
     (announcement) => ({
       ...announcement,
-      gleaningPeriods: announcement.gleaningPeriods.map((period) => ({
-        id: period.gleaningPeriod.id,
-        startDate: period.gleaningPeriod.startDate,
-        endDate: period.gleaningPeriod.endDate,
-        status: period.gleaningPeriod.status,
-      })),
+      gleaningPeriods:
+        announcement.startDate && announcement.endDate
+          ? [
+              {
+                id: announcement.id,
+                startDate: announcement.startDate,
+                endDate: announcement.endDate,
+                status: "NOT_STARTED", // ignorer le statut du gleaning
+              },
+            ]
+          : [],
       isLiked: announcement.likes && announcement.likes.length > 0,
     }),
   );
 
   const sortedAnnouncements = [...formattedAnnouncements].sort((a, b) => {
-    const aFuturePeriods = a.gleaningPeriods.filter(
-      (period) =>
-        period.startDate >= currentDate || period.endDate >= currentDate,
-    );
-
-    const bFuturePeriods = b.gleaningPeriods.filter(
-      (period) =>
-        period.startDate >= currentDate || period.endDate >= currentDate,
-    );
-
-    if (aFuturePeriods.length === 0) return 1;
-    if (bFuturePeriods.length === 0) return -1;
-
-    const aNextPeriod = aFuturePeriods.sort(
-      (p1, p2) => p1.startDate.getTime() - p2.startDate.getTime(),
-    )[0];
-
-    const bNextPeriod = bFuturePeriods.sort(
-      (p1, p2) => p1.startDate.getTime() - p2.startDate.getTime(),
-    )[0];
-
-    return aNextPeriod.startDate.getTime() - bNextPeriod.startDate.getTime();
+    if (!a.startDate) return 1;
+    if (!b.startDate) return -1;
+    return a.startDate.getTime() - b.startDate.getTime();
   });
 
   const mapAnnouncements: MapAnnouncement[] = sortedAnnouncements.map(

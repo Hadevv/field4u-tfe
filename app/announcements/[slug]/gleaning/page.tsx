@@ -1,14 +1,25 @@
-import { Clock, Users, MapPin } from "lucide-react";
 import type { PageParams } from "@/types/next";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { requiredAuth } from "@/lib/auth/helper";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format } from "date-fns";
+import { format, differenceInHours } from "date-fns";
 import { fr } from "date-fns/locale";
-import { GleaningActions } from "./_components/GleaningActions";
 import { Metadata } from "next";
+import { ContentSection } from "@/features/layout/ContentSection";
+import { Suspense } from "react";
+import { Announcement, Gleaning, User } from "@prisma/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LocationBlock } from "./_components/LocationBlock";
+import { DonationBlock } from "./_components/DonationBlock";
+import { ChatBlock } from "./_components/ChatBlock";
+import { RulesBlock } from "./_components/RulesBlock";
+import { GleaningProgress } from "./_components/GleaningProgress";
+
+type ParticipantInfo = {
+  id: string;
+  name: string | null;
+  image: string | null;
+};
 
 export async function generateMetadata(
   props: PageParams<{ slug: string }>,
@@ -24,32 +35,47 @@ export async function generateMetadata(
 
   if (!announcement) {
     return {
-      title: "Glanage non trouvé | Field4U",
+      title: "glanage non trouvé | field4u",
     };
   }
 
   return {
-    title: `Glanage: ${announcement.title} | Field4U`,
-    description: "Détails du glanage et participants",
+    title: `glanage: ${announcement.title} | field4u`,
+    description: "détails du glanage et participants",
   };
 }
 
-export default async function GleaningPage(
-  props: PageParams<{ slug: string }>,
-) {
-  const params = await props.params;
-  const user = await requiredAuth();
-
-  // Récupérer l'annonce
+// fonction pour récupérer les données de l'annonce et du glanage
+async function getGleaningData(
+  slug: string,
+  userId: string,
+): Promise<{
+  announcement: Announcement & {
+    owner?: User;
+    field: {
+      id: string;
+      name: string | null;
+      city: string | null;
+      postalCode: string | null;
+      latitude: number;
+      longitude: number;
+    };
+    cropType: {
+      id: string;
+      name: string;
+    };
+  };
+  gleaning: Gleaning;
+  userIsParticipant: boolean;
+  participantsCount: number;
+  participants: ParticipantInfo[];
+}> {
   const announcement = await prisma.announcement.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: {
+      owner: true,
       field: true,
-      gleaningPeriods: {
-        include: {
-          gleaningPeriod: true,
-        },
-      },
+      cropType: true,
     },
   });
 
@@ -57,24 +83,62 @@ export default async function GleaningPage(
     notFound();
   }
 
-  // Récupérer le glanage (devrait être unique car announcementId est unique)
   const gleaning = await prisma.gleaning.findUnique({
     where: { announcementId: announcement.id },
   });
 
   if (!gleaning) {
-    // Si pas de glanage, rediriger vers la page de l'annonce
-    redirect(`/announcements/${params.slug}`);
+    redirect(`/announcements/${slug}`);
   }
 
-  // Récupérer les participants confirmés
-  const confirmedParticipants = await prisma.participation.findMany({
+  // mettre à jour le statut du glanage en fonction des dates
+  if (announcement.startDate && announcement.endDate) {
+    const now = new Date();
+    let currentStatus = gleaning.status;
+
+    if (gleaning.status !== "CANCELLED") {
+      if (now < announcement.startDate) {
+        currentStatus = "NOT_STARTED";
+      } else if (now >= announcement.startDate && now <= announcement.endDate) {
+        currentStatus = "IN_PROGRESS";
+      } else if (now > announcement.endDate) {
+        currentStatus = "COMPLETED";
+      }
+
+      // mettre à jour le statut si nécessaire
+      if (currentStatus !== gleaning.status) {
+        await prisma.gleaning.update({
+          where: { id: gleaning.id },
+          data: { status: currentStatus },
+        });
+        // mise à jour de l'état local pour l'affichage
+        gleaning.status = currentStatus;
+      }
+    }
+  }
+
+  // vérifier si l'utilisateur est participant au glanage
+  const participation = await prisma.participation.findUnique({
     where: {
-      gleaningId: gleaning.id,
-      status: {
-        in: ["CONFIRMED", "ATTENDED"],
+      userId_gleaningId: {
+        userId,
+        gleaningId: gleaning.id,
       },
     },
+  });
+
+  // nombre de participants au glanage
+  const participantsCount = await prisma.participation.count({
+    where: {
+      gleaningId: gleaning.id,
+    },
+  });
+
+  const participants = await prisma.participation.findMany({
+    where: {
+      gleaningId: gleaning.id,
+    },
+    take: 8,
     include: {
       user: {
         select: {
@@ -86,100 +150,121 @@ export default async function GleaningPage(
     },
   });
 
-  // Vérifier si l'utilisateur participe
-  const userParticipation = await prisma.participation.findUnique({
-    where: {
-      userId_gleaningId: {
-        userId: user.id,
-        gleaningId: gleaning.id,
-      },
-    },
-  });
+  // transformer en format plus simple
+  const participantsList = participants.map((p) => ({
+    id: p.user.id,
+    name: p.user.name,
+    image: p.user.image,
+  }));
 
-  // Vérifier si l'utilisateur est un participant
-  const isParticipant = userParticipation !== null;
+  return {
+    announcement,
+    gleaning,
+    userIsParticipant: !!participation,
+    participantsCount,
+    participants: participantsList,
+  };
+}
+
+export default async function GleaningPage(
+  props: PageParams<{ slug: string }>,
+) {
+  const params = await props.params;
+  const user = await requiredAuth();
+
+  return <GleaningContent slug={params.slug} userId={user.id} />;
+}
+
+async function GleaningContent({
+  slug,
+  userId,
+}: {
+  slug: string;
+  userId: string;
+}) {
+  const { announcement, gleaning, userIsParticipant, participantsCount } =
+    await getGleaningData(slug, userId);
+
+  const formattedDate = announcement.startDate
+    ? format(announcement.startDate, "EEEE d MMMM à HH:mm", { locale: fr })
+    : "date non définie";
+
+  const showRestrictedContent = !!(
+    userIsParticipant &&
+    announcement.startDate &&
+    differenceInHours(announcement.startDate, new Date()) <= 24
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Statut et Timer */}
-      <Card className="p-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center">
-              <Clock className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-secondary">
-                {gleaning.status}
-              </h3>
-              <p className="text-muted-foreground">
-                {announcement.gleaningPeriods[0]?.gleaningPeriod.startDate &&
-                  format(
-                    announcement.gleaningPeriods[0].gleaningPeriod.startDate,
-                    "EEEE d MMMM à HH:mm",
-                    { locale: fr },
-                  )}
-              </p>
-            </div>
-          </div>
-        </div>
-      </Card>
+    <div className="p-4 pb-16">
+      <ContentSection>
+        {/* composant de progression combiné */}
+        <GleaningProgress
+          status={gleaning.status}
+          startDate={announcement.startDate}
+          endDate={announcement.endDate}
+          formattedDate={formattedDate}
+        />
 
-      {/* Informations sensibles */}
-      <Card className="p-6">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-muted-foreground" />
-            <span>
-              {announcement.field.name}, {announcement.field.city}
-            </span>
-          </div>
-          <div className="aspect-square relative rounded-lg overflow-hidden">
-            <iframe
-              width="100%"
-              height="100%"
-              frameBorder="0"
-              scrolling="no"
-              src={`https://maps.google.com/maps?q=${announcement.field.latitude},${announcement.field.longitude}&z=15&output=embed`}
-            ></iframe>
-          </div>
-        </div>
-      </Card>
+        {/* navigation par onglets pour gagner de l'espace */}
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="w-full grid grid-cols-3 mb-4">
+            <TabsTrigger value="details">détails</TabsTrigger>
+            <TabsTrigger value="chat">discussions</TabsTrigger>
+            <TabsTrigger value="rules">règles</TabsTrigger>
+          </TabsList>
 
-      {/* Liste des participants */}
-      <Card className="p-6">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-muted-foreground" />
-            <h3 className="font-semibold">
-              Participants ({confirmedParticipants.length})
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {confirmedParticipants.map((participation) => (
-              <div
-                key={participation.id}
-                className="flex items-center gap-2 p-2 rounded-lg bg-muted"
+          <TabsContent value="details" className="mt-0">
+            <div className="space-y-4">
+              <Suspense
+                fallback={
+                  <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
+                }
               >
-                <Avatar>
-                  <AvatarImage src={participation.user.image || undefined} />
-                  <AvatarFallback>
-                    {participation.user.name?.[0] || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-medium">{participation.user.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Card>
+                <LocationBlock
+                  fieldName={announcement.field.name}
+                  city={announcement.field.city}
+                  postalCode={announcement.field.postalCode}
+                  latitude={announcement.field.latitude}
+                  longitude={announcement.field.longitude}
+                  showLocation={showRestrictedContent}
+                />
+              </Suspense>
 
-      {/* Actions */}
-      <GleaningActions
-        gleaningId={gleaning.id}
-        isParticipant={isParticipant}
-        slug={params.slug}
-      />
+              <Suspense
+                fallback={
+                  <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
+                }
+              >
+                <DonationBlock />
+              </Suspense>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="chat" className="mt-0">
+            <Suspense
+              fallback={
+                <div className="h-[300px] bg-muted animate-pulse rounded-lg" />
+              }
+            >
+              <ChatBlock
+                showChat={showRestrictedContent}
+                participantsCount={participantsCount}
+              />
+            </Suspense>
+          </TabsContent>
+
+          <TabsContent value="rules" className="mt-0">
+            <Suspense
+              fallback={
+                <div className="h-[200px] bg-muted animate-pulse rounded-lg" />
+              }
+            >
+              <RulesBlock />
+            </Suspense>
+          </TabsContent>
+        </Tabs>
+      </ContentSection>
     </div>
   );
 }
