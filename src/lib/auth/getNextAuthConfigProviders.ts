@@ -15,6 +15,7 @@ export const getNextAuthConfigProviders = (): Providers => {
   const providers: Providers = [
     Resend({
       apiKey: env.RESEND_API_KEY,
+      allowDangerousEmailAccountLinking: true,
       sendVerificationRequest: async ({ identifier: email, url }) => {
         const result = await sendEmail({
           from: SiteConfig.email.from,
@@ -48,6 +49,7 @@ export const getNextAuthConfigProviders = (): Providers => {
       Google({
         clientId: env.GOOGLE_ID,
         clientSecret: env.GOOGLE_SECRET,
+        allowDangerousEmailAccountLinking: true,
       }),
     );
   }

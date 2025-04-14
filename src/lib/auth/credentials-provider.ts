@@ -39,9 +39,19 @@ export const getCredentialsProvider = () => {
 
       const user = await prisma.user.findUnique({
         where: { email },
+        include: { accounts: true },
       });
 
       if (!user) return null;
+
+      // si l'utilisateur existe mais n'a pas de mot de passe,
+      // vérifier s'il a un compte avec un autre provider
+      if (!user.hashedPassword) {
+        // l'utilisateur existe via un autre provider (oauth ou magic link)
+        // mais n'a pas encore de mot de passe défini
+        // on peut soit refuser la connexion, soit continuer avec le compte existant
+        return null;
+      }
 
       const passwordMatch = await comparePassword(
         password,

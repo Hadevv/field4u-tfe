@@ -16,6 +16,8 @@ import { LayoutDashboard, LogOut, Settings, Tractor } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import type { PropsWithChildren } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const UserDropdown = ({ children }: PropsWithChildren) => {
   const logout = useMutation({
@@ -23,6 +25,34 @@ export const UserDropdown = ({ children }: PropsWithChildren) => {
   });
   const session = useSession();
   const userRole = session.data?.user?.role;
+  const [hasCheckedLinking, setHasCheckedLinking] = useState(false);
+
+  useEffect(() => {
+    if (session.status === "authenticated" && !hasCheckedLinking) {
+      setHasCheckedLinking(true);
+
+      // verifier le localStorage pour voir si c'est la premiere connexion
+      const lastEmail = localStorage.getItem("lastLoginEmail");
+      const currentEmail = session.data.user.email;
+
+      // si lemail est différent ou n'existe pas encore, l'utilisateur se connecte pour la première fois
+      if (lastEmail !== currentEmail) {
+        localStorage.setItem("lastLoginEmail", currentEmail);
+
+        // verifier les providers liés au compte
+        fetch("/api/auth/linked-providers")
+          .then((res) => res.json())
+          .then((providers) => {
+            if (providers && providers.length > 1) {
+              toast.success(
+                "comptes liés détectés! vous pouvez vous connecter avec n'importe quel provider.",
+              );
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  }, [session.status, session.data, hasCheckedLinking]);
 
   return (
     <DropdownMenu>

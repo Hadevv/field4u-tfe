@@ -44,7 +44,7 @@ export const SignUpCredentialsForm = () => {
   async function onSubmit(values: LoginCredentialsFormType) {
     if (values.password !== values.verifyPassword) {
       form.setError("verifyPassword", {
-        message: "Password does not match",
+        message: "les mots de passe ne correspondent pas",
       });
       return;
     }

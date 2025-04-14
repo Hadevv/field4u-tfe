@@ -10,6 +10,7 @@ import {
   credentialsOverrideJwt,
   credentialsSignInCallback,
 } from "./credentials-provider";
+import { cookies } from "next/headers";
 
 export const { handlers, auth: baseAuth } = NextAuth((req) => ({
   pages: {
@@ -39,6 +40,62 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
       typedParams.user.hashedPassword = null;
 
       return typedParams.session;
+    },
+    async signIn({ user, account, profile }) {
+      if (!user.email) return true;
+
+      // recherche d'un utilisateur existant avec le même email
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+        include: { accounts: true },
+      });
+
+      // si aucun utilisateur existant, continue normalement
+      if (!existingUser) return true;
+
+      // si l'utilisateur existe et que le compte n'existe pas encore
+      if (existingUser && account && account.provider) {
+        // vérifier si ce provider est déjà lié à cet utilisateur
+        const existingAccount = existingUser.accounts.find(
+          (acc) => acc.provider === account.provider,
+        );
+
+        // si le provider n'est pas encore lié, crée le lien
+        if (!existingAccount) {
+          await prisma.account.create({
+            data: {
+              userId: existingUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              refresh_token: account.refresh_token,
+            },
+          });
+
+          // définir un cookie pour indiquer qu'un compte a été lié
+          const cookieStore = cookies();
+          cookieStore.set("account-linked", "true", {
+            maxAge: 60 * 5, // 5 minutes
+            path: "/",
+          });
+
+          // on continue la connexion normalement, mais on modifie user.id
+          // pour utiliser l'id de l'utilisateur existant
+          user.id = existingUser.id;
+
+          return true;
+        }
+
+        // retourne l'id de l'utilisateur existant pour la connexion
+        return true;
+      }
+
+      return true;
     },
   },
   events: {

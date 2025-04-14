@@ -7,6 +7,7 @@ import { Typography } from "@/components/ui/typography";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { AccountLinkingInfo } from "./AccountLinkingInfo";
 import { MagicLinkForm } from "./MagicLinkForm";
 import { ProviderButton } from "./ProviderButton";
 import { SignInCredentialsAndMagicLinkForm } from "./SignInCredentialsAndMagicLinkForm";
@@ -49,6 +50,8 @@ export const SignInProviders = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      <AccountLinkingInfo />
+
       {providers.resend && !providers.credentials ? (
         <>
           <Typography variant="small">Magic link ✨</Typography>

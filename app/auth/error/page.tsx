@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -23,10 +24,10 @@ export default async function AuthErrorPage(props: PageParams<{}>) {
 
   return (
     <div className="flex h-full flex-col">
-      <HeaderBase />
+      <HeaderBase isAuthenticated={false} />
       <Layout>
         <LayoutHeader>
-          <LayoutTitle>Authentification Error</LayoutTitle>
+          <LayoutTitle>Erreur d'authentification</LayoutTitle>
         </LayoutHeader>
         <LayoutContent>
           <Card variant="error">
@@ -36,7 +37,7 @@ export default async function AuthErrorPage(props: PageParams<{}>) {
             </CardHeader>
             <CardFooter className="flex items-center gap-2">
               <Link href="/" className={buttonVariants({ size: "sm" })}>
-                Home
+                Accueil
               </Link>
               <ContactSupportDialog />
             </CardFooter>

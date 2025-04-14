@@ -12,15 +12,21 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Typography } from "@/components/ui/typography";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useLocalStorage } from "react-use";
 import { z } from "zod";
 import { getSession } from "next-auth/react";
+import { useState } from "react";
+import { AlertTriangle } from "lucide-react";
 
 const LoginCredentialsFormScheme = z.object({
-  email: z.string().email(),
-  password: z.string().min(8).optional(),
+  email: z.string().email("veuillez saisir un email valide"),
+  password: z
+    .string()
+    .min(8, "le mot de passe doit contenir au moins 8 caractères")
+    .optional(),
 });
 
 type LoginCredentialsFormType = z.infer<typeof LoginCredentialsFormScheme>;
@@ -34,29 +40,65 @@ export const SignInCredentialsAndMagicLinkForm = () => {
     "sign-in-with-credentials",
     false,
   );
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function onSubmit(values: LoginCredentialsFormType) {
-    const result = await signIn(isUsingCredentials ? "credentials" : "resend", {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    });
+    setIsSubmitting(true);
+    setAuthError(null);
 
-    if (result?.error) {
-      console.error(result.error);
-      return;
-    }
+    try {
+      const result = await signIn(
+        isUsingCredentials ? "credentials" : "resend",
+        {
+          email: values.email,
+          password: values.password,
+          redirect: false,
+        },
+      );
 
-    const session = await getSession();
-    if (session?.user?.onboardingCompleted) {
-      window.location.href = searchParams.get("callbackUrl") ?? "/";
-    } else {
-      window.location.href = "/auth/onboarding";
+      if (result?.error) {
+        // utiliser l'api pour obtenir un message d'erreur plus détaillé
+        const errorResponse = await fetch("/api/auth/error-handler", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ error: result.error }),
+        });
+
+        const errorData = await errorResponse.json();
+        setAuthError(
+          errorData.errorMessage ||
+            "échec de l'authentification, veuillez réessayer",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      const session = await getSession();
+      if (session?.user?.onboardingCompleted) {
+        window.location.href = searchParams.get("callbackUrl") ?? "/";
+      } else {
+        window.location.href = "/auth/onboarding";
+      }
+    } catch (error) {
+      setAuthError(
+        "une erreur s'est produite lors de la connexion, veuillez réessayer",
+      );
+      setIsSubmitting(false);
     }
   }
 
   return (
     <Form form={form} onSubmit={onSubmit} className="max-w-lg space-y-4">
+      {authError && (
+        <Alert variant="destructive">
+          <AlertTriangle className="size-4" />
+          <AlertDescription>{authError}</AlertDescription>
+        </Alert>
+      )}
+
       <FormField
         control={form.control}
         name="email"
@@ -100,7 +142,7 @@ export const SignInCredentialsAndMagicLinkForm = () => {
         </Typography>
       )}
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isUsingCredentials ? "Login with Password" : "Login with MagicLink"}
       </Button>
 
