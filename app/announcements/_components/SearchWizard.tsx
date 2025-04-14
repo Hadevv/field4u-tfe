@@ -7,7 +7,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar, MapPin, Search, RotateCcw, X, Leaf } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  ListFilterPlus,
+  Search,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -15,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { LocationField } from "./LocationField";
-import { toast } from "sonner";
 import { useSearch } from "../_hooks/useSearch";
 import {
   CropType,
@@ -24,7 +30,6 @@ import {
   SearchWizardProps,
 } from "./types";
 
-// Composant pour les badges de filtre
 const FilterBadge = ({ label, icon, onRemove }: FilterBadgeProps) => {
   return (
     <Badge variant="secondary" className="gap-1 rounded-full py-1">
@@ -41,11 +46,11 @@ const FilterBadge = ({ label, icon, onRemove }: FilterBadgeProps) => {
   );
 };
 
-interface CropTypeFilterProps {
+type CropTypeFilterProps = {
   cropTypes: CropType[];
   selectedCropType: string | null;
   onChange: (value: string) => void;
-}
+};
 
 const CropTypeFilter = ({
   cropTypes,
@@ -56,7 +61,7 @@ const CropTypeFilter = ({
     <RadioGroup
       value={selectedCropType || ""}
       onValueChange={(value) => onChange(value)}
-      className="flex flex-col space-y-1"
+      className="flex flex-col space-y-1 max-h-40 overflow-y-auto"
     >
       <div className="flex items-center space-x-2">
         <RadioGroupItem value="" id="all-crops" />
@@ -81,11 +86,11 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={handleSubmit} className="space-y-2 max-w-3xl mx-auto">
       <Card className="overflow-hidden shadow-sm">
-        <CardContent className="p-1.5 sm:p-2">
+        <CardContent className="p-0 sm:p-0">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:rounded-full border shadow-sm bg-white p-1 sm:p-2">
-            {/* Recherche */}
+            {/* recherche */}
             <Popover open={ui.isSearchOpen} onOpenChange={ui.setIsSearchOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -95,7 +100,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                     filters.query && "font-medium",
                   )}
                 >
-                  <Search className="h-4 w-4 mr-2 text-primary" />
+                  <Search className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="truncate">
                     {filters.query || "Rechercher"}
                   </span>
@@ -129,7 +134,6 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
             />
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
 
-            {/* Localisation */}
             <Popover
               open={ui.isLocationOpen}
               onOpenChange={ui.setIsLocationOpen}
@@ -142,7 +146,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                     filters.location && "font-medium",
                   )}
                 >
-                  <MapPin className="h-4 w-4 mr-2 text-primary" />
+                  <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="truncate">{filters.location || "Lieu"}</span>
                 </Button>
               </PopoverTrigger>
@@ -162,7 +166,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
             />
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
 
-            {/* Filtres */}
+            {/* filtres */}
             <Popover open={ui.isFilterOpen} onOpenChange={ui.setIsFilterOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -172,7 +176,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                     (filters.period || filters.cropTypeId) && "font-medium",
                   )}
                 >
-                  <Leaf className="h-4 w-4 mr-2 text-primary" />
+                  <ListFilterPlus className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="truncate">Filtres</span>
                   {(filters.period || filters.cropTypeId) && (
                     <Badge className="ml-2 rounded-full h-5 min-w-5 p-0 flex items-center justify-center">
@@ -267,7 +271,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
               </PopoverContent>
             </Popover>
 
-            {/* Bouton de recherche */}
+            {/* bouton de recherche */}
             <Button
               type="submit"
               className="w-full sm:w-auto rounded-full px-4 h-10"
@@ -279,7 +283,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
         </CardContent>
       </Card>
 
-      {/* Badges de filtres */}
+      {/* badges de filtres */}
       {ui.hasFilters && (
         <div className="flex flex-wrap items-center gap-2 p-1">
           {filters.query && (

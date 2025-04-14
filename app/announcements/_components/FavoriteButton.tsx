@@ -1,45 +1,45 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { Star } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { resolveActionResult } from "@/lib/backend/actions-utils";
-import { toggleLikeAction } from "../_actions/like.action";
+import { toggleFavoriteAction } from "../_actions/favorite.action";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-type LikeButtonProps = {
+type FavoriteButtonProps = {
   announcementId: string;
-  initialLiked: boolean;
+  initialFavorited: boolean;
   className?: string;
 };
 
-export function LikeButton({
+export function FavoriteButton({
   announcementId,
-  initialLiked,
+  initialFavorited,
   className,
-}: LikeButtonProps) {
-  const [isLiked, setIsLiked] = useState(Boolean(initialLiked));
+}: FavoriteButtonProps) {
+  const [isFavorited, setIsFavorited] = useState(Boolean(initialFavorited));
   const router = useRouter();
 
   useEffect(() => {
-    setIsLiked(Boolean(initialLiked));
-  }, [initialLiked]);
+    setIsFavorited(Boolean(initialFavorited));
+  }, [initialFavorited]);
 
-  const likeMutation = useMutation({
+  const favoriteMutation = useMutation({
     mutationFn: async () => {
       try {
         return resolveActionResult(
-          toggleLikeAction({
+          toggleFavoriteAction({
             announcementId,
           }),
         );
       } catch (error) {
         // Si l'erreur est liée à l'authentification
         if ((error as Error).message?.includes("auth")) {
-          toast.error("veuillez vous connecter pour liker cette annonce");
+          toast.error("veuillez vous connecter pour ajouter aux favoris");
           router.push(`/auth/signin?callbackUrl=/announcements`);
           throw new Error("non authentifié");
         }
@@ -47,11 +47,11 @@ export function LikeButton({
       }
     },
     onSuccess: (data) => {
-      setIsLiked(data.liked);
-      if (data.liked) {
-        toast.success("annonce likée");
+      setIsFavorited(data.favorited);
+      if (data.favorited) {
+        toast.success("ajouté aux favoris");
       } else {
-        toast.success("like retiré");
+        toast.success("retiré des favoris");
       }
     },
     onError: (error) => {
@@ -61,10 +61,10 @@ export function LikeButton({
     },
   });
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    likeMutation.mutate();
+    favoriteMutation.mutate();
   };
 
   return (
@@ -73,17 +73,17 @@ export function LikeButton({
       size="icon"
       className={cn(
         "w-10 h-10 bg-background border shadow-sm hover:bg-background/80",
-        isLiked
-          ? "text-rose-500 hover:text-rose-600 border-rose-200"
+        isFavorited
+          ? "text-yellow-500 hover:text-yellow-600 border-yellow-200"
           : "text-muted-foreground hover:text-foreground",
         className,
       )}
-      onClick={handleLike}
-      disabled={likeMutation.isPending}
+      onClick={handleFavorite}
+      disabled={favoriteMutation.isPending}
     >
-      <Heart className={cn("w-4 h-4", isLiked && "fill-current")} />
+      <Star className={cn("w-4 h-4", isFavorited && "fill-current")} />
       <span className="sr-only">
-        {isLiked ? "retirer le like" : "liker l'annonce"}
+        {isFavorited ? "retirer des favoris" : "ajouter aux favoris"}
       </span>
     </Button>
   );

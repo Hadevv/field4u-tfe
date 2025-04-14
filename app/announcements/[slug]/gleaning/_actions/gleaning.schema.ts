@@ -10,6 +10,7 @@ export type JoinGleaningResponse = {
   success: boolean;
   error?: string;
   gleaningId?: string;
+  alreadyParticipating?: boolean;
 };
 
 export const LeaveGleaningSchema = z.object({
@@ -21,4 +22,18 @@ export type LeaveGleaningSchemaType = z.infer<typeof LeaveGleaningSchema>;
 export type LeaveGleaningResponse = {
   success: boolean;
   error?: string;
+};
+
+export const UpdateGleaningStatusSchema = z.object({
+  gleaningId: z.string().min(1, "l'identifiant du glanage est requis"),
+});
+
+export type UpdateGleaningStatusSchemaType = z.infer<
+  typeof UpdateGleaningStatusSchema
+>;
+
+export type UpdateGleaningStatusResponse = {
+  success: boolean;
+  error?: string;
+  newStatus?: string;
 };

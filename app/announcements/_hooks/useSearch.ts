@@ -25,24 +25,30 @@ export const useSearch = (initialFilters?: SearchFilters) => {
     periodValue
   );
 
-  const resetAllFilters = () => {
-    setSearchQuery(null);
-    setSelectedCropType(null);
-    setPeriodValue(null);
-    setRadiusValue("25");
-    setLocationValue(null);
+  const resetAllFilters = async () => {
+    try {
+      // Réinitialiser tous les filtres
+      await setSearchQuery(null);
+      await setSelectedCropType(null);
+      await setPeriodValue(null);
+      await setRadiusValue("25");
+      await setLocationValue(null);
 
-    setIsSearchOpen(false);
-    setIsLocationOpen(false);
-    setIsFilterOpen(false);
+      setIsSearchOpen(false);
+      setIsLocationOpen(false);
+      setIsFilterOpen(false);
 
-    router.refresh();
+      window.location.href = "/announcements";
+    } catch (error) {
+      console.error("Erreur lors de la réinitialisation des filtres:", error);
+      window.location.reload();
+    }
   };
 
   const handleLocationChange = (value: string | null) => {
     setLocationValue(value);
     if (value === null) {
-      router.refresh();
+      router.push(window.location.pathname);
     }
   };
 
@@ -54,7 +60,7 @@ export const useSearch = (initialFilters?: SearchFilters) => {
     setIsSearchOpen(false);
     setIsLocationOpen(false);
     setIsFilterOpen(false);
-    router.refresh();
+    router.push(window.location.pathname + window.location.search);
   };
 
   const currentFilters: SearchFilters = {

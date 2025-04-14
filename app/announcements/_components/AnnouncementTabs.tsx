@@ -4,10 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Map, List } from "lucide-react";
 import React from "react";
 
-interface AnnouncementTabsProps {
+type AnnouncementTabsProps = {
   listContent: React.ReactNode;
   mapContent: React.ReactNode;
-}
+};
 
 export function AnnouncementTabs({
   listContent,

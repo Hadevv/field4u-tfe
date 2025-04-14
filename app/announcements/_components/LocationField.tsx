@@ -2,16 +2,16 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapPin, X } from "lucide-react";
+import { X } from "lucide-react";
 import { LocationDetector } from "./LocationDetector";
 import { useRouter } from "next/navigation";
 
-interface LocationFieldProps {
+type LocationFieldProps = {
   value: string | null;
   onChange: (value: string | null) => void;
   radius: string;
   onRadiusChange: (radius: string) => void;
-}
+};
 
 export function LocationField({
   value,

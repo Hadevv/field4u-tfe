@@ -6,13 +6,13 @@ import { Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { LocationService } from "@/lib/geo/location-service";
 
-interface LocationDetectorProps {
+type LocationDetectorProps = {
   onLocationDetected: (cityName: string) => void;
   className?: string;
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
   disabled?: boolean;
-}
+};
 
 export function LocationDetector({
   onLocationDetected,
