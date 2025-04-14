@@ -1,7 +1,10 @@
-/** @type {import('next').NextConfig} */
-
-const { withPlausibleProxy } = require("next-plausible");
-
-const nextConfig = withPlausibleProxy()({});
-
-module.exports = nextConfig;
+module.exports = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "yzrv5nd8tn.ufs.sh",
+      },
+    ],
+  },
+};
