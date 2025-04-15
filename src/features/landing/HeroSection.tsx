@@ -33,7 +33,6 @@ export function HeroSection() {
             </p>
             <div className="relative z-10 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
               <Button
-                size="lg"
                 className="text-base transition-colors hover:bg-primary/90"
                 asChild
               >
@@ -41,7 +40,6 @@ export function HeroSection() {
               </Button>
               {session.data?.user ? (
                 <Button
-                  size="lg"
                   variant="outline"
                   className="cursor-not-allowed text-base opacity-70"
                   disabled
@@ -50,7 +48,6 @@ export function HeroSection() {
                 </Button>
               ) : (
                 <Button
-                  size="lg"
                   variant="outline"
                   className="text-base transition-colors hover:bg-accent"
                   asChild

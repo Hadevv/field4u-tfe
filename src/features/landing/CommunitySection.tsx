@@ -25,10 +25,8 @@ export function CommunitySection() {
             encore.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <Button size="lg" className="text-base">
-              Commencez à Glaner !
-            </Button>
-            <Button size="lg" variant="secondary" className="text-base">
+            <Button className="text-base">Commencez à Glaner !</Button>
+            <Button variant="secondary" className="text-base">
               Inscrivez vous Gratuitement
             </Button>
           </div>

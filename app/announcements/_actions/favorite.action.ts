@@ -18,7 +18,7 @@ export const toggleFavoriteAction = authAction
       },
     });
 
-    // si déjà en favoris, supprimer le favori
+    // si deja favoris, supprimer le favori
     if (existingFavorite) {
       await prisma.favorite.delete({
         where: {
