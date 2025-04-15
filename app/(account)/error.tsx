@@ -8,7 +8,6 @@ import { useEffect } from "react";
 
 export default function RouteError({ error }: ErrorParams) {
   useEffect(() => {
-    // Log the error to an error reporting service
     logger.error(error);
   }, [error]);
 
@@ -16,11 +15,11 @@ export default function RouteError({ error }: ErrorParams) {
     <Card>
       <CardHeader>
         <CardTitle>
-          You need to be authenticated to access this resource.
+          Vous devez être connecté pour accéder à cette ressource.
         </CardTitle>
       </CardHeader>
       <CardFooter>
-        <SignInButton variant="invert" size="lg" />
+        <SignInButton variant="default" size="lg" />
       </CardFooter>
     </Card>
   );

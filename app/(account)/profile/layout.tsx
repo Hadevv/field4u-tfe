@@ -9,7 +9,6 @@ export default async function RouteLayout(props: LayoutParams<{}>) {
 
   const isEmailNotVerified = user.email && !user.emailVerified;
 
-  const isAdminUser = await isAdmin().catch(() => false);
   return (
     <>
       {isEmailNotVerified ? (
@@ -21,11 +20,6 @@ export default async function RouteLayout(props: LayoutParams<{}>) {
           <VerifyEmailButton />
         </Alert>
       ) : null}
-      {isAdminUser ? (
-        <div className="admin-banner">Welcome Admin!</div>
-      ) : (
-        <div className="user-banner">Welcome User!</div>
-      )}
       {props.children}
     </>
   );
