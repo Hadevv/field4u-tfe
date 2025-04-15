@@ -12,7 +12,13 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { Typography } from "@/components/ui/typography";
 import { useMutation } from "@tanstack/react-query";
-import { LayoutDashboard, LogOut, Settings, Tractor } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Tractor,
+  Heart,
+} from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import type { PropsWithChildren } from "react";
@@ -67,6 +73,12 @@ export const UserDropdown = ({ children }: PropsWithChildren) => {
           <Link href="/profile">
             <Settings className="mr-2 size-4" />
             Mon compte
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/my-gleanings">
+            <Heart className="mr-2 size-4" />
+            Mes glanages
           </Link>
         </DropdownMenuItem>
 

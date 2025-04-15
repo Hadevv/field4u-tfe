@@ -6,7 +6,7 @@ import Link from "next/link";
 import type { PropsWithChildren } from "react";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
+import { MapPin, Heart } from "lucide-react";
 import { NotificationsMenu } from "../notifications/NotificationsMenu";
 import { usePathname } from "next/navigation";
 
@@ -39,8 +39,11 @@ export function HeaderBase({ children, isAuthenticated }: HeaderBaseProps) {
                   Explorer la carte
                 </Link>
               </Button>
-              <Button asChild variant="ghost">
-                <Link href="/forum">Forum</Link>
+              <Button asChild variant="ghost" className="gap-2">
+                <Link href="/my-gleanings">
+                  <Heart className="size-4" />
+                  Mes glanages
+                </Link>
               </Button>
             </nav>
           </div>

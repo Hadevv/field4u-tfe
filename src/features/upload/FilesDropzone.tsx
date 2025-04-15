@@ -19,6 +19,7 @@ type FilesDropzoneProps = {
   acceptedFileTypes?: string[];
   maxSizeMB?: number;
   className?: string;
+  onSelectFiles?: (files: File[]) => void;
 };
 
 export function FilesDropzone({
@@ -28,6 +29,7 @@ export function FilesDropzone({
   acceptedFileTypes = ["image/jpeg", "image/png", "image/jpg"],
   maxSizeMB = 2,
   className,
+  onSelectFiles,
 }: FilesDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<FileWithPreview[]>([]);
@@ -82,9 +84,16 @@ export function FilesDropzone({
         preview: URL.createObjectURL(file),
       }));
 
-      setFiles((prev) => [...prev, ...filesWithPreviews]);
+      setFiles((prev) => {
+        const newFiles = [...prev, ...filesWithPreviews];
+        // appeler le callback avec les fichiers bruts
+        if (onSelectFiles) {
+          onSelectFiles(newFiles.map((f) => f.file));
+        }
+        return newFiles;
+      });
     },
-    [acceptedFileTypes, maxFiles, maxSizeMB, remainingSlots],
+    [acceptedFileTypes, maxFiles, maxSizeMB, remainingSlots, onSelectFiles],
   );
 
   // Gérer la sélection de fichiers via input
@@ -109,15 +118,24 @@ export function FilesDropzone({
   );
 
   // Supprimer un fichier de la liste d'attente
-  const removeFile = useCallback((index: number) => {
-    setFiles((prev) => {
-      const newFiles = [...prev];
-      // Libérer l'URL de la prévisualisation pour éviter les fuites mémoire
-      URL.revokeObjectURL(newFiles[index].preview);
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
-  }, []);
+  const removeFile = useCallback(
+    (index: number) => {
+      setFiles((prev) => {
+        const newFiles = [...prev];
+        // Libérer l'URL de la prévisualisation pour éviter les fuites mémoire
+        URL.revokeObjectURL(newFiles[index].preview);
+        newFiles.splice(index, 1);
+
+        // mettre à jour le callback avec les fichiers restants
+        if (onSelectFiles) {
+          onSelectFiles(newFiles.map((f) => f.file));
+        }
+
+        return newFiles;
+      });
+    },
+    [onSelectFiles],
+  );
 
   // Supprimer une image déjà téléchargée
   const removeUploadedFile = useCallback(

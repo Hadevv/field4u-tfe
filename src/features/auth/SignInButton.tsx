@@ -44,7 +44,7 @@ export const LoggedInButton = ({
 }) => {
   return (
     <UserDropdown>
-      <Button variant="outline" size="sm">
+      <Button variant="outline">
         <Avatar className="mr-2 size-6 bg-card">
           <AvatarFallback className="bg-card">
             {user.email.slice(0, 1).toUpperCase()}
