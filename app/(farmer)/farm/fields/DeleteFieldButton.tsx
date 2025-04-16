@@ -51,13 +51,14 @@ export function DeleteFieldButton({
 
   return (
     <Button
-      variant="destructive"
+      variant="outline"
       size="sm"
+      className="text-destructive hover:bg-destructive/10"
       onClick={handleDeleteClick}
       disabled={deleteFieldMutation.isPending}
-      className="h-8"
     >
-      <Trash2 className="h-4 w-4" />
+      <Trash2 className="mr-2 h-3.5 w-3.5" />
+      Supprimer
     </Button>
   );
 }

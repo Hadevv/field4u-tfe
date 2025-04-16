@@ -39,7 +39,7 @@ export default async function AnnouncementsPage() {
 
       <LayoutActions>
         {hasFields ? (
-          <Button asChild>
+          <Button asChild className="bg-primary">
             <Link href="/farm/announcements/new">
               <Plus className="mr-2 h-4 w-4" />
               Créer une annonce

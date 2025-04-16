@@ -37,14 +37,9 @@ export const deleteAnnouncementAction = authAction
       throw new Error("Vous n'êtes pas autorisé à supprimer cette annonce");
     }
 
-    // supprimer d'abord les associations
-    await prisma.announcementGleaningPeriod.deleteMany({
-      where: { announcementId: announcement.id },
-    });
-
     // supprimer le glanage et les participations si existants
-    if (announcement.gleaning.length > 0) {
-      const gleaningId = announcement.gleaning[0].id;
+    if (announcement.gleaning) {
+      const gleaningId = announcement.gleaning.id;
 
       // supprimer les participations
       await prisma.participation.deleteMany({

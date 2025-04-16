@@ -48,10 +48,10 @@ export default async function FarmerDashboardPage() {
         <div className="mt-8">
           <h2 className="mb-4 text-2xl font-semibold">Actions rapides</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="border-green-100">
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center text-lg font-medium">
-                  <Tractor className="mr-2 h-5 w-5 text-green-600" />
+                  <Tractor className="mr-2 h-5 w-5" />
                   Exploitation
                 </CardTitle>
               </CardHeader>
@@ -71,10 +71,10 @@ export default async function FarmerDashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-green-100">
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center text-lg font-medium">
-                  <MapPin className="mr-2 h-5 w-5 text-green-600" />
+                  <MapPin className="mr-2 h-5 w-5" />
                   Champs
                 </CardTitle>
               </CardHeader>
@@ -104,10 +104,10 @@ export default async function FarmerDashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-green-100">
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center text-lg font-medium">
-                  <FileText className="mr-2 h-5 w-5 text-green-600" />
+                  <FileText className="mr-2 h-5 w-5" />
                   Annonces
                 </CardTitle>
               </CardHeader>

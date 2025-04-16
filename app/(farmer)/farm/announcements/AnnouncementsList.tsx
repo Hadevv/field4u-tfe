@@ -41,11 +41,6 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
           participations: true,
         },
       },
-      gleaningPeriods: {
-        include: {
-          gleaningPeriod: true,
-        },
-      },
     },
     orderBy: [{ isPublished: "desc" }, { createdAt: "desc" }],
   });
@@ -74,13 +69,8 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
   return (
     <div className="space-y-6">
       {announcements.map((announcement) => {
-        const nextPeriod = announcement.gleaningPeriods
-          .map((ap) => ap.gleaningPeriod)
-          .filter((gp) => gp.startDate > new Date())
-          .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())[0];
-
         const participationCount =
-          announcement.gleaning?.[0]?.participations.length || 0;
+          announcement.gleaning?.participations.length || 0;
 
         return (
           <Card
@@ -112,11 +102,11 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
                 </span>
                 <span className="flex items-center">
                   <Calendar className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
-                  {nextPeriod
-                    ? format(nextPeriod.startDate, "dd MMM yyyy", {
+                  {announcement.startDate
+                    ? format(announcement.startDate, "dd MMM yyyy", {
                         locale: fr,
                       })
-                    : "Aucune période prévue"}
+                    : "Pas de date définie"}
                 </span>
                 <span className="flex items-center">
                   <Users className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
@@ -128,9 +118,7 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
 
             <CardContent className="flex-grow pb-2">
               <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="bg-green-100">
-                  {announcement.cropType.name}
-                </Badge>
+                <Badge>{announcement.cropType.name}</Badge>
                 {announcement.quantityAvailable && (
                   <Badge variant="outline">
                     {announcement.quantityAvailable} kg disponibles
@@ -144,14 +132,14 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
 
             <CardFooter className="flex justify-between border-t pt-4">
               <div className="flex gap-2">
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline">
                   <Link href={`/farm/announcements/${announcement.id}`}>
                     <Eye className="mr-2 h-3.5 w-3.5" />
                     Voir
                   </Link>
                 </Button>
 
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline">
                   <Link href={`/farm/announcements/${announcement.id}/edit`}>
                     <Pencil className="mr-2 h-3.5 w-3.5" />
                     Modifier

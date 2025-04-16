@@ -53,7 +53,7 @@ export function ToggleAnnouncementStatus({
         checked={isPublished}
         onCheckedChange={handleToggle}
         disabled={toggleStatusMutation.isPending}
-        className="data-[state=checked]:bg-green-600"
+        className="data-[state=checked]:bg-primary"
       />
     </div>
   );

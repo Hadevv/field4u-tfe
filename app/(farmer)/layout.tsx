@@ -14,7 +14,7 @@ export default async function FarmerLayout(
     redirect("/");
   }
 
-  // recupérer les infos de l'utilisateur pour les passer au composant client
+  // recupérer les infos de l'utilisateur
   const user = await auth();
 
   if (!user) {

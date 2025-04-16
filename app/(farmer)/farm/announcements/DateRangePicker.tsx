@@ -79,7 +79,7 @@ export function DateRangePicker({
         return isValid(date) ? date : null;
       }
     } catch (error) {
-      // Ignorer les erreurs de parse
+      console.error("Erreur lors de la conversion de la date:", error);
     }
     return null;
   };
@@ -92,38 +92,38 @@ export function DateRangePicker({
             id="date"
             variant="outline"
             className={cn(
-              "w-full h-12 justify-start text-left font-normal border-gray-300 shadow-sm hover:bg-gray-50 transition-colors",
+              "w-full h-12 justify-start text-left font-normal shadow-sm transition-colors",
               !dateRange && "text-muted-foreground",
               isPopoverOpen && "ring-2 ring-primary ring-offset-2",
             )}
             disabled={disabled}
           >
-            <CalendarIcon className="mr-3 h-5 w-5 text-gray-500" />
+            <CalendarIcon className="mr-3 h-5 w-5" />
             {dateRange?.from ? (
               dateRange.to ? (
                 <div>
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold">
                     {format(dateRange.from, "dd MMM yyyy", { locale: fr })} -{" "}
                     {format(dateRange.to, "dd MMM yyyy", { locale: fr })}
                   </div>
-                  <div className="text-xs text-gray-500 mt-0.5">
+                  <div className="text-xs mt-0.5">
                     Durée:{" "}
                     {calculateDurationInDays(dateRange.from, dateRange.to)}{" "}
                     jours
                   </div>
                 </div>
               ) : (
-                <div className="font-semibold text-gray-900">
+                <div className="font-semibold">
                   {format(dateRange.from, "dd MMM yyyy", { locale: fr })}
                 </div>
               )
             ) : (
-              <span className="text-gray-500">Sélectionner une période</span>
+              <span>Sélectionner une période</span>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-0 border border-gray-200 rounded-xl shadow-lg"
+          className="w-auto p-0 rounded-xl shadow-lg"
           align="center"
         >
           <div className="p-5">
@@ -131,9 +131,7 @@ export function DateRangePicker({
             <div>
               <div className="grid grid-cols-2 gap-2 px-0.5 mb-4">
                 <div>
-                  <div className="text-sm font-medium text-gray-900 mb-1">
-                    Date de début
-                  </div>
+                  <div className="text-sm font-medium mb-1">Date de début</div>
                   <div className="relative">
                     <Input
                       value={
@@ -151,17 +149,15 @@ export function DateRangePicker({
                           setIsSelectingFirstDate(false);
                         }
                       }}
-                      className="border-gray-300 pl-9 focus:ring-primary"
+                      className="pl-9"
                       placeholder="JJ/MM/AAAA"
                     />
-                    <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" />
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-sm font-medium text-gray-900 mb-1">
-                    Date de fin
-                  </div>
+                  <div className="text-sm font-medium mb-1">Date de fin</div>
                   <div className="relative">
                     <Input
                       value={
@@ -178,10 +174,10 @@ export function DateRangePicker({
                           });
                         }
                       }}
-                      className="border-gray-300 pl-9 focus:ring-primary"
+                      className=" pl-9"
                       placeholder="JJ/MM/AAAA"
                     />
-                    <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" />
                   </div>
                 </div>
               </div>
@@ -229,17 +225,14 @@ export function DateRangePicker({
               <div className="flex justify-end mt-4 border-t pt-4 px-2">
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => setIsPopoverOpen(false)}
-                  className="mr-2 border-gray-300"
+                  className="mr-2"
                 >
                   Annuler
                 </Button>
                 <Button
-                  size="sm"
                   onClick={onApply}
                   disabled={!selectedRange?.from || !selectedRange?.to}
-                  className="bg-primary text-white hover:bg-primary/90"
                 >
                   Appliquer
                 </Button>

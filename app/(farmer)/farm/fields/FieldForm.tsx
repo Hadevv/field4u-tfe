@@ -79,7 +79,7 @@ export function FieldForm({
   };
 
   return (
-    <Card className="border-green-100">
+    <Card>
       <CardHeader>
         <CardTitle>
           {isEditing ? "Modifier le champ" : "Ajouter un nouveau champ"}
@@ -185,8 +185,8 @@ export function FieldForm({
               <label className="text-sm font-medium">
                 Localisation du champ
               </label>
-              <div className="border border-green-100 rounded-md p-4 bg-green-50/50">
-                <div className="flex items-center gap-2 mb-4 text-green-700">
+              <div className="border rounded-md p-4">
+                <div className="flex items-center gap-2 mb-4">
                   <MapPin className="h-5 w-5" />
                   <p className="text-sm">
                     Précisez la position exacte de votre champ sur la carte
@@ -237,7 +237,7 @@ export function FieldForm({
                   />
                 </div>
 
-                <div className="mt-4 h-[300px] bg-gray-100 rounded-md border border-green-100 flex items-center justify-center">
+                <div className="mt-4 h-[300px] rounded-md border flex items-center justify-center">
                   {/* Ici, vous pourriez intégrer une carte interactive (Mapbox, GoogleMaps, etc.) */}
                   <p className="text-sm text-muted-foreground">
                     Carte interactive (à implémenter)
@@ -259,8 +259,8 @@ export function FieldForm({
               )}
               <Button
                 type="submit"
+                className="bg-primary"
                 disabled={createFieldMutation.isPending}
-                className="bg-green-600 hover:bg-green-700"
               >
                 {createFieldMutation.isPending
                   ? "Enregistrement..."

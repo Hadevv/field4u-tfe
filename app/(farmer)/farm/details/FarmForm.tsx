@@ -61,7 +61,7 @@ export function FarmForm({ farm }: FarmFormProps) {
   });
 
   return (
-    <Card className="border-green-100">
+    <Card>
       <CardHeader>
         <CardTitle>Modifier l'exploitation</CardTitle>
         <CardDescription>
@@ -159,11 +159,7 @@ export function FarmForm({ farm }: FarmFormProps) {
               >
                 Annuler
               </Button>
-              <Button
-                type="submit"
-                disabled={updateFarmMutation.isPending}
-                className="bg-green-600 hover:bg-green-700"
-              >
+              <Button type="submit" disabled={updateFarmMutation.isPending}>
                 {updateFarmMutation.isPending
                   ? "Enregistrement..."
                   : "Mettre à jour"}

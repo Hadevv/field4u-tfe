@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Announcement } from "@prisma/client";
@@ -30,9 +29,7 @@ import {
   AnnouncementSchema,
   AnnouncementSchemaType,
 } from "./new/announcement.schema";
-import { MapPin, PlusCircle, Trash2 } from "lucide-react";
-import { isValid, parse } from "date-fns";
-import { fr } from "date-fns/locale";
+import { MapPin, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { Combobox } from "@/components/ui/combobox";
 import { LoadingButton } from "@/features/form/SubmitButton";
@@ -45,7 +42,6 @@ import {
 } from "@/components/ui/dialog";
 import { FieldForm } from "../fields/FieldForm";
 import { Badge } from "@/components/ui/badge";
-import { DateRange } from "react-day-picker";
 import { DateRangePicker } from "./DateRangePicker";
 import { FilesDropzone } from "@/features/upload/FilesDropzone";
 
@@ -88,6 +84,10 @@ export function AnnouncementForm({
   const isEditing = !!announcement;
   const [showFieldDialog, setShowFieldDialog] = useState(false);
 
+  const defaultStartDate = new Date();
+  const defaultEndDate = new Date();
+  defaultEndDate.setDate(defaultEndDate.getDate() + 7);
+
   const form = useZodForm({
     schema: AnnouncementSchema,
     defaultValues: {
@@ -96,17 +96,8 @@ export function AnnouncementForm({
       fieldId: announcement?.fieldId || defaultFieldId || "",
       cropTypeId: announcement?.cropTypeId || "",
       quantityAvailable: announcement?.quantityAvailable || undefined,
-      gleaningPeriods: announcement?.gleaningPeriods
-        ? announcement.gleaningPeriods.map((period: any) => ({
-            from: new Date(period.startDate),
-            to: new Date(period.endDate),
-          }))
-        : [
-            {
-              from: new Date(),
-              to: new Date(new Date().setDate(new Date().getDate() + 7)),
-            },
-          ],
+      startDate: announcement?.startDate || defaultStartDate,
+      endDate: announcement?.endDate || defaultEndDate,
       images: announcement?.images || [],
     },
   });
@@ -118,8 +109,6 @@ export function AnnouncementForm({
       // recupérer les fichiers à envoyer directement
       const formData = new FormData();
 
-      // si nous avons des fichiers en attente, les ajouter au FormData
-      // Récupérer tous les fichiers des prévisualisations du FilesDropzone
       const fileElements = document.querySelectorAll("#file-upload");
       if (fileElements.length > 0) {
         const fileInput = fileElements[0] as HTMLInputElement;
@@ -154,50 +143,9 @@ export function AnnouncementForm({
     },
   });
 
-  const handleAddGleaningPeriod = () => {
-    const currentPeriods = form.getValues().gleaningPeriods;
-    const lastPeriod = currentPeriods[currentPeriods.length - 1];
-
-    const newFrom = new Date(lastPeriod.to);
-    newFrom.setDate(newFrom.getDate() + 1);
-
-    const newTo = new Date(newFrom);
-    newTo.setDate(newTo.getDate() + 7);
-
-    form.setValue("gleaningPeriods", [
-      ...currentPeriods,
-      { from: newFrom, to: newTo },
-    ]);
-  };
-
-  const handleRemoveGleaningPeriod = (index: number) => {
-    const currentPeriods = form.getValues().gleaningPeriods;
-    if (currentPeriods.length > 1) {
-      form.setValue(
-        "gleaningPeriods",
-        currentPeriods.filter((_, i) => i !== index),
-      );
-    }
-  };
-
-  // Fonction pour parser une date à partir d'un string
-  const parseDateString = (dateString: string, originalDate: Date) => {
-    if (!dateString) return null;
-
-    // Essayer avec plusieurs formats
-    const formats = ["dd/MM/yyyy", "d/M/yyyy", "dd-MM-yyyy", "d-M-yyyy"];
-
-    for (const formatString of formats) {
-      const date = parse(dateString, formatString, new Date(), { locale: fr });
-      if (isValid(date)) return date;
-    }
-
-    return null;
-  };
-
   return (
     <>
-      <Card className="border-green-100">
+      <Card>
         <CardHeader>
           <CardTitle>
             {isEditing ? "Modifier l'annonce" : "Créer une nouvelle annonce"}
@@ -208,11 +156,8 @@ export function AnnouncementForm({
               : "Publiez une nouvelle opportunité de glanage pour partager vos surplus de récolte"}
           </CardDescription>
           {farm && (
-            <Badge
-              variant="outline"
-              className="mt-2 bg-green-50 text-green-800 inline-flex gap-1 items-center self-start"
-            >
-              <MapPin className="h-3 w-3" />
+            <Badge className="bg-primary mt-2 mb-2 w-fit">
+              <MapPin className="h-3 w-3 mr-1" />
               {farm.name}
             </Badge>
           )}
@@ -269,7 +214,7 @@ export function AnnouncementForm({
                           </div>
                         ) : (
                           <Button
-                            type="button"
+                            asChild
                             variant="outline"
                             className="w-full"
                             onClick={() => setShowFieldDialog(true)}
@@ -353,76 +298,31 @@ export function AnnouncementForm({
               />
 
               <div>
-                <h3 className="text-lg font-medium mb-2">
-                  Périodes de glanage
-                </h3>
+                <h3 className="text-lg font-medium mb-2">Période de glanage</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Définissez les périodes durant lesquelles le glanage est
-                  possible pour cette annonce
+                  Définissez la période durant laquelle le glanage est possible
                 </p>
-                <div className="space-y-4">
-                  {form.watch("gleaningPeriods").map((period, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col gap-4 p-4 border rounded-md bg-background/50"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium">
-                          Période {index + 1}
-                        </h4>
-                        {form.watch("gleaningPeriods").length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveGleaningPeriod(index)}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8"
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Supprimer
-                          </Button>
-                        )}
-                      </div>
-
-                      <DateRangePicker
-                        dateRange={period as DateRange}
-                        onDateRangeChange={(range) => {
-                          if (range && range.from && range.to) {
-                            const periods = [
-                              ...form.getValues().gleaningPeriods,
-                            ];
-                            periods[index] = range as { from: Date; to: Date };
-                            form.setValue("gleaningPeriods", periods);
-                          }
-                        }}
-                        minDate={new Date(new Date().setHours(0, 0, 0, 0))}
-                      />
-
-                      {form.formState.errors.gleaningPeriods?.[index] && (
-                        <div className="text-red-500 text-sm">
-                          {form.formState.errors.gleaningPeriods[index]?.from
-                            ?.message ||
-                            form.formState.errors.gleaningPeriods[index]?.to
-                              ?.message ||
-                            (
-                              form.formState.errors.gleaningPeriods[
-                                index
-                              ] as any
-                            )?.message}
-                        </div>
-                      )}
+                <div className="p-4 border rounded-md">
+                  <DateRangePicker
+                    dateRange={{
+                      from: form.watch("startDate"),
+                      to: form.watch("endDate"),
+                    }}
+                    onDateRangeChange={(range) => {
+                      if (range && range.from && range.to) {
+                        form.setValue("startDate", range.from);
+                        form.setValue("endDate", range.to);
+                      }
+                    }}
+                    minDate={new Date(new Date().setHours(0, 0, 0, 0))}
+                  />
+                  {(form.formState.errors.startDate ||
+                    form.formState.errors.endDate) && (
+                    <div className="bg-destructive text-sm mt-2">
+                      {form.formState.errors.startDate?.message ||
+                        form.formState.errors.endDate?.message}
                     </div>
-                  ))}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAddGleaningPeriod}
-                    className="mt-2"
-                  >
-                    <PlusCircle className="h-4 w-4 mr-1" />
-                    Ajouter une période
-                  </Button>
+                  )}
                 </div>
               </div>
 
@@ -465,11 +365,7 @@ export function AnnouncementForm({
                 >
                   Annuler
                 </Button>
-                <LoadingButton
-                  type="submit"
-                  className="bg-green-600 hover:bg-green-700"
-                  loading={createMutation.isPending}
-                >
+                <LoadingButton type="submit" loading={createMutation.isPending}>
                   {isEditing ? "Mettre à jour" : "Publier l'annonce"}
                 </LoadingButton>
               </div>
@@ -491,7 +387,6 @@ export function AnnouncementForm({
             onSuccess={() => {
               setShowFieldDialog(false);
               toast.success("Champ créé avec succès");
-              // rafraîchir la page pour récupérer les nouvelles données du serveur
               router.refresh();
             }}
           />

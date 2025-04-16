@@ -7,19 +7,12 @@ import { isFarmer } from "@/lib/auth/helper";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { AnnouncementSchema } from "./announcement.schema";
-import { GleaningPeriodStatus } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { generateSlug } from "@/lib/format/id";
 import { uploadManager } from "@/features/upload/upload-new";
-import { z } from "zod";
-
-// Schéma modifié pour accepter soit des URLs, soit des fichiers via FormData
-const CreateAnnouncementSchema = AnnouncementSchema.extend({
-  imageFiles: z.instanceof(FormData).optional(),
-});
 
 export const createAnnouncementAction = authAction
-  .schema(CreateAnnouncementSchema)
+  .schema(AnnouncementSchema)
   .action(async ({ parsedInput: input, ctx }) => {
     // vérifier que l'utilisateur est bien un agriculteur
     try {
@@ -53,16 +46,13 @@ export const createAnnouncementAction = authAction
         );
       }
 
-      // gerer les images - on les reçoit comme URLs ou via FormData
       let imageUrls: string[] = input.images || [];
 
-      // Si nous avons des fichiers d'images à traiter via FormData
       if (input.imageFiles) {
         const files = input.imageFiles.getAll("files") as File[];
 
         if (files.length > 0) {
           try {
-            // Utiliser le nouveau gestionnaire d'upload pour télécharger les fichiers
             const uploadedUrls = await uploadManager.uploadFiles(files, {
               maxSizeMB: 2,
             });
@@ -78,21 +68,7 @@ export const createAnnouncementAction = authAction
         }
       }
 
-      // creation des périodes de glanage
-      const gleaningPeriods = await Promise.all(
-        input.gleaningPeriods.map(async (period) => {
-          const gleaningPeriod = await prisma.gleaningPeriod.create({
-            data: {
-              startDate: period.from,
-              endDate: period.to,
-              status: GleaningPeriodStatus.AVAILABLE,
-            },
-          });
-          return gleaningPeriod;
-        }),
-      );
-
-      // creation de l'annonce
+      // creation de l'annonce avec startDate et endDate directement
       const announcement = await prisma.announcement.create({
         data: {
           title: input.title,
@@ -104,26 +80,16 @@ export const createAnnouncementAction = authAction
           ownerId: user.id,
           isPublished: true,
           images: imageUrls,
-          gleaningPeriods: {
-            create: gleaningPeriods.map((period) => ({
-              gleaningPeriodId: period.id,
-            })),
-          },
-        },
-        include: {
-          gleaningPeriods: {
-            include: {
-              gleaningPeriod: true,
-            },
-          },
+          startDate: input.startDate,
+          endDate: input.endDate,
         },
       });
 
-      // crer un glanage associé à l'annonce (pour les participations)
+      // crer un glanage associé à l'annonce
       await prisma.gleaning.create({
         data: {
           announcementId: announcement.id,
-          status: "PENDING",
+          status: "NOT_STARTED",
         },
       });
 
