@@ -4,7 +4,56 @@ import React, { useState, useEffect } from "react";
 import { AnnouncementList } from "./AnnouncementList";
 import { AnnouncementMap } from "./AnnouncementMap";
 import { AnnouncementTabs } from "./AnnouncementTabs";
-import { Announcement, MapAnnouncement } from "./types";
+import { Announcement, MapAnnouncement } from "@/types/announcement";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+
+function AnnouncementCardSkeleton() {
+  return (
+    <Card className="overflow-hidden mb-4 rounded-lg">
+      <div className="flex">
+        <Skeleton className="w-[180px] min-w-[180px] h-[160px]" />
+        <div className="flex-1 p-4 relative">
+          <div className="absolute top-3 right-3">
+            <Skeleton className="h-9 w-9 rounded-full" />
+          </div>
+          <div className="mb-3 pr-10">
+            <Skeleton className="h-4 w-36 mb-1" />
+            <Skeleton className="h-5 w-48" />
+          </div>
+          <div className="space-y-1 mb-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+          <div className="space-y-1.5 mt-auto">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-3.5 w-3.5 rounded-full" />
+              <Skeleton className="h-3.5 w-36" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-3.5 w-3.5 rounded-full" />
+              <Skeleton className="h-3.5 w-52" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function AnnouncementListSkeleton() {
+  return (
+    <div className="space-y-4 overflow-auto max-h-[calc(100vh-14rem)]">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <AnnouncementCardSkeleton key={index} />
+      ))}
+    </div>
+  );
+}
+
+function AnnouncementMapSkeleton() {
+  return <Skeleton className="h-[calc(100vh-12rem)] w-full rounded-lg" />;
+}
 
 declare global {
   interface Window {
@@ -47,7 +96,7 @@ type ApiResponse = {
     };
   }>;
   mapAnnouncements: MapAnnouncement[];
-}
+};
 
 export function DynamicAnnouncementResults() {
   const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +105,7 @@ export function DynamicAnnouncementResults() {
     announcements: Announcement[];
     mapAnnouncements: MapAnnouncement[];
   } | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // convertir les chaines de date en objets date
   const convertAnnouncementDates = (
@@ -87,7 +137,12 @@ export function DynamicAnnouncementResults() {
         );
 
         if (!response.ok) {
-          throw new Error(`erreur: ${response.status}`);
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: "erreur inconnue" }));
+          const errorMessage =
+            errorData.message || `erreur: ${response.status}`;
+          throw new Error(errorMessage);
         }
 
         const result = (await response.json()) as ApiResponse;
@@ -95,19 +150,43 @@ export function DynamicAnnouncementResults() {
         // convertir les dates
         const processedData = convertAnnouncementDates(result);
         setData(processedData);
+        setHasSearched(true);
 
         window.updateAnnouncementResults = (newData) => {
           setData(newData);
+          setHasSearched(true);
         };
       } catch (err) {
         console.error("erreur de chargement:", err);
         setError(err instanceof Error ? err : new Error("erreur inconnue"));
+        setHasSearched(true);
+
+        // en cas d'erreur afficher des résultats vides
+        setData({ announcements: [], mapAnnouncements: [] });
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchInitialData();
+    // ajouter un délai
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const attemptFetch = () => {
+      fetchInitialData().catch((error) => {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(
+            `Nouvelle tentative de chargement (${retryCount}/${maxRetries})...`,
+          );
+          setTimeout(attemptFetch, 1000);
+        } else {
+          console.error("Abandon après plusieurs tentatives échouées:", error);
+        }
+      });
+    };
+
+    attemptFetch();
 
     // nettoyage
     return () => {
@@ -115,34 +194,48 @@ export function DynamicAnnouncementResults() {
     };
   }, []);
 
-  // afficher un loader
-  if (isLoading) {
+  // afficher le squelette pendant le chargement initial
+  if (isLoading && !hasSearched) {
     return (
-      <div className="flex justify-center p-8">
-        <div className="animate-pulse text-muted-foreground">chargement...</div>
-      </div>
+      <>
+        <div className="md:hidden mt-2">
+          <AnnouncementListSkeleton />
+        </div>
+        <div className="hidden md:grid md:grid-cols-12 gap-4 mt-2">
+          <div className="md:col-span-6 lg:col-span-5">
+            <AnnouncementListSkeleton />
+          </div>
+          <div className="md:col-span-6 lg:col-span-7">
+            <AnnouncementMapSkeleton />
+          </div>
+        </div>
+      </>
     );
   }
 
-  if (error) {
+  if (hasSearched && (!data || data.announcements.length === 0)) {
     return (
-      <div className="p-8 text-center text-destructive">
-        erreur: {error.message}
-      </div>
-    );
-  }
-
-  // si pas de données
-  if (!data || data.announcements.length === 0) {
-    return (
-      <div className="p-8 text-center text-muted-foreground">
-        aucune annonce disponible
-      </div>
+      <>
+        <div className="md:hidden mt-2">
+          <AnnouncementList announcements={[]} />
+        </div>
+        <div className="hidden md:grid md:grid-cols-12 gap-4 mt-2">
+          <div className="md:col-span-6 lg:col-span-5">
+            <AnnouncementList announcements={[]} />
+          </div>
+          <div className="md:col-span-6 lg:col-span-7">
+            <AnnouncementMap announcements={[]} />
+          </div>
+        </div>
+      </>
     );
   }
 
   // donnes disponibles
-  const { announcements, mapAnnouncements } = data;
+  const { announcements, mapAnnouncements } = data || {
+    announcements: [],
+    mapAnnouncements: [],
+  };
 
   return (
     <>
