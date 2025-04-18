@@ -8,10 +8,10 @@ import { ContentSection } from "@/features/layout/ContentSection";
 import { Suspense } from "react";
 import { Announcement, Gleaning, User } from "@prisma/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LocationBlock } from "./_components/LocationBlock";
-import { DonationBlock } from "./_components/DonationBlock";
-import { ChatBlock } from "./_components/ChatBlock";
-import { RulesBlock } from "./_components/RulesBlock";
+import { LocationSection } from "./_components/LocationSection";
+import { DonationSection } from "./_components/DonationSection";
+import { ChatSection } from "./_components/ChatSection";
+import { RulesSection } from "./_components/RulesSection";
 import { GleaningProgress } from "./_components/GleaningProgress";
 import { auth } from "@/lib/auth/helper";
 
@@ -229,7 +229,7 @@ async function GleaningContent({ slug }: { slug: string }) {
                   <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
                 }
               >
-                <LocationBlock
+                <LocationSection
                   fieldName={announcement.field.name}
                   city={announcement.field.city}
                   postalCode={announcement.field.postalCode}
@@ -244,7 +244,7 @@ async function GleaningContent({ slug }: { slug: string }) {
                   <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
                 }
               >
-                <DonationBlock />
+                <DonationSection />
               </Suspense>
             </div>
           </TabsContent>
@@ -255,7 +255,7 @@ async function GleaningContent({ slug }: { slug: string }) {
                 <div className="h-[300px] bg-muted animate-pulse rounded-lg" />
               }
             >
-              <ChatBlock
+              <ChatSection
                 showChat={showRestrictedContent}
                 participantsCount={participantsCount}
               />
@@ -268,7 +268,7 @@ async function GleaningContent({ slug }: { slug: string }) {
                 <div className="h-[200px] bg-muted animate-pulse rounded-lg" />
               }
             >
-              <RulesBlock />
+              <RulesSection />
             </Suspense>
           </TabsContent>
         </Tabs>
