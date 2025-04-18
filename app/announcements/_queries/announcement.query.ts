@@ -8,9 +8,10 @@ import {
   startOfMonth,
   endOfMonth,
 } from "date-fns";
+import { logger } from "@/lib/logger";
 
 export const buildPeriodQuery = (period: PeriodFilter) => {
-  if (!period || period === "all") return {};
+  if (!period) return {};
 
   const now = new Date();
   let startDate: Date;
@@ -22,8 +23,8 @@ export const buildPeriodQuery = (period: PeriodFilter) => {
       endDate = endOfDay(now);
       break;
     case "week":
-      startDate = startOfWeek(now, { weekStartsOn: 1 }); // Lundi
-      endDate = endOfWeek(now, { weekStartsOn: 1 }); // Dimanche
+      startDate = startOfWeek(now, { weekStartsOn: 1 });
+      endDate = endOfWeek(now, { weekStartsOn: 1 });
       break;
     case "month":
       startDate = startOfMonth(now);
@@ -33,43 +34,107 @@ export const buildPeriodQuery = (period: PeriodFilter) => {
       return {};
   }
 
+  logger.debug(`Filtre période: ${period}`);
+  logger.debug(`Date de début: ${startDate.toISOString()}`);
+  logger.debug(`Date de fin: ${endDate.toISOString()}`);
+
   return {
-    gleaningPeriods: {
-      some: {
-        gleaningPeriod: {
-          AND: [
-            { startDate: { lte: endDate } },
-            { endDate: { gte: startDate } },
-          ],
+    OR: [
+      // commence pendant la période
+      {
+        startDate: {
+          gte: startDate,
+          lte: endDate,
         },
       },
+      // se termine pendant la période
+      {
+        endDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      // englobe la période entière
+      {
+        startDate: { lte: startDate },
+        endDate: { gte: endDate },
+      },
+      // en cours pendant la période
+      {
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+    ],
+  };
+};
+
+export const buildDefaultQuery = (): Prisma.AnnouncementWhereInput => {
+  const now = new Date();
+  return {
+    isPublished: true,
+    OR: [
+      { endDate: { gte: now } },
+      {
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+    ],
+    gleaning: {
+      status: { not: { equals: "CANCELLED" } },
     },
   };
 };
 
 export const buildSearchQuery = (
   filters: SearchFilters,
+  includeAll: boolean = false,
 ): Prisma.AnnouncementWhereInput => {
-  const where: Prisma.AnnouncementWhereInput = { isPublished: true };
+  // Base query
+  const where: Prisma.AnnouncementWhereInput = {
+    isPublished: true,
+  };
+  if (includeAll) {
+    return buildDefaultQuery();
+  }
 
+  const conditions: Prisma.AnnouncementWhereInput[] = [];
+
+  // recherche par texte
   if (filters.query) {
-    where.OR = [
-      { title: { contains: filters.query, mode: "insensitive" } },
-      { description: { contains: filters.query, mode: "insensitive" } },
-    ];
+    const searchTerms = filters.query.toLowerCase().split(" ");
+    conditions.push({
+      OR: searchTerms.map((term) => ({
+        OR: [
+          { title: { contains: term, mode: "insensitive" } },
+          { description: { contains: term, mode: "insensitive" } },
+        ],
+      })),
+    });
   }
 
+  // filtre par type de culture
   if (filters.cropTypeId) {
-    where.cropTypeId = filters.cropTypeId;
+    conditions.push({ cropTypeId: filters.cropTypeId });
   }
 
+  // recherche par localisation
   if (filters.location) {
-    where.field = {
-      OR: [
-        { city: { contains: filters.location, mode: "insensitive" } },
-        { postalCode: { contains: filters.location } },
-      ],
-    };
+    const locationTerms = filters.location.toLowerCase().split(" ");
+    conditions.push({
+      field: {
+        OR: locationTerms.map((term) => ({
+          OR: [
+            { city: { contains: term, mode: "insensitive" } },
+            { postalCode: { contains: term } },
+          ],
+        })),
+      },
+    });
+  }
+
+  // combiner toutes les conditions
+  if (conditions.length > 0) {
+    where.AND = conditions;
   }
 
   return where;

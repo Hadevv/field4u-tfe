@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { LocationDetector } from "./LocationDetector";
-import { useRouter } from "next/navigation";
+import { useRef, useEffect } from "react";
 
 type LocationFieldProps = {
   value: string | null;
@@ -19,24 +19,46 @@ export function LocationField({
   radius,
   onRadiusChange,
 }: LocationFieldProps) {
-  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Gestion du bouton de géolocalisation
+  useEffect(() => {
+    if (inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, []);
+
+  // fonction pour effacer la localisation
+  const clearLocation = () => {
+    onChange(null);
+
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  // gestion du bouton de geo
   const handleLocationDetected = (cityName: string) => {
     onChange(cityName);
   };
 
-  // Fonction pour effacer la localisation
-  const clearLocation = () => {
-    onChange(null);
-    router.refresh(); // Rafraîchir pour appliquer immédiatement les changements d'URL
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    onChange(inputValue === "" ? null : inputValue);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      clearLocation();
+      e.preventDefault();
+      e.stopPropagation();
+    }
   };
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h4 className="font-medium">Recherche par lieu</h4>
+          <h4 className="font-medium">recherche par lieu</h4>
           {value && (
             <Button
               variant="ghost"
@@ -45,34 +67,36 @@ export function LocationField({
               onClick={clearLocation}
             >
               <X className="h-3 w-3 mr-1" />
-              Effacer
+              effacer
             </Button>
           )}
         </div>
         <div className="relative">
           <Input
-            placeholder="Ville, code postal..."
+            ref={inputRef}
+            placeholder="ville, code postal..."
             value={value || ""}
-            onChange={(e) => onChange(e.target.value || null)}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="pr-8"
-            aria-label="Entrer une localisation"
+            aria-label="entrer une localisation"
           />
           {value && (
             <button
               type="button"
               onClick={clearLocation}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              aria-label="Effacer la recherche par lieu"
+              aria-label="effacer la recherche par lieu"
             >
               <X className="h-4 w-4" />
-              <span className="sr-only">Effacer</span>
+              <span className="sr-only">effacer</span>
             </button>
           )}
         </div>
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-sm">Position actuelle</span>
+        <span className="text-sm">position actuelle</span>
         <LocationDetector
           onLocationDetected={handleLocationDetected}
           variant="outline"
@@ -81,7 +105,7 @@ export function LocationField({
       </div>
 
       <div className="space-y-2">
-        <h4 className="font-medium">Rayon de recherche: {radius} km</h4>
+        <h4 className="font-medium">rayon de recherche: {radius} km</h4>
         <div className="grid grid-cols-4 gap-2">
           {["10", "25", "50", "100"].map((radiusValue) => (
             <Button
@@ -90,7 +114,7 @@ export function LocationField({
               size="sm"
               variant={radius === radiusValue ? "default" : "outline"}
               onClick={() => onRadiusChange(radiusValue)}
-              aria-label={`Rayon de ${radiusValue} km`}
+              aria-label={`rayon de ${radiusValue} km`}
             >
               {radiusValue}
             </Button>

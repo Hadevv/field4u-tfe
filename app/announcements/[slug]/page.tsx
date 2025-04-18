@@ -136,7 +136,15 @@ export default async function AnnouncementPage(
   const params = await props.params;
   const user = await auth();
 
-  return <AnnouncementContent slug={params.slug} userId={user?.id} />;
+  return (
+    <div className="container mx-auto pt-6 max-w-6xl">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full">
+          <AnnouncementContent slug={params.slug} userId={user?.id} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 async function AnnouncementContent({

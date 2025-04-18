@@ -3,11 +3,11 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import Link from "next/link";
 import { Calendar, MapPin } from "lucide-react";
 import { Announcement, getGleaningStatusInfo } from "./types";
 import { LikeButton } from "./LikeButton";
 import { formatDate } from "@/lib/format/date";
+import Link from "next/link";
 
 type AnnouncementCardProps = {
   announcement: Announcement;
@@ -28,16 +28,17 @@ export function AnnouncementCard({
     id,
     startDate,
     endDate,
+    status,
   } = announcement;
 
-  // utiliser la première image ou une image par défaut
-  const imageUrl =
-    images && images.length > 0 ? images[0] : "/images/harvest-potatoes.avif";
+  const imageUrl = images && images.length > 0 ? images[0] : "/images/harvest-potatoes.avif";
 
-  // utiliser la fonction centralisée pour obtenir les infos de statut
-  const statusInfo = getGleaningStatusInfo(startDate, endDate);
+  // obtenir les info de statut
+  const statusInfo = status
+    ? getGleaningStatusInfo(startDate, endDate, status)
+    : getGleaningStatusInfo(startDate, endDate);
 
-  // extraire la quantité et l'unité de la description
+  // extraire la quantité
   const getQuantityAndType = () => {
     const regex = /(\d+)\s*(kg|g|t|L)\s*de\s*([^\s,.]+)/i;
     const match = description.match(regex);
@@ -54,8 +55,8 @@ export function AnnouncementCard({
   const quantityText = getQuantityAndType();
 
   return (
-    <Link href={`/announcements/${slug}`} prefetch={false} className="block">
-      <Card className="overflow-hidden bg-white hover:shadow transition-shadow rounded-lg mb-4">
+    <Link href={`/announcements/${slug}`}>
+      <Card className="overflow-hidden rounded-lg mb-4 cursor-pointer transition-shadow hover:shadow-md">
         <div className="flex">
           {/* image à gauche */}
           <div className="relative w-[120px] min-w-[150px]">
@@ -74,7 +75,10 @@ export function AnnouncementCard({
                 {cropType.name}
               </Badge>
               {statusInfo.label && (
-                <Badge variant="outline" className="bg-muted shadow-sm">
+                <Badge
+                  variant="outline"
+                  className={`${statusInfo.color} shadow-sm`}
+                >
                   {statusInfo.label}
                 </Badge>
               )}
@@ -83,7 +87,10 @@ export function AnnouncementCard({
 
           <div className="flex-1 p-4 relative">
             {/* bouton like */}
-            <div className="absolute top-3 right-3">
+            <div
+              className="absolute top-3 right-3"
+              onClick={(e) => e.stopPropagation()}
+            >
               <LikeButton announcementId={id} initialLiked={isLiked} />
             </div>
             {/* titre et organisme */}

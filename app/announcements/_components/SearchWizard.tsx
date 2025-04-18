@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,11 +25,21 @@ import { Badge } from "@/components/ui/badge";
 import { LocationField } from "./LocationField";
 import { useSearch } from "../_hooks/useSearch";
 import {
-  CropType,
   FilterBadgeProps,
   PERIOD_LABELS,
   SearchWizardProps,
+  Announcement,
+  MapAnnouncement,
 } from "./types";
+
+declare global {
+  interface Window {
+    updateAnnouncementResults?: (data: {
+      announcements: Announcement[];
+      mapAnnouncements: MapAnnouncement[];
+    }) => void;
+  }
+}
 
 const FilterBadge = ({ label, icon, onRemove }: FilterBadgeProps) => {
   return (
@@ -46,54 +57,92 @@ const FilterBadge = ({ label, icon, onRemove }: FilterBadgeProps) => {
   );
 };
 
-type CropTypeFilterProps = {
-  cropTypes: CropType[];
-  selectedCropType: string | null;
-  onChange: (value: string) => void;
-};
-
-const CropTypeFilter = ({
+export function SearchWizard({
   cropTypes,
-  selectedCropType,
-  onChange,
-}: CropTypeFilterProps) => {
-  return (
-    <RadioGroup
-      value={selectedCropType || ""}
-      onValueChange={(value) => onChange(value)}
-      className="flex flex-col space-y-1 max-h-40 overflow-y-auto"
-    >
-      <div className="flex items-center space-x-2">
-        <RadioGroupItem value="" id="all-crops" />
-        <Label htmlFor="all-crops">Toutes cultures</Label>
-      </div>
-      {cropTypes.map((type) => (
-        <div key={type.id} className="flex items-center space-x-2">
-          <RadioGroupItem value={type.id} id={`crop-${type.id}`} />
-          <Label htmlFor={`crop-${type.id}`}>{type.name}</Label>
-        </div>
-      ))}
-    </RadioGroup>
-  );
-};
+  initialFilters,
+}: SearchWizardProps): React.ReactNode {
+  const { filters, ui, actions, results } = useSearch(initialFilters);
 
-export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
-  const { filters, ui, actions } = useSearch(initialFilters);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const isPeriodSelectionRef = useRef(false);
+  const isCropSelectionRef = useRef(false);
 
+  // effectuer la recherche initiale
+  useEffect(() => {
+    if (ui.hasFilters) {
+      actions.handleSearch();
+    }
+  }, []);
+
+  // formulaire de recherche
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    actions.handleSearchSubmit();
+    actions.handleSearch();
+  };
+
+  // gestion des filtres
+  const handlePeriodChange = (value: string) => {
+    isPeriodSelectionRef.current = true;
+
+    setTimeout(() => {
+      actions.setPeriodValue(value || null);
+      isPeriodSelectionRef.current = false;
+    }, 100);
+  };
+
+  const handleCropTypeChange = (value: string) => {
+    isCropSelectionRef.current = true;
+
+    setTimeout(() => {
+      actions.setSelectedCropType(value || null);
+      isCropSelectionRef.current = false;
+    }, 100);
+  };
+
+  // fonction reset
+  const handleReset = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    actions.resetAllFilters();
+  };
+
+  const handlePopoverOpenChange = (
+    open: boolean,
+    type: "filter" | "search" | "location",
+  ) => {
+    if (!open && (isPeriodSelectionRef.current || isCropSelectionRef.current)) {
+      return;
+    }
+
+    switch (type) {
+      case "filter":
+        ui.setIsFilterOpen(open);
+        break;
+      case "search":
+        ui.setIsSearchOpen(open);
+        if (open && searchInputRef.current) {
+          setTimeout(() => searchInputRef.current?.focus(), 100);
+        }
+        break;
+      case "location":
+        ui.setIsLocationOpen(open);
+        break;
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2 max-w-3xl mx-auto">
       <Card className="overflow-hidden shadow-sm">
         <CardContent className="p-0 sm:p-0">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:rounded-full border shadow-sm bg-white p-1 sm:p-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:rounded-full border p-1 sm:p-2">
             {/* recherche */}
-            <Popover open={ui.isSearchOpen} onOpenChange={ui.setIsSearchOpen}>
+            <Popover
+              open={ui.isSearchOpen}
+              onOpenChange={(open) => handlePopoverOpenChange(open, "search")}
+            >
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   variant="ghost"
                   className={cn(
                     "w-full sm:w-auto rounded-full px-4 h-10 flex justify-start border-none",
@@ -102,28 +151,25 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                 >
                   <Search className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="truncate">
-                    {filters.query || "Rechercher"}
+                    {filters.query || "rechercher"}
                   </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[min(80vw,320px)] p-3" align="start">
                 <div className="space-y-2">
-                  <h4 className="font-medium">Recherche</h4>
+                  <h4 className="font-medium">recherche</h4>
                   <Input
-                    placeholder="Rechercher..."
+                    ref={searchInputRef}
+                    placeholder="rechercher..."
                     value={filters.query || ""}
                     onChange={(e) =>
                       actions.setSearchQuery(e.target.value || null)
                     }
                     className="w-full"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        ui.setIsSearchOpen(false);
-                        actions.handleSearchSubmit();
-                      }
-                    }}
                   />
+                  <div className="text-xs text-muted-foreground">
+                    la recherche s'effectue uniquement sur le titre des annonces
+                  </div>
                 </div>
               </PopoverContent>
             </Popover>
@@ -136,10 +182,11 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
 
             <Popover
               open={ui.isLocationOpen}
-              onOpenChange={ui.setIsLocationOpen}
+              onOpenChange={(open) => handlePopoverOpenChange(open, "location")}
             >
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   variant="ghost"
                   className={cn(
                     "w-full sm:w-auto rounded-full px-4 h-10 flex justify-start border-none",
@@ -147,7 +194,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                   )}
                 >
                   <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="truncate">{filters.location || "Lieu"}</span>
+                  <span className="truncate">{filters.location || "lieu"}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[min(90vw,320px)] p-3" align="start">
@@ -167,9 +214,13 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
 
             {/* filtres */}
-            <Popover open={ui.isFilterOpen} onOpenChange={ui.setIsFilterOpen}>
+            <Popover
+              open={ui.isFilterOpen}
+              onOpenChange={(open) => handlePopoverOpenChange(open, "filter")}
+            >
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   variant="ghost"
                   className={cn(
                     "w-full sm:w-auto rounded-full px-4 h-10 flex justify-start border-none",
@@ -177,7 +228,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                   )}
                 >
                   <ListFilterPlus className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="truncate">Filtres</span>
+                  <span className="truncate">filtres</span>
                   {(filters.period || filters.cropTypeId) && (
                     <Badge className="ml-2 rounded-full h-5 min-w-5 p-0 flex items-center justify-center">
                       {(filters.period ? 1 : 0) + (filters.cropTypeId ? 1 : 0)}
@@ -187,29 +238,57 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
               </PopoverTrigger>
               <PopoverContent className="w-[min(90vw,350px)] p-3" align="start">
                 <div className="space-y-4">
+                  {/* type de culture */}
                   <div className="space-y-2">
-                    <h4 className="font-medium">Type de culture</h4>
-                    <CropTypeFilter
-                      cropTypes={cropTypes}
-                      selectedCropType={filters.cropTypeId ?? null}
-                      onChange={(value) => {
-                        actions.setSelectedCropType(value || null);
-                      }}
-                    />
+                    <h4 className="font-medium">type de culture</h4>
+                    <RadioGroup
+                      value={filters.cropTypeId || ""}
+                      onValueChange={handleCropTypeChange}
+                      className="flex flex-col space-y-1 max-h-[200px] overflow-y-auto"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="" id="all-crops" />
+                        <Label htmlFor="all-crops" className="cursor-pointer">
+                          toutes cultures
+                        </Label>
+                      </div>
+                      {cropTypes.map((type) => (
+                        <div
+                          key={type.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <RadioGroupItem
+                            value={type.id}
+                            id={`crop-${type.id}`}
+                          />
+                          <Label
+                            htmlFor={`crop-${type.id}`}
+                            className="cursor-pointer"
+                          >
+                            {type.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
                   </div>
 
                   <Separator />
 
+                  {/* periode */}
                   <div className="space-y-2">
-                    <h4 className="font-medium">Période</h4>
+                    <h4 className="font-medium">période</h4>
                     <RadioGroup
                       value={filters.period || ""}
-                      onValueChange={(value: string) => {
-                        actions.setPeriodValue(value || null);
-                      }}
+                      onValueChange={handlePeriodChange}
                       className="grid grid-cols-2 gap-2"
                     >
-                      <div className="flex flex-col items-center space-y-1 border rounded-lg p-2 cursor-pointer hover:bg-muted">
+                      <div
+                        onClick={() => handlePeriodChange("")}
+                        className={cn(
+                          "flex flex-col items-center space-y-1 border rounded-lg p-2 cursor-pointer hover:bg-muted",
+                          !filters.period && "bg-primary/10",
+                        )}
+                      >
                         <RadioGroupItem
                           value=""
                           id="period-all"
@@ -220,10 +299,16 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                           htmlFor="period-all"
                           className="cursor-pointer text-sm text-center"
                         >
-                          Toutes périodes
+                          toutes périodes
                         </Label>
                       </div>
-                      <div className="flex flex-col items-center space-y-1 border rounded-lg p-2 cursor-pointer hover:bg-muted">
+                      <div
+                        onClick={() => handlePeriodChange("today")}
+                        className={cn(
+                          "flex flex-col items-center space-y-1 border rounded-lg p-2 cursor-pointer hover:bg-muted",
+                          filters.period === "today" && "bg-primary/10",
+                        )}
+                      >
                         <RadioGroupItem
                           value="today"
                           id="period-today"
@@ -234,10 +319,16 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                           htmlFor="period-today"
                           className="cursor-pointer text-sm text-center"
                         >
-                          Aujourd'hui
+                          aujourd'hui
                         </Label>
                       </div>
-                      <div className="flex flex-col items-center space-y-1 border rounded-lg p-2 cursor-pointer hover:bg-muted">
+                      <div
+                        onClick={() => handlePeriodChange("week")}
+                        className={cn(
+                          "flex flex-col items-center space-y-1 border rounded-lg p-2 cursor-pointer hover:bg-muted",
+                          filters.period === "week" && "bg-primary/10",
+                        )}
+                      >
                         <RadioGroupItem
                           value="week"
                           id="period-week"
@@ -248,10 +339,16 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                           htmlFor="period-week"
                           className="cursor-pointer text-sm text-center"
                         >
-                          Cette semaine
+                          cette semaine
                         </Label>
                       </div>
-                      <div className="flex flex-col items-center space-y-1 border rounded-lg p-2 cursor-pointer hover:bg-muted">
+                      <div
+                        onClick={() => handlePeriodChange("month")}
+                        className={cn(
+                          "flex flex-col items-center space-y-1 border rounded-lg p-2 cursor-pointer hover:bg-muted",
+                          filters.period === "month" && "bg-primary/10",
+                        )}
+                      >
                         <RadioGroupItem
                           value="month"
                           id="period-month"
@@ -262,7 +359,7 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                           htmlFor="period-month"
                           className="cursor-pointer text-sm text-center"
                         >
-                          Ce mois-ci
+                          ce mois-ci
                         </Label>
                       </div>
                     </RadioGroup>
@@ -275,9 +372,10 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
             <Button
               type="submit"
               className="w-full sm:w-auto rounded-full px-4 h-10"
+              disabled={results.isLoading}
             >
               <Search className="h-4 w-4 sm:mr-0 md:mr-2" />
-              <span className="hidden md:inline">Rechercher</span>
+              <span className="hidden md:inline">rechercher</span>
             </Button>
           </div>
         </CardContent>
@@ -289,19 +387,14 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
           {filters.query && (
             <FilterBadge
               label={filters.query}
-              onRemove={() => {
-                actions.setSearchQuery(null);
-                actions.handleSearchSubmit();
-              }}
+              onRemove={() => actions.setSearchQuery(null)}
             />
           )}
           {filters.location && (
             <FilterBadge
               label={filters.location}
               icon={<MapPin className="h-3 w-3" />}
-              onRemove={() => {
-                actions.handleLocationChange(null);
-              }}
+              onRemove={() => actions.handleLocationChange(null)}
             />
           )}
           {filters.cropTypeId && (
@@ -310,29 +403,20 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
                 cropTypes.find((type) => type.id === filters.cropTypeId)
                   ?.name || ""
               }
-              onRemove={() => {
-                actions.setSelectedCropType(null);
-                actions.handleSearchSubmit();
-              }}
+              onRemove={() => actions.setSelectedCropType(null)}
             />
           )}
           {filters.period && (
             <FilterBadge
               label={PERIOD_LABELS[filters.period]}
               icon={<Calendar className="h-3 w-3" />}
-              onRemove={() => {
-                actions.setPeriodValue(null);
-                actions.handleSearchSubmit();
-              }}
+              onRemove={() => actions.setPeriodValue(null)}
             />
           )}
           {filters.radius !== "25" && (
             <FilterBadge
-              label={`Rayon ${filters.radius} km`}
-              onRemove={() => {
-                actions.handleRadiusChange("25");
-                actions.handleSearchSubmit();
-              }}
+              label={`rayon ${filters.radius} km`}
+              onRemove={() => actions.handleRadiusChange("25")}
             />
           )}
 
@@ -341,11 +425,18 @@ export function SearchWizard({ cropTypes, initialFilters }: SearchWizardProps) {
             variant="ghost"
             size="sm"
             className="text-xs text-muted-foreground hover:text-destructive rounded-full h-7 px-3"
-            onClick={actions.resetAllFilters}
+            onClick={handleReset}
           >
             <RotateCcw className="h-3 w-3 mr-1" />
-            Réinitialiser tout
+            réinitialiser tout
           </Button>
+        </div>
+      )}
+
+      {/* affichage des erreurs */}
+      {results.isError && (
+        <div className="text-center p-2 text-destructive text-sm">
+          erreur lors de la recherche. veuillez réessayer.
         </div>
       )}
     </form>

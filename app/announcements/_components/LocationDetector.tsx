@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { LocationService } from "@/lib/geo/location-service";
 
 type LocationDetectorProps = {
   onLocationDetected: (cityName: string) => void;
@@ -12,6 +11,97 @@ type LocationDetectorProps = {
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
   disabled?: boolean;
+};
+
+// service de géolocalisation
+const LocationService = {
+  getCurrentPosition: (
+    highAccuracy = false,
+  ): Promise<{
+    latitude: number;
+    longitude: number;
+  } | null> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        () => {
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: highAccuracy,
+          timeout: 10000,
+          maximumAge: 0,
+        },
+      );
+    });
+  },
+
+  // localisation à partir des coordonnées
+  getLocationInfo: async (
+    latitude: number,
+    longitude: number,
+  ): Promise<{
+    success: boolean;
+    city: string | null;
+    fallbackCity: string | null;
+  }> => {
+    try {
+      // utiliser l'API Nominatim
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la requête de géocodage inverse");
+      }
+
+      const data = await response.json();
+
+      let city = null;
+      let fallbackCity = null;
+
+      if (data.address) {
+        city =
+          data.address.city ||
+          data.address.town ||
+          data.address.village ||
+          data.address.municipality ||
+          data.address.suburb;
+
+        fallbackCity =
+          data.address.county ||
+          data.address.state_district ||
+          data.address.state;
+
+        if (!city && fallbackCity) {
+          city = fallbackCity;
+        }
+
+        if (!city && data.name) {
+          city = data.name;
+        }
+      }
+
+      return {
+        success: !!city,
+        city,
+        fallbackCity,
+      };
+    } catch (error) {
+      console.error("Erreur de géocodage inverse:", error);
+      return { success: false, city: null, fallbackCity: null };
+    }
+  },
 };
 
 export function LocationDetector({
@@ -27,30 +117,30 @@ export function LocationDetector({
     setIsLoading(true);
 
     try {
-      // Utiliser la géolocalisation du navigateur
+      // utiliser la geo du navigateur
       const position = await LocationService.getCurrentPosition(true);
 
       if (!position) {
-        toast.error("Impossible de déterminer votre position actuelle");
+        toast.error("impossible de déterminer votre position actuelle");
         setIsLoading(false);
         return;
       }
 
-      // Obtenir les informations de localisation à partir des coordonnées
+      // localisation a partir des coos
       const locationResult = await LocationService.getLocationInfo(
         position.latitude,
         position.longitude,
       );
 
       if (locationResult.success && locationResult.city) {
-        toast.success(`Position détectée : ${locationResult.city}`);
+        toast.success(`position détectée : ${locationResult.city}`);
         onLocationDetected(locationResult.city);
       } else {
-        toast.error("Impossible de déterminer votre position");
+        toast.error("impossible de déterminer votre localité");
       }
     } catch (error) {
-      console.error("Erreur de géolocalisation:", error);
-      toast.error("Une erreur est survenue lors de la géolocalisation");
+      console.error("erreur de géolocalisation:", error);
+      toast.error("une erreur est survenue lors de la géolocalisation");
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +160,7 @@ export function LocationDetector({
       ) : (
         <MapPin className="h-4 w-4 mr-2" />
       )}
-      {isLoading ? "Localisation..." : "Ma position"}
+      {isLoading ? "localisation..." : "ma position"}
     </Button>
   );
 }
