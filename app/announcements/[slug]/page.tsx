@@ -15,11 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth/helper";
 import { JoinGleaningButton } from "./gleaning/_components/JoinGleaningButton";
-import {
-  getCurrentDate,
-  isFutureDate,
-  getGleaningStatusInfo,
-} from "../_components/types";
+import { getGleaningStatusInfo } from "@/lib/format/gleaningStatus";
+import { isFutureDate, getCurrentDate } from "@/lib/format/date";
 import { Suspense } from "react";
 import { LikeButton } from "../_components/LikeButton";
 import { FavoriteButton } from "../_components/FavoriteButton";

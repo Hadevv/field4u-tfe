@@ -36,7 +36,7 @@ export function JoinGleaningButton({
       }
 
       if (data.success) {
-        router.push(`/announcements/${slug}/gleaning?step=2&maxStep=2`);
+        router.push(`/announcements/${slug}/gleaning`);
         router.refresh();
       }
     },
@@ -49,11 +49,7 @@ export function JoinGleaningButton({
 
   if (userIsParticipant) {
     return (
-      <Button
-        onClick={() =>
-          router.push(`/announcements/${slug}/gleaning?step=2&maxStep=2`)
-        }
-      >
+      <Button onClick={() => router.push(`/announcements/${slug}/gleaning`)}>
         <Check className="size-4" />
         voir le glanage
       </Button>

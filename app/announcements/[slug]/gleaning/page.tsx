@@ -1,7 +1,6 @@
 import type { PageParams } from "@/types/next";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
-import { requiredAuth } from "@/lib/auth/helper";
 import { format, differenceInHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Metadata } from "next";
@@ -14,6 +13,7 @@ import { DonationBlock } from "./_components/DonationBlock";
 import { ChatBlock } from "./_components/ChatBlock";
 import { RulesBlock } from "./_components/RulesBlock";
 import { GleaningProgress } from "./_components/GleaningProgress";
+import { auth } from "@/lib/auth/helper";
 
 type ParticipantInfo = {
   id: string;
@@ -41,15 +41,12 @@ export async function generateMetadata(
 
   return {
     title: `glanage: ${announcement.title} | field4u`,
-    description: "détails du glanage et participants",
+    description: "détails et participation au glanage",
   };
 }
 
-// fonction pour récupérer les données de l'annonce et du glanage
-async function getGleaningData(
-  slug: string,
-  userId: string,
-): Promise<{
+// fonction pour recup les données de l'annonce et du glanage
+async function getGleaningData(slug: string): Promise<{
   announcement: Announcement & {
     owner?: User;
     field: {
@@ -70,6 +67,12 @@ async function getGleaningData(
   participantsCount: number;
   participants: ParticipantInfo[];
 }> {
+  const user = await auth();
+
+  if (!user) {
+    redirect(`/login?callbackUrl=/announcements/${slug}/gleaning`);
+  }
+
   const announcement = await prisma.announcement.findUnique({
     where: { slug },
     include: {
@@ -91,6 +94,21 @@ async function getGleaningData(
     redirect(`/announcements/${slug}`);
   }
 
+  // vérifier si l'utilisateur est participant au glanage
+  const participation = await prisma.participation.findUnique({
+    where: {
+      userId_gleaningId: {
+        userId: user.id,
+        gleaningId: gleaning.id,
+      },
+    },
+  });
+
+  // si l'utilisateur n'est pas participant, rediriger vers la page de l'annonce
+  if (!participation) {
+    redirect(`/announcements/${slug}`);
+  }
+
   // mettre à jour le statut du glanage en fonction des dates
   if (announcement.startDate && announcement.endDate) {
     const now = new Date();
@@ -104,28 +122,20 @@ async function getGleaningData(
       } else if (now > announcement.endDate) {
         currentStatus = "COMPLETED";
       }
-
-      // mettre à jour le statut si nécessaire
+      // TODO: supprimer en prod car tache cron
+      // mettre à jour le statut
       if (currentStatus !== gleaning.status) {
         await prisma.gleaning.update({
           where: { id: gleaning.id },
           data: { status: currentStatus },
         });
-        // mise à jour de l'état local pour l'affichage
+        // mise à jour de l'état
         gleaning.status = currentStatus;
       }
     }
   }
 
-  // vérifier si l'utilisateur est participant au glanage
-  const participation = await prisma.participation.findUnique({
-    where: {
-      userId_gleaningId: {
-        userId,
-        gleaningId: gleaning.id,
-      },
-    },
-  });
+  const userIsParticipant = true;
 
   // nombre de participants au glanage
   const participantsCount = await prisma.participation.count({
@@ -150,7 +160,6 @@ async function getGleaningData(
     },
   });
 
-  // transformer en format plus simple
   const participantsList = participants.map((p) => ({
     id: p.user.id,
     name: p.user.name,
@@ -160,7 +169,7 @@ async function getGleaningData(
   return {
     announcement,
     gleaning,
-    userIsParticipant: !!participation,
+    userIsParticipant,
     participantsCount,
     participants: participantsList,
   };
@@ -170,20 +179,19 @@ export default async function GleaningPage(
   props: PageParams<{ slug: string }>,
 ) {
   const params = await props.params;
-  const user = await requiredAuth();
 
-  return <GleaningContent slug={params.slug} userId={user.id} />;
+  return (
+    <Suspense
+      fallback={<div className="h-96 bg-muted animate-pulse rounded-lg" />}
+    >
+      <GleaningContent slug={params.slug} />
+    </Suspense>
+  );
 }
 
-async function GleaningContent({
-  slug,
-  userId,
-}: {
-  slug: string;
-  userId: string;
-}) {
+async function GleaningContent({ slug }: { slug: string }) {
   const { announcement, gleaning, userIsParticipant, participantsCount } =
-    await getGleaningData(slug, userId);
+    await getGleaningData(slug);
 
   const formattedDate = announcement.startDate
     ? format(announcement.startDate, "EEEE d MMMM à HH:mm", { locale: fr })
@@ -198,7 +206,7 @@ async function GleaningContent({
   return (
     <div className="p-4 pb-16">
       <ContentSection>
-        {/* composant de progression combiné */}
+        {/* composant de progression */}
         <GleaningProgress
           status={gleaning.status}
           startDate={announcement.startDate}
@@ -206,7 +214,7 @@ async function GleaningContent({
           formattedDate={formattedDate}
         />
 
-        {/* navigation par onglets pour gagner de l'espace */}
+        {/* navigation par onglets */}
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="w-full grid grid-cols-3 mb-4">
             <TabsTrigger value="details">détails</TabsTrigger>

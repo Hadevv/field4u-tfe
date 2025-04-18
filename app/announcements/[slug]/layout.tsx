@@ -2,15 +2,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { GleaningStepper } from "@/features/stepper/GleaningStepper";
 import { prisma } from "@/lib/prisma";
 import type { LayoutParams } from "@/types/next";
+import { auth } from "@/lib/auth/helper";
 
 export default async function AnnouncementLayout({
   children,
   params: dynamicParams,
 }: LayoutParams<{ slug: string }>) {
   const params = await dynamicParams;
+  const user = await auth();
 
   // recup le statut du glanage pour l'annonce actuelle
   let gleaningStatus;
+  let isParticipant = false;
+
   try {
     const announcement = await prisma.announcement.findUnique({
       where: {
@@ -19,16 +23,32 @@ export default async function AnnouncementLayout({
       include: {
         gleaning: {
           select: {
+            id: true,
             status: true,
+            participations: user
+              ? {
+                  where: {
+                    userId: user.id,
+                  },
+                  select: {
+                    id: true,
+                  },
+                }
+              : false,
           },
         },
       },
     });
 
     gleaningStatus = announcement?.gleaning?.status;
+
+    // vérifier si l'utilisateur est participant au glanage
+    if (user && announcement?.gleaning?.participations) {
+      isParticipant = announcement.gleaning.participations.length > 0;
+    }
   } catch (error) {
     console.error(
-      "Erreur lors de la récupération du statut du glanage:",
+      "erreur lors de la récupération du statut du glanage:",
       error,
     );
   }
@@ -42,6 +62,7 @@ export default async function AnnouncementLayout({
             <GleaningStepper
               variant="vertical"
               gleaningStatus={gleaningStatus}
+              isParticipant={isParticipant}
             />
           </CardContent>
         </Card>
@@ -52,6 +73,7 @@ export default async function AnnouncementLayout({
             <GleaningStepper
               variant="horizontal"
               gleaningStatus={gleaningStatus}
+              isParticipant={isParticipant}
             />
           </CardContent>
         </Card>

@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import React from "react";
 
 type GleaningStep = {
   id: number;
@@ -35,79 +35,73 @@ type GleaningStepperProps = {
   className?: string;
   steps?: GleaningStep[];
   variant?: "vertical" | "horizontal";
+  gleaningStatus?: string;
+  isParticipant?: boolean;
 };
 
 export function GleaningStepper({
   className,
   steps = defaultSteps,
   variant = "vertical",
+  gleaningStatus,
+  isParticipant = false,
 }: GleaningStepperProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const stepParam = searchParams.get("step");
-  const maxStepParam = searchParams.get("maxStep");
 
-  // état local pour le rendu
-  const [currentStep, setCurrentStep] = useState(
-    stepParam ? parseInt(stepParam) : 1,
-  );
-  const [maxStep, setMaxStep] = useState(
-    maxStepParam ? parseInt(maxStepParam) : 1,
-  );
+  // déterminer l'étape actuelle basée sur le chemin
+  const getCurrentStep = () => {
+    if (pathname.includes("/gleaning/review")) return 3;
+    if (pathname.includes("/gleaning")) return 2;
+    return 1;
+  };
 
-  // mettre à jour les états locaux quand les paramètres changent
-  useEffect(() => {
-    const newStep = stepParam ? parseInt(stepParam) : 1;
-    const newMaxStep = maxStepParam ? parseInt(maxStepParam) : 1;
+  const currentStep = getCurrentStep();
 
-    setCurrentStep(newStep);
-    setMaxStep(newMaxStep);
-  }, [stepParam, maxStepParam]);
+  // vérifier si le glanage est terminé
+  const isCompleted = gleaningStatus === "COMPLETED";
 
-  // déterminer l'étape en fonction du chemin
-  useEffect(() => {
-    if (
-      pathname.includes("/gleaning") &&
-      (!stepParam || parseInt(stepParam || "1") < 2)
-    ) {
-      const params = new URLSearchParams(searchParams);
-      params.set("step", "2");
-
-      const currentMaxStep = parseInt(maxStepParam || "1");
-      if (currentMaxStep < 2) {
-        params.set("maxStep", "2");
-      }
-
-      router.replace(`${pathname}?${params.toString()}`);
-    }
-  }, [pathname, stepParam, maxStepParam, searchParams, router]);
-
+  // construire l'URL de base et les URLs des étapes
   const getBaseUrl = () => {
-    const basePathParts = pathname.split("/");
-    // enlever la dernière partie si nous sommes sur /gleaning
-    if (basePathParts[basePathParts.length - 1] === "gleaning") {
-      basePathParts.pop();
-    }
-    return basePathParts.join("/");
+    const pathParts = pathname.split("/");
+    // trouver l'index de "announcements" et ajouter 1 pour obtenir l'index du slug
+    const slugIndex =
+      pathParts.findIndex((part) => part === "announcements") + 1;
+    // extraire le slug de l'URL
+    const slug = pathParts[slugIndex];
+
+    if (!slug) return "/";
+    return `/announcements/${slug}`;
   };
 
   const getStepUrl = (stepNumber: number) => {
     const baseUrl = getBaseUrl();
-    const url = stepNumber === 1 ? baseUrl : `${baseUrl}/gleaning`;
-    const params = new URLSearchParams();
-    params.set("step", stepNumber.toString());
 
-    const newMaxStep = Math.max(maxStep, stepNumber);
-    params.set("maxStep", newMaxStep.toString());
+    if (stepNumber === 1) return baseUrl;
+    if (stepNumber === 2) return `${baseUrl}/gleaning`;
+    if (stepNumber === 3) return `${baseUrl}/gleaning/review`;
 
-    return `${url}?${params.toString()}`;
+    return baseUrl;
+  };
+
+  // déterminer si une étape est accessible
+  const isStepAccessible = (stepId: number) => {
+    // si le glanage est terminé, toutes les étapes sont accessibles
+    if (isCompleted) return true;
+
+    // l'étape 1 (annonce) est toujours accessible
+    if (stepId === 1) return true;
+
+    // l'étape 2 (glanage) est accessible uniquement si l'utilisateur est participant
+    if (stepId === 2) return isParticipant;
+
+    // l'étape 3 (évaluation) n'est accessible que si le glanage est terminé
+    return false;
   };
 
   const getStepState = (stepId: number) => {
     if (stepId < currentStep) return "completed";
     if (stepId === currentStep) return "current";
-    if (stepId <= maxStep) return "available";
+    if (isStepAccessible(stepId)) return "available";
     return "disabled";
   };
 
@@ -147,7 +141,7 @@ export function GleaningStepper({
               </Link>
             </Button>
           )}
-          {currentStep < 3 && maxStep >= currentStep && (
+          {currentStep < 3 && isStepAccessible(currentStep + 1) && (
             <div className={cn("ml-auto", { "ml-0": currentStep === 1 })}>
               <Button
                 size="sm"
