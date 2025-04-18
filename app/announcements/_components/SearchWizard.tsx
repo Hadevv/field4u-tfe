@@ -30,7 +30,7 @@ import {
   SearchWizardProps,
   Announcement,
   MapAnnouncement,
-} from "./types";
+} from "@/types/announcement";
 
 declare global {
   interface Window {
@@ -158,15 +158,32 @@ export function SearchWizard({
               <PopoverContent className="w-[min(80vw,320px)] p-3" align="start">
                 <div className="space-y-2">
                   <h4 className="font-medium">recherche</h4>
-                  <Input
-                    ref={searchInputRef}
-                    placeholder="rechercher..."
-                    value={filters.query || ""}
-                    onChange={(e) =>
-                      actions.setSearchQuery(e.target.value || null)
-                    }
-                    className="w-full"
-                  />
+                  <div className="relative">
+                    <Input
+                      ref={searchInputRef}
+                      placeholder="rechercher..."
+                      value={filters.query || ""}
+                      onChange={(e) => {
+                        const input = e.target.value;
+                        actions.setSearchQuery(
+                          input.trim() === "" ? null : input.trim(),
+                        );
+                      }}
+                      className="w-full pr-8"
+                      data-cy="search-input"
+                    />
+                    {filters.query && (
+                      <button
+                        type="button"
+                        onClick={() => actions.setSearchQuery(null)}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        aria-label="effacer la recherche"
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">effacer</span>
+                      </button>
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     la recherche s'effectue uniquement sur le titre des annonces
                   </div>

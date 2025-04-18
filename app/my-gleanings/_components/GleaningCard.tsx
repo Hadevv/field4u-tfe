@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { Calendar, Leaf, Star, ArrowRight } from "lucide-react";
-import { getGleaningStatusInfo } from "../../announcements/_components/types";
+import { getGleaningStatusInfo } from "@/lib/format/gleaningStatus";
 import type { GleaningStatus } from "@prisma/client";
 
 type GleaningCardProps = {

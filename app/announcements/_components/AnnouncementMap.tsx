@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Card } from "@/components/ui/card";
-import { MapAnnouncement } from "./types";
+import { MapAnnouncement } from "@/types/announcement";
 
 type MapProps = {
   announcements: MapAnnouncement[];

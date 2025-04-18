@@ -28,10 +28,14 @@ export function LocationField({
   }, []);
 
   // fonction pour effacer la localisation
-  const clearLocation = () => {
+  const clearLocation = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     onChange(null);
 
     if (inputRef.current) {
+      inputRef.current.value = "";
       inputRef.current.focus();
     }
   };
@@ -39,6 +43,10 @@ export function LocationField({
   // gestion du bouton de geo
   const handleLocationDetected = (cityName: string) => {
     onChange(cityName);
+
+    if (inputRef.current) {
+      inputRef.current.value = cityName;
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,29 +67,18 @@ export function LocationField({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h4 className="font-medium">recherche par lieu</h4>
-          {value && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-xs"
-              onClick={clearLocation}
-            >
-              <X className="h-3 w-3 mr-1" />
-              effacer
-            </Button>
-          )}
         </div>
         <div className="relative">
           <Input
             ref={inputRef}
             placeholder="ville, code postal..."
-            value={value || ""}
+            defaultValue={value || ""}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             className="pr-8"
             aria-label="entrer une localisation"
           />
-          {value && (
+          {inputRef.current?.value && (
             <button
               type="button"
               onClick={clearLocation}

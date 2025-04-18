@@ -13,7 +13,7 @@ type LocationDetectorProps = {
   disabled?: boolean;
 };
 
-// service de géolocalisation
+// service de géo
 const LocationService = {
   getCurrentPosition: (
     highAccuracy = false,

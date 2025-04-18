@@ -2,7 +2,7 @@
 
 import { AnnouncementCard } from "./AnnouncementCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Announcement } from "./types";
+import { Announcement } from "@/types/announcement";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Search } from "lucide-react";
 import Link from "next/link";
@@ -23,16 +23,11 @@ function EmptyState() {
         d'ajuster vos filtres ou de réinitialiser votre recherche.
       </p>
       <div className="flex flex-wrap gap-3 justify-center">
-        <Button
-          variant="outline"
-          onClick={() => (window.location.href = "/announcements")}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Réinitialiser les filtres
-        </Button>
-        <Button asChild>
-          <Link href="/map">Explorer la carte</Link>
+        <Button variant="outline" asChild className="flex items-center gap-2">
+          <Link href="/announcements">
+            <RefreshCw className="h-4 w-4" />
+            Réinitialiser les filtres
+          </Link>
         </Button>
       </div>
     </div>

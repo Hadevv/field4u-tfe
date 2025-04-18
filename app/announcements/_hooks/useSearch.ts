@@ -7,7 +7,7 @@ import {
   PeriodFilter,
   Announcement,
   MapAnnouncement,
-} from "../_components/types";
+} from "@/types/announcement";
 
 type SearchResults = {
   announcements: Announcement[];
@@ -17,13 +17,31 @@ type SearchResults = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useSearch = (initialFilters?: SearchFilters) => {
   // états url
-  const [query, setQuery] = useQueryState("q");
-  const [crop, setCrop] = useQueryState("crop");
-  const [period, setPeriod] = useQueryState("period");
+  const [query, setQuery] = useQueryState("q", {
+    shallow: true,
+    throttleMs: 300,
+  });
+
+  const [crop, setCrop] = useQueryState("crop", {
+    shallow: true,
+    throttleMs: 300,
+  });
+
+  const [period, setPeriod] = useQueryState("period", {
+    shallow: true,
+    throttleMs: 300,
+  });
+
   const [radius, setRadius] = useQueryState("radius", {
     defaultValue: "25",
+    shallow: true,
+    throttleMs: 300,
   });
-  const [location, setLocation] = useQueryState("location");
+
+  const [location, setLocation] = useQueryState("location", {
+    shallow: true,
+    throttleMs: 300,
+  });
 
   // états ui
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -63,7 +81,7 @@ export const useSearch = (initialFilters?: SearchFilters) => {
     };
   }, []);
 
-  // fonction pour gérer le changement de localisation
+  // fonction pour gerer le changement de localisation
   const handleLocationChange = useCallback(
     (value: string | null) => {
       if (value === "") {
@@ -92,10 +110,15 @@ export const useSearch = (initialFilters?: SearchFilters) => {
       // éviter la mise en cache
       params.set("_t", Date.now().toString());
 
+      console.log(`Envoi de la requête: /api/search?${params.toString()}`);
       const response = await fetch(`/api/search?${params.toString()}`);
 
       if (!response.ok) {
-        throw new Error(`erreur: ${response.status}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "erreur inconnue" }));
+        const errorMessage = errorData.message || `erreur: ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       const rawData = await response.json();
@@ -109,6 +132,13 @@ export const useSearch = (initialFilters?: SearchFilters) => {
     } catch (err) {
       console.error("erreur de recherche:", err);
       setError(err instanceof Error ? err : new Error("erreur inconnue"));
+
+      const emptyResults = { announcements: [], mapAnnouncements: [] };
+      setResults(emptyResults);
+
+      if (window.updateAnnouncementResults) {
+        window.updateAnnouncementResults(emptyResults);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -126,30 +156,31 @@ export const useSearch = (initialFilters?: SearchFilters) => {
 
     try {
       // reset tous les filtres
-      await Promise.all([
-        setQuery(null),
-        setCrop(null),
-        setPeriod(null),
-        setRadius("25"),
-        setLocation(null),
-      ]);
+      await setQuery(null);
+      await setCrop(null);
+      await setPeriod(null);
+      await setRadius("25");
+      await setLocation(null);
 
       setIsSearchOpen(false);
       setIsLocationOpen(false);
       setIsFilterOpen(false);
 
       // effectuer une recherche sans filtres
-      await fetch(`/api/search?_t=${Date.now()}`)
-        .then((res) => res.json())
-        .then((data) => {
-          const processedData = convertDates(data as SearchResults);
-          setResults(processedData);
+      const response = await fetch(`/api/search?_t=${Date.now()}`);
 
-          // mettre a jour les resultats globaux
-          if (window.updateAnnouncementResults) {
-            window.updateAnnouncementResults(processedData);
-          }
-        });
+      if (!response.ok) {
+        throw new Error(`erreur: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const processedData = convertDates(data as SearchResults);
+      setResults(processedData);
+
+      // mettre a jour les resultats globaux
+      if (window.updateAnnouncementResults) {
+        window.updateAnnouncementResults(processedData);
+      }
     } catch (error) {
       console.error("erreur lors de la réinitialisation:", error);
     } finally {

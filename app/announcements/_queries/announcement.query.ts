@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client";
-import { SearchFilters, PeriodFilter } from "../_components/types";
+/* eslint-disable no-useless-escape */
+import { PeriodFilter } from "@/types/announcement";
 import {
   startOfDay,
   endOfDay,
@@ -9,7 +9,11 @@ import {
   endOfMonth,
 } from "date-fns";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 
+/**
+ * construit une requête pour les périodes
+ */
 export const buildPeriodQuery = (period: PeriodFilter) => {
   if (!period) return {};
 
@@ -68,74 +72,132 @@ export const buildPeriodQuery = (period: PeriodFilter) => {
   };
 };
 
-export const buildDefaultQuery = (): Prisma.AnnouncementWhereInput => {
-  const now = new Date();
-  return {
-    isPublished: true,
-    OR: [
-      { endDate: { gte: now } },
-      {
-        startDate: { lte: now },
-        endDate: { gte: now },
-      },
-    ],
-    gleaning: {
-      status: { not: { equals: "CANCELLED" } },
-    },
-  };
+/**
+ * recherche des annonces par titre avec unaccent
+ */
+export const searchAnnouncementsByTitle = async (searchTerm: string) => {
+  if (!searchTerm || searchTerm.trim() === "") {
+    return [];
+  }
+
+  try {
+    const safeSearchTerm = searchTerm
+      .trim()
+      .replace(/[%_'"\\\[\]]/g, "")
+      .slice(0, 50);
+    const searchParam = `%${safeSearchTerm}%`;
+
+    logger.debug(`Recherche par titre avec terme nettoyé: "${safeSearchTerm}"`);
+
+    // requete sql brute pour garantir l'utilisation de unaccent
+    const results = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT a.id
+      FROM "announcements" a
+      WHERE unaccent(lower(a.title)) LIKE unaccent(lower(${searchParam}))
+    `;
+
+    return results.map((r) => r.id);
+  } catch (error) {
+    logger.error("Erreur lors de la recherche par titre avec unaccent:", error);
+    try {
+      logger.debug("Tentative de fallback sans unaccent");
+      const safeSearchTerm = searchTerm
+        .trim()
+        .replace(/[%_'"\\\[\]]/g, "")
+        .slice(0, 50);
+
+      const fallbackResults = await prisma.announcement.findMany({
+        where: {
+          title: {
+            contains: safeSearchTerm,
+            mode: "insensitive",
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      return fallbackResults.map((r) => r.id);
+    } catch (fallbackError) {
+      logger.error("Erreur lors de la tentative de fallback:", fallbackError);
+      return [];
+    }
+  }
 };
 
-export const buildSearchQuery = (
-  filters: SearchFilters,
-  includeAll: boolean = false,
-): Prisma.AnnouncementWhereInput => {
-  // Base query
-  const where: Prisma.AnnouncementWhereInput = {
-    isPublished: true,
-  };
-  if (includeAll) {
-    return buildDefaultQuery();
+/**
+ * recherche des annonces par localisation avec unaccent
+ */
+export const searchAnnouncementsByLocation = async (locationTerm: string) => {
+  if (!locationTerm || locationTerm.trim() === "") {
+    return [];
   }
 
-  const conditions: Prisma.AnnouncementWhereInput[] = [];
+  try {
+    const safeLocationTerm = locationTerm
+      .trim()
+      .replace(/[%_'"\\\[\]]/g, "")
+      .slice(0, 50);
+    const locationParam = `%${safeLocationTerm}%`;
 
-  // recherche par texte
-  if (filters.query) {
-    const searchTerms = filters.query.toLowerCase().split(" ");
-    conditions.push({
-      OR: searchTerms.map((term) => ({
-        OR: [
-          { title: { contains: term, mode: "insensitive" } },
-          { description: { contains: term, mode: "insensitive" } },
-        ],
-      })),
-    });
+    logger.debug(
+      `Recherche par localisation avec terme nettoyé: "${safeLocationTerm}"`,
+    );
+
+    const results = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT a.id
+      FROM "announcements" a
+      JOIN "fields" f ON a."field_id" = f.id
+      WHERE 
+        unaccent(lower(f.city)) LIKE unaccent(lower(${locationParam}))
+        OR f."postal_code" LIKE ${locationParam}
+    `;
+
+    return results.map((r) => r.id);
+  } catch (error) {
+    logger.error(
+      "Erreur lors de la recherche par location avec unaccent:",
+      error,
+    );
+
+    try {
+      logger.debug("Tentative de fallback sans unaccent pour localisation");
+      const safeLocationTerm = locationTerm
+        .trim()
+        .replace(/[%_'"\\\[\]]/g, "")
+        .slice(0, 50);
+
+      const fallbackResults = await prisma.announcement.findMany({
+        where: {
+          field: {
+            OR: [
+              {
+                city: {
+                  contains: safeLocationTerm,
+                  mode: "insensitive",
+                },
+              },
+              {
+                postalCode: {
+                  contains: safeLocationTerm,
+                },
+              },
+            ],
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      return fallbackResults.map((r) => r.id);
+    } catch (fallbackError) {
+      logger.error(
+        "Erreur lors de la tentative de fallback pour localisation:",
+        fallbackError,
+      );
+      return [];
+    }
   }
-
-  // filtre par type de culture
-  if (filters.cropTypeId) {
-    conditions.push({ cropTypeId: filters.cropTypeId });
-  }
-
-  // recherche par localisation
-  if (filters.location) {
-    const locationTerms = filters.location.toLowerCase().split(" ");
-    conditions.push({
-      field: {
-        OR: locationTerms.map((term) => ({
-          OR: [
-            { city: { contains: term, mode: "insensitive" } },
-            { postalCode: { contains: term } },
-          ],
-        })),
-      },
-    });
-  }
-
-  // combiner toutes les conditions
-  if (conditions.length > 0) {
-    where.AND = conditions;
-  }
-
-  return where;
 };
