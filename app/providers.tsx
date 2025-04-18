@@ -1,6 +1,7 @@
 "use client";
 
 import { Toaster } from "@/components/ui/sonner";
+import { AccountLinkingNotification } from "@/features/auth/AccountLinkingNotification";
 import { DialogManagerRenderer } from "@/features/dialog-manager/dialog-manager-renderer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
@@ -16,6 +17,7 @@ export const Providers = ({ children }: PropsWithChildren) => {
         <QueryClientProvider client={queryClient}>
           <Toaster />
           <DialogManagerRenderer />
+          <AccountLinkingNotification />
           {children}
         </QueryClientProvider>
       </SessionProvider>

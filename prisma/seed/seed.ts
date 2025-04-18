@@ -5,9 +5,7 @@ import {
   UserPlan,
   CropCategory,
   CropSeason,
-  GleaningPeriodStatus,
   GleaningStatus,
-  ParticipationStatus,
   NotificationType,
 } from "@prisma/client";
 import { nanoid } from "nanoid";
@@ -227,70 +225,10 @@ async function seedFields() {
   return await prisma.field.createMany({ data: fields });
 }
 
-async function seedGleaningPeriods() {
-  console.log("🌱 seeding gleaning periods...");
-
-  // périodes de glanage pour toute l'année
-  const periods = [];
-
-  // périodes actuelles et futures (plus nombreuses)
-  for (let i = 0; i < SEED_COUNT; i++) {
-    const now = new Date();
-    const startDate = faker.date.between({
-      from: now,
-      to: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000),
-    });
-
-    const endDate = new Date(startDate);
-    endDate.setDate(
-      startDate.getDate() + faker.number.int({ min: 1, max: 10 }),
-    );
-
-    periods.push({
-      id: nanoid(21),
-      startDate,
-      endDate,
-      status: faker.helpers.arrayElement([
-        GleaningPeriodStatus.AVAILABLE,
-        GleaningPeriodStatus.AVAILABLE,
-        GleaningPeriodStatus.AVAILABLE,
-        GleaningPeriodStatus.PENDING,
-      ]),
-    });
-  }
-
-  // périodes passées (moins nombreuses)
-  for (let i = 0; i < Math.floor(SEED_COUNT / 2); i++) {
-    const now = new Date();
-    const startDate = faker.date.between({
-      from: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000),
-      to: now,
-    });
-
-    const endDate = new Date(startDate);
-    endDate.setDate(
-      startDate.getDate() + faker.number.int({ min: 1, max: 10 }),
-    );
-
-    periods.push({
-      id: nanoid(21),
-      startDate,
-      endDate,
-      status: faker.helpers.arrayElement([
-        GleaningPeriodStatus.CLOSED,
-        GleaningPeriodStatus.NOT_AVAILABLE,
-      ]),
-    });
-  }
-
-  return await prisma.gleaningPeriod.createMany({ data: periods });
-}
-
 async function seedAnnouncements() {
   console.log("🌱 seeding announcements...");
   const fields = await prisma.field.findMany();
   const cropTypes = await prisma.cropType.findMany();
-  const gleaningPeriods = await prisma.gleaningPeriod.findMany();
 
   let count = 0;
 
@@ -314,6 +252,35 @@ async function seedAnnouncements() {
         select: { ownerId: true },
       });
 
+      // générer des dates pour le glanage
+      const now = new Date();
+      let startDate, endDate;
+
+      // 70% des annonces ont des dates dans le futur, 30% dans le passé
+      if (faker.datatype.boolean({ probability: 0.7 })) {
+        // dates futures
+        startDate = faker.date.between({
+          from: now,
+          to: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000),
+        });
+
+        endDate = new Date(startDate);
+        endDate.setDate(
+          startDate.getDate() + faker.number.int({ min: 1, max: 10 }),
+        );
+      } else {
+        // dates passées
+        endDate = faker.date.between({
+          from: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+          to: now,
+        });
+
+        startDate = new Date(endDate);
+        startDate.setDate(
+          endDate.getDate() - faker.number.int({ min: 1, max: 10 }),
+        );
+      }
+
       await prisma.announcement.create({
         data: {
           id: nanoid(21),
@@ -325,16 +292,8 @@ async function seedAnnouncements() {
           cropTypeId: cropType.id,
           quantityAvailable: faker.number.int({ min: 10, max: 500 }),
           ownerId: farm!.ownerId,
-          gleaningPeriods: {
-            create: faker.helpers
-              .arrayElements(
-                gleaningPeriods,
-                faker.number.int({ min: 1, max: 3 }),
-              )
-              .map((period) => ({
-                gleaningPeriodId: period.id,
-              })),
-          },
+          startDate: startDate,
+          endDate: endDate,
         },
       });
     }
@@ -352,8 +311,8 @@ async function seedGleanings() {
       id: nanoid(21),
       announcementId: announcement.id,
       status: faker.helpers.weightedArrayElement([
-        { weight: 3, value: GleaningStatus.PENDING },
-        { weight: 4, value: GleaningStatus.ACCEPTED },
+        { weight: 3, value: GleaningStatus.NOT_STARTED },
+        { weight: 4, value: GleaningStatus.IN_PROGRESS },
         { weight: 2, value: GleaningStatus.COMPLETED },
         { weight: 1, value: GleaningStatus.CANCELLED },
       ]),
@@ -389,33 +348,10 @@ async function seedParticipations() {
     count += participants.length;
 
     for (const participant of participants) {
-      // différents statuts selon l'état du glanage
-      let status;
-      if (gleaning.status === GleaningStatus.PENDING) {
-        status = ParticipationStatus.PENDING;
-      } else if (gleaning.status === GleaningStatus.ACCEPTED) {
-        status = faker.helpers.arrayElement([
-          ParticipationStatus.CONFIRMED,
-          ParticipationStatus.CONFIRMED,
-          ParticipationStatus.CONFIRMED,
-          ParticipationStatus.CANCELLED,
-        ]);
-      } else if (gleaning.status === GleaningStatus.COMPLETED) {
-        status = faker.helpers.arrayElement([
-          ParticipationStatus.ATTENDED,
-          ParticipationStatus.ATTENDED,
-          ParticipationStatus.ATTENDED,
-          ParticipationStatus.NO_SHOW,
-        ]);
-      } else {
-        status = ParticipationStatus.CANCELLED;
-      }
-
       participations.push({
         id: nanoid(21),
         userId: participant.id,
         gleaningId: gleaning.id,
-        status: status,
       });
     }
   }
@@ -439,14 +375,13 @@ async function seedReviews() {
     const participants = await prisma.participation.findMany({
       where: {
         gleaningId: gleaning.id,
-        status: ParticipationStatus.ATTENDED,
       },
     });
 
     for (const participant of participants) {
       if (count >= targetCount) break;
 
-      // 80% de chance qu'un participant ayant assisté laisse un avis
+      // 80% de chance qu'un participant laisse un avis
       if (faker.datatype.boolean({ probability: 0.8 })) {
         count++;
         reviews.push({
@@ -683,9 +618,9 @@ async function seedStatistics() {
   const statistics = [];
 
   for (const user of users) {
-    // compter les vrais participations pour cet utilisateur
+    // compter les participations pour cet utilisateur
     const participations = await prisma.participation.count({
-      where: { userId: user.id, status: ParticipationStatus.ATTENDED },
+      where: { userId: user.id },
     });
 
     // compter les annonces publiées par l'utilisateur
@@ -730,7 +665,6 @@ async function seedAll() {
     await seedCropTypes();
     await seedFarms();
     await seedFields();
-    await seedGleaningPeriods();
     await seedAnnouncements();
     await seedGleanings();
     await seedParticipations();
