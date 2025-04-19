@@ -20,6 +20,9 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
     NEXTAUTH_SECRET: z.string().min(1),
     UPLOADTHING_TOKEN: z.string().min(1),
+    INNGEST_EVENT_KEY: z.string().optional(),
+    INNGEST_SIGNING_KEY: z.string().optional(),
+    USE_MAILHOG: z.enum(["true", "false"]).optional().default("false"),
   },
   /**
    * If you add `client` environment variables, you need to add them to
