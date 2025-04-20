@@ -9,17 +9,18 @@ import {
   type LeaveGleaningResponse,
 } from "./gleaning.schema";
 import { GleaningStatus } from "@prisma/client";
+import { inngest } from "@/lib/inngest/client";
 
 export const joinGleaningAction = authAction
   .schema(JoinGleaningSchema)
   .action(async ({ parsedInput: input, ctx }) => {
     try {
-      // récupérer l'annonce pour vérifier les dates
       const announcement = await prisma.announcement.findUnique({
         where: { id: input.announcementId },
         select: {
           startDate: true,
           endDate: true,
+          title: true,
         },
       });
 
@@ -30,14 +31,11 @@ export const joinGleaningAction = authAction
         };
       }
 
-      // verifier si un glanage existe déjà
       let gleaning = await prisma.gleaning.findUnique({
         where: { announcementId: input.announcementId },
       });
 
-      // si non, créer un nouveau glanage
       if (!gleaning) {
-        // déterminer le statut initial du glanage en fonction des dates
         let initialStatus: GleaningStatus = "NOT_STARTED";
 
         if (announcement.startDate && announcement.endDate) {
@@ -58,7 +56,6 @@ export const joinGleaningAction = authAction
         });
       }
 
-      // verifier si l'utilisateur participe déjà
       const existingParticipation = await prisma.participation.findUnique({
         where: {
           userId_gleaningId: {
@@ -76,13 +73,24 @@ export const joinGleaningAction = authAction
         };
       }
 
-      // ajouter l'utilisateur comme participant
       await prisma.participation.create({
         data: {
           userId: ctx.user.id,
           gleaningId: gleaning.id,
         },
       });
+
+      if (announcement.startDate) {
+        await inngest.send({
+          name: "glanage.joined",
+          data: {
+            gleaningId: gleaning.id,
+            userId: ctx.user.id,
+            announcementId: input.announcementId,
+            startDate: announcement.startDate,
+          },
+        });
+      }
 
       return {
         success: true,
@@ -101,7 +109,6 @@ export const leaveGleaningAction = authAction
   .action(
     async ({ parsedInput: input, ctx }): Promise<LeaveGleaningResponse> => {
       try {
-        // verifier si l'utilisateur participe
         const participation = await prisma.participation.findUnique({
           where: {
             userId_gleaningId: {
@@ -118,7 +125,6 @@ export const leaveGleaningAction = authAction
           };
         }
 
-        // supprimer la participation
         await prisma.participation.delete({
           where: {
             id: participation.id,

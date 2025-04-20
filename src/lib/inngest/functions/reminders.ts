@@ -11,24 +11,27 @@ export const remindersFunction = inngest.createFunction(
   async ({ event, step }) => {
     const { announcementId, startDate, userId } = event.data;
 
-    // calculer le délai avant le début du glanage
+    // calculer le délai
     const now = new Date();
     const gleaningStartDate = new Date(startDate);
     const hoursUntilGleaning = differenceInHours(gleaningStartDate, now);
 
-    // si glanage dans moins de 24h, ne pas envoyer de rappel
-    if (hoursUntilGleaning < 1) {
+    // determiner quand envoyer le rappel
+    let sendAt: Date;
+
+    if (hoursUntilGleaning > 24) {
+      // envoyer 24h avant
+      sendAt = addHours(gleaningStartDate, -24);
+    } else if (hoursUntilGleaning >= 12) {
+      // envoyer 12h avant
+      sendAt = addHours(gleaningStartDate, -12);
+    } else {
+      // trop tard pour envoyer un rappel
       return { success: false, reason: "trop tard pour envoyer un rappel" };
     }
-
-    // rappel 24h avant le glanage
-    const reminderDelay =
-      hoursUntilGleaning > 24 ? 24 : Math.max(1, hoursUntilGleaning - 1);
-    const sendAt = addHours(now, hoursUntilGleaning - reminderDelay);
     await step.sleepUntil("wait-until", sendAt.toISOString());
 
     try {
-      // récupérer les informations de l'annonce séparément
       const announcement = await step.run("get-announcement", async () => {
         return prisma.announcement.findUnique({
           where: { id: announcementId },
@@ -36,7 +39,6 @@ export const remindersFunction = inngest.createFunction(
         });
       });
 
-      // récupérer les informations de l'utilisateur séparément
       const user = await step.run("get-user", async () => {
         return prisma.user.findUnique({
           where: { id: userId },
@@ -61,7 +63,7 @@ export const remindersFunction = inngest.createFunction(
       const baseUrl = getServerUrl();
       const gleaningLink = `${baseUrl}/announcements/${announcement.slug}/gleaning`;
 
-      // envoyer l'email de rappel
+      // envoyer email de rappel
       await step.run("send-reminder-email", async () => {
         await sendEmail({
           to: user.email,

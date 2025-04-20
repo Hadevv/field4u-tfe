@@ -46,10 +46,9 @@ export const cancelationsFunction = inngest.createFunction(
         };
       }
 
-      // construire le lien vers la page d'accueil
       const baseUrl = getServerUrl();
 
-      // envoyer les emails d'annulation à tous les participants
+      // envoyer les emails d'annulation a tous les participants
       const results = await step.run("send-cancelation-emails", async () => {
         const emailPromises = participantEmails.map((email) =>
           sendEmail({

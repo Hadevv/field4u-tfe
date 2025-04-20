@@ -6,7 +6,7 @@ export const inngest = new Inngest({
   id: "field4u",
 });
 
-// définir les types d'événement
+// définir les types d'event
 export type GleaningJoinedEvent = {
   name: "glanage.joined";
   data: {
