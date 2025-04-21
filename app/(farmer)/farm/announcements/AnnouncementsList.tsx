@@ -17,6 +17,7 @@ import {
   Clock,
   MapPin,
   Users,
+  Heart,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -39,6 +40,11 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
       gleaning: {
         include: {
           participations: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
         },
       },
     },
@@ -112,6 +118,11 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
                   <Users className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
                   {participationCount} glaneur
                   {participationCount !== 1 ? "s" : ""}
+                </span>
+                <span className="flex items-center">
+                  <Heart className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
+                  {announcement._count.likes} like
+                  {announcement._count.likes !== 1 ? "s" : ""}
                 </span>
               </CardDescription>
             </CardHeader>

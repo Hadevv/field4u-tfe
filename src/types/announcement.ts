@@ -27,6 +27,7 @@ export type Announcement = {
   createdAt: Date;
   isLiked?: boolean;
   status?: string;
+  likeCount?: number;
 };
 
 export type MapAnnouncement = {

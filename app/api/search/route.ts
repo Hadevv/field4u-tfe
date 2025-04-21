@@ -57,12 +57,12 @@ export const GET = route
         isPublished: true,
       };
 
-      // Ajouter le filtre par type de culture
+      // ajouter le filtre par type de culture
       if (filters.cropTypeId) {
         where.cropTypeId = filters.cropTypeId;
       }
 
-      // Ajouter le filtre par période
+      // ajouter le filtre par période
       if (filters.period) {
         const periodQuery = buildPeriodQuery(filters.period);
         if (Object.keys(periodQuery).length > 0) {
@@ -183,6 +183,11 @@ export const GET = route
                   },
                 }
               : undefined,
+            _count: {
+              select: {
+                likes: true,
+              },
+            },
           },
           orderBy: {
             createdAt: "desc",
@@ -210,6 +215,7 @@ export const GET = route
             endDate,
             status: statusInfo.status,
             isLiked: announcement.likes && announcement.likes.length > 0,
+            likeCount: announcement._count.likes,
           };
         });
 

@@ -33,6 +33,7 @@ export function AnnouncementCard({
     endDate,
     status,
     owner,
+    likeCount,
   } = announcement;
 
   const imageUrl =
@@ -96,12 +97,16 @@ export function AnnouncementCard({
         </div>
 
         <div className="flex-1 p-4 relative">
-          {/* bouton like */}
+          {/* bouton like et compteur */}
           <div
-            className="absolute top-3 right-3"
+            className="absolute top-3 right-3 flex items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <LikeButton announcementId={id} initialLiked={isLiked} />
+            <LikeButton
+              announcementId={id}
+              initialLiked={isLiked}
+              likeCount={likeCount}
+            />
           </div>
           {/* titre et organisme */}
           <div className="mb-3 pr-10">

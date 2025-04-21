@@ -13,20 +13,29 @@ import { useRouter } from "next/navigation";
 type LikeButtonProps = {
   announcementId: string;
   initialLiked: boolean;
+  likeCount?: number;
   className?: string;
 };
 
 export function LikeButton({
   announcementId,
   initialLiked,
+  likeCount,
   className,
 }: LikeButtonProps) {
   const [isLiked, setIsLiked] = useState(Boolean(initialLiked));
+  const [count, setCount] = useState(likeCount || 0);
   const router = useRouter();
 
   useEffect(() => {
     setIsLiked(Boolean(initialLiked));
   }, [initialLiked]);
+
+  useEffect(() => {
+    if (typeof likeCount === "number") {
+      setCount(likeCount);
+    }
+  }, [likeCount]);
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -37,7 +46,6 @@ export function LikeButton({
           }),
         );
       } catch (error) {
-        // Si l'erreur est liée à l'authentification
         if ((error as Error).message?.includes("auth")) {
           toast.error("veuillez vous connecter pour liker cette annonce");
           router.push(`/auth/signin?callbackUrl=/announcements`);
@@ -48,6 +56,10 @@ export function LikeButton({
     },
     onSuccess: (data) => {
       setIsLiked(data.liked);
+      setCount((prevCount) =>
+        data.liked ? prevCount + 1 : Math.max(0, prevCount - 1),
+      );
+
       if (data.liked) {
         toast.success("annonce likée");
       } else {
@@ -67,21 +79,36 @@ export function LikeButton({
     likeMutation.mutate();
   };
 
+  const showCount = typeof count === "number" && count > 0;
+
   return (
     <Button
       variant="outline"
-      size="icon"
+      size={showCount ? "default" : "icon"}
       className={cn(
-        "w-10 h-10 bg-background border shadow-sm hover:bg-background/80",
+        "bg-background border shadow-sm hover:bg-background/80 transition-all",
         isLiked
-          ? "text-rose-500 hover:text-rose-600 border-rose-200"
+          ? "text-destructive hover:text-destructive/80 border-destructive/20"
           : "text-muted-foreground hover:text-foreground",
+        showCount ? "pl-2.5 pr-3 h-10" : "w-10 h-10",
         className,
       )}
       onClick={handleLike}
       disabled={likeMutation.isPending}
     >
-      <Heart className={cn("w-4 h-4", isLiked && "fill-current")} />
+      <div className="flex items-center gap-1.5">
+        <Heart className={cn("w-4 h-4", isLiked && "fill-current")} />
+        {showCount && (
+          <span
+            className={cn(
+              "text-xs font-medium",
+              isLiked ? "text-destructive" : "text-muted-foreground",
+            )}
+          >
+            {count}
+          </span>
+        )}
+      </div>
       <span className="sr-only">
         {isLiked ? "retirer le like" : "liker l'annonce"}
       </span>
