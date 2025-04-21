@@ -15,7 +15,7 @@ import { useSearchParams } from "next/navigation";
 import { z } from "zod";
 
 const FormSchema = z.object({
-  email: z.string(),
+  email: z.string().email("veuillez saisir un email valide"),
 });
 
 export const MagicLinkForm = () => {
@@ -29,6 +29,7 @@ export const MagicLinkForm = () => {
         callbackUrl: searchParams.get("callbackUrl") ?? `${getServerUrl()}/`,
         redirect: true,
         email,
+        verifyCallbackUrl: `/auth/verify-request?email=${encodeURIComponent(email)}`,
       });
     },
   });
@@ -48,14 +49,18 @@ export const MagicLinkForm = () => {
           render={({ field }) => (
             <FormItem className="flex-1">
               <FormControl className="w-full">
-                <Input className="w-full" placeholder="" {...field} />
+                <Input
+                  className="w-full"
+                  placeholder="adresse e-mail"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <LoadingButton loading={mutation.isPending} type="submit" size="sm">
-          Sign in
+          Connexion
         </LoadingButton>
       </Form>
     </>

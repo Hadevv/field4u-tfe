@@ -18,7 +18,11 @@ export default async function OnboardingPage(props: PageParams) {
 
   const user = await requiredAuth();
 
-  console.log("User", user);
+  // Si l'utilisateur n'a pas de nom défini, le rediriger pour le définir d'abord
+  if (!user.name) {
+    logger.info("User has no name, redirecting to name definition");
+    redirect(`/auth/verify-request?email=${encodeURIComponent(user.email)}`);
+  }
 
   if (user?.onboardingCompleted === true) {
     logger.info("User has completed onboarding");

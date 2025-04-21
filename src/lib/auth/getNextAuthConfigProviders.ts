@@ -15,20 +15,20 @@ export const getNextAuthConfigProviders = (): Providers => {
   const providers: Providers = [
     Resend({
       apiKey: env.RESEND_API_KEY,
-      allowDangerousEmailAccountLinking: true,
-      sendVerificationRequest: async ({ identifier: email, url }) => {
+      sendVerificationRequest: async ({ identifier: email, url, provider }) => {
         const result = await sendEmail({
           from: SiteConfig.email.from,
           to: email,
-          subject: `Sign in to ${SiteConfig.domain}`,
+          subject: `Connexion à ${SiteConfig.domain}`,
           react: MagicLinkMail({
-            url,
+            url, // Utiliser l'URL originale pour le lien dans l'email
           }),
         });
 
-        if (result.error) {
-          logger.error("Auth Resend Provider Error", result.error);
-          throw new Error(`Failed to send email: ${result.error}`);
+        // verifie si le resultat est de type CreateEmailResponse et contient une erreur
+        if ("error" in result && result.error) {
+          logger.error("erreur provider resend auth", result.error);
+          throw new Error(`echec envoi email: ${result.error}`);
         }
       },
     }),

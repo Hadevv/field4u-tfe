@@ -36,7 +36,7 @@ export const SignInCredentialsAndMagicLinkForm = () => {
     schema: LoginCredentialsFormScheme,
   });
   const searchParams = useSearchParams();
-  const [isUsingCredentials, setIsUsingCredentials] = useLocalStorage(
+  const [isUsingCredentials, setIsUsingCredentials] = useLocalStorage<boolean>(
     "sign-in-with-credentials",
     false,
   );
@@ -48,39 +48,29 @@ export const SignInCredentialsAndMagicLinkForm = () => {
     setAuthError(null);
 
     try {
-      const result = await signIn(
-        isUsingCredentials ? "credentials" : "resend",
-        {
+      if (isUsingCredentials) {
+        // connexion avec identifiants
+        const result = await signIn("credentials", {
           email: values.email,
           password: values.password,
           redirect: false,
-        },
-      );
-
-      if (result?.error) {
-        // utiliser l'api pour obtenir un message d'erreur plus détaillé
-        const errorResponse = await fetch("/api/auth/error-handler", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ error: result.error }),
         });
 
-        const errorData = await errorResponse.json();
-        setAuthError(
-          errorData.errorMessage ||
-            "échec de l'authentification, veuillez réessayer",
-        );
-        setIsSubmitting(false);
-        return;
-      }
+        if (result?.error) {
+          handleAuthError(result.error);
+          return;
+        }
 
-      const session = await getSession();
-      if (session?.user?.onboardingCompleted) {
-        window.location.href = searchParams.get("callbackUrl") ?? "/";
+        redirectAfterAuth();
       } else {
-        window.location.href = "/auth/onboarding";
+        // connexion avec magic link
+        await signIn("resend", {
+          email: values.email,
+          redirect: true,
+          callbackUrl: "/auth/onboarding",
+          // ajouter des paramètres pour la page verify-request
+          verifyCallbackUrl: `/auth/verify-request?email=${encodeURIComponent(values.email)}`,
+        });
       }
     } catch (error) {
       setAuthError(
@@ -89,6 +79,32 @@ export const SignInCredentialsAndMagicLinkForm = () => {
       setIsSubmitting(false);
     }
   }
+
+  const handleAuthError = async (error: string) => {
+    const errorResponse = await fetch("/api/auth/error-handler", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ error }),
+    });
+
+    const errorData = await errorResponse.json();
+    setAuthError(
+      errorData.errorMessage ||
+        "échec de l'authentification, veuillez réessayer",
+    );
+    setIsSubmitting(false);
+  };
+
+  const redirectAfterAuth = async () => {
+    const session = await getSession();
+    if (session?.user?.onboardingCompleted) {
+      window.location.href = searchParams.get("callbackUrl") ?? "/";
+    } else {
+      window.location.href = "/auth/onboarding";
+    }
+  };
 
   return (
     <Form form={form} onSubmit={onSubmit} className="max-w-lg space-y-4">
@@ -106,7 +122,7 @@ export const SignInCredentialsAndMagicLinkForm = () => {
           <FormItem>
             {isUsingCredentials ? <FormLabel>Email</FormLabel> : null}
             <FormControl>
-              <Input placeholder="john@doe.com" {...field} />
+              <Input placeholder="adresse e-mail" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -119,7 +135,7 @@ export const SignInCredentialsAndMagicLinkForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Mot de passe</FormLabel>
                 <FormControl>
                   <Input type="password" {...field} />
                 </FormControl>
@@ -138,17 +154,19 @@ export const SignInCredentialsAndMagicLinkForm = () => {
             setIsUsingCredentials(true);
           }}
         >
-          Use password
+          utiliser un mot de passe
         </Typography>
       )}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isUsingCredentials ? "Login with Password" : "Login with MagicLink"}
+        {isUsingCredentials
+          ? "connexion avec mot de passe"
+          : "connexion avec un lien magique"}
       </Button>
 
       {isUsingCredentials && (
         <Typography variant="small">
-          Forgot password ?{" "}
+          mot de passe oublié ?{" "}
           <Typography
             variant="link"
             as="button"
@@ -157,7 +175,7 @@ export const SignInCredentialsAndMagicLinkForm = () => {
               setIsUsingCredentials(false);
             }}
           >
-            Login with magic link
+            connexion avec un lien magique
           </Typography>
         </Typography>
       )}

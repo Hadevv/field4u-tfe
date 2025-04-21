@@ -50,8 +50,11 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
         include: { accounts: true },
       });
 
-      // si aucun utilisateur existant, continue normalement
-      if (!existingUser) return true;
+      // si aucun utilisateur existant, on continue normalement
+      // le nom sera vérifié après la connexion sur la page verify-request
+      if (!existingUser) {
+        return true;
+      }
 
       // si l'utilisateur existe et que le compte n'existe pas encore
       if (existingUser && account && account.provider) {
@@ -79,7 +82,7 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
 
           // définir un cookie pour indiquer qu'un compte a été lié
           const cookieStore = cookies();
-          cookieStore.set("account-linked", "true", {
+          (await cookieStore).set("account-linked", "true", {
             maxAge: 60 * 5, // 5 minutes
             path: "/",
           });
@@ -91,7 +94,6 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
           return true;
         }
 
-        // retourne l'id de l'utilisateur existant pour la connexion
         return true;
       }
 

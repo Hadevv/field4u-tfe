@@ -8,3 +8,5 @@ pg_dump -h pg.neon.tech -d Field4u -f dump.sql
 - [Change 2]
 
 https://dashboard.stripe.com/test/settings/billing/portal
+
+http://localhost:8025
