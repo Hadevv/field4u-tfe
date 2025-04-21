@@ -205,74 +205,72 @@ async function GleaningContent({ slug }: { slug: string }) {
 
   return (
     <div className="p-4 pb-16">
-      <ContentSection>
-        {/* composant de progression */}
-        <GleaningProgress
-          status={gleaning.status}
-          startDate={announcement.startDate}
-          endDate={announcement.endDate}
-          formattedDate={formattedDate}
-        />
+      {/* composant de progression */}
+      <GleaningProgress
+        status={gleaning.status}
+        startDate={announcement.startDate}
+        endDate={announcement.endDate}
+        formattedDate={formattedDate}
+      />
 
-        {/* navigation par onglets */}
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList className="w-full grid grid-cols-3 mb-4">
-            <TabsTrigger value="details">détails</TabsTrigger>
-            <TabsTrigger value="chat">discussions</TabsTrigger>
-            <TabsTrigger value="rules">règles</TabsTrigger>
-          </TabsList>
+      {/* navigation par onglets */}
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList className="w-full grid grid-cols-3 mb-4">
+          <TabsTrigger value="details">détails</TabsTrigger>
+          <TabsTrigger value="chat">discussions</TabsTrigger>
+          <TabsTrigger value="rules">règles</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="details" className="mt-0">
-            <div className="space-y-4">
-              <Suspense
-                fallback={
-                  <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
-                }
-              >
-                <LocationSection
-                  fieldName={announcement.field.name}
-                  city={announcement.field.city}
-                  postalCode={announcement.field.postalCode}
-                  latitude={announcement.field.latitude}
-                  longitude={announcement.field.longitude}
-                  showLocation={showRestrictedContent}
-                />
-              </Suspense>
-
-              <Suspense
-                fallback={
-                  <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
-                }
-              >
-                <DonationSection />
-              </Suspense>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="chat" className="mt-0">
+        <TabsContent value="details" className="mt-0">
+          <div className="space-y-4">
             <Suspense
               fallback={
-                <div className="h-[300px] bg-muted animate-pulse rounded-lg" />
+                <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
               }
             >
-              <ChatSection
-                showChat={showRestrictedContent}
-                participantsCount={participantsCount}
+              <LocationSection
+                fieldName={announcement.field.name}
+                city={announcement.field.city}
+                postalCode={announcement.field.postalCode}
+                latitude={announcement.field.latitude}
+                longitude={announcement.field.longitude}
+                showLocation={showRestrictedContent}
               />
             </Suspense>
-          </TabsContent>
 
-          <TabsContent value="rules" className="mt-0">
             <Suspense
               fallback={
-                <div className="h-[200px] bg-muted animate-pulse rounded-lg" />
+                <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
               }
             >
-              <RulesSection />
+              <DonationSection />
             </Suspense>
-          </TabsContent>
-        </Tabs>
-      </ContentSection>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="chat" className="mt-0">
+          <Suspense
+            fallback={
+              <div className="h-[300px] bg-muted animate-pulse rounded-lg" />
+            }
+          >
+            <ChatSection
+              showChat={showRestrictedContent}
+              participantsCount={participantsCount}
+            />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="rules" className="mt-0">
+          <Suspense
+            fallback={
+              <div className="h-[200px] bg-muted animate-pulse rounded-lg" />
+            }
+          >
+            <RulesSection />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

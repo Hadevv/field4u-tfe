@@ -17,7 +17,6 @@ export async function GET() {
       },
     });
 
-    // vérifier si l'utilisateur a un mot de passe
     const hasPassword = !!user.hashedPassword;
 
     const providers = [
@@ -28,7 +27,6 @@ export async function GET() {
       })),
     ];
 
-    // ajouter le provider d'identifiants s'il existe
     if (hasPassword) {
       providers.push({
         id: "credentials",

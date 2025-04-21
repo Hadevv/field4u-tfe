@@ -40,7 +40,8 @@ export default function SubscribtionFailedEmail() {
       </Section>
       <Text className="text-lg leading-6">
         Best,
-        <br />- {SiteConfig.maker.name} from {SiteConfig.title}
+        <br />
+        {SiteConfig.title}
       </Text>
     </EmailLayout>
   );

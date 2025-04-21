@@ -12,7 +12,7 @@ export const SiteConfig = {
     primary: "F5F3EE",
   },
   email: {
-    from: "Field4u <noreply@field4u.app>", // Replace this with your domaine email
+    from: "Field4u <noreply@field4u.app>",
     contact: "contact@field4u.app",
   },
   auth: {

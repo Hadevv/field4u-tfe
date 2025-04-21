@@ -54,7 +54,7 @@ export default async function AnnouncementLayout({
   }
 
   return (
-    <div className="container mx-auto pt-4">
+    <div className="container mx-auto pt-4 sm:pt-6">
       <div className="flex flex-col md:flex-row gap-6">
         {/* stepper sur le côté gauche */}
         <Card className="hidden md:block w-full md:w-[240px] bg-blanc-special overflow-hidden shadow-sm">

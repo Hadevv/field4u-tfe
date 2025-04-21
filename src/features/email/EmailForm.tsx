@@ -102,7 +102,6 @@ export const EmailForm = ({
               />
               <LoadingButton
                 className="px-4 py-6 text-lg font-normal"
-                variant="invert"
                 loading={submit.isPending}
               >
                 {submitButtonLabel}

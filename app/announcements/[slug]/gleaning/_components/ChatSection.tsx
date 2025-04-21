@@ -113,7 +113,11 @@ export function ChatSection({ showChat, participantsCount }: ChatSectionProps) {
                   className="bg-background text-foreground border-border"
                   onKeyDown={(e) => e.key === "Enter" && handleSendGroup()}
                 />
-                <Button className="shrink-0" onClick={handleSendGroup}>
+                <Button
+                  className="shrink-0"
+                  variant="secondary"
+                  onClick={handleSendGroup}
+                >
                   <MessageSquareText className="h-4 w-4" />
                 </Button>
               </div>
@@ -144,7 +148,11 @@ export function ChatSection({ showChat, participantsCount }: ChatSectionProps) {
                   className="bg-background text-foreground border-border"
                   onKeyDown={(e) => e.key === "Enter" && handleSendOwner()}
                 />
-                <Button className="shrink-0" onClick={handleSendOwner}>
+                <Button
+                  className="shrink-0"
+                  variant="secondary"
+                  onClick={handleSendOwner}
+                >
                   <MessageSquareHeart className="h-4 w-4" />
                 </Button>
               </div>
@@ -166,7 +174,7 @@ export function ChatSection({ showChat, participantsCount }: ChatSectionProps) {
       </CardContent>
       <CardFooter>
         <Button
-          variant="outline"
+          variant="secondary"
           className="w-full flex items-center justify-center"
         >
           <Users className="h-4 w-4 mr-2" />

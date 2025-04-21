@@ -1,13 +1,9 @@
 import { Typography } from "@/components/ui/typography";
-import { SectionLayout } from "../landing/SectionLayout";
 import { EmailForm } from "./EmailForm";
 
 export const EmailFormSection = () => {
   return (
-    <SectionLayout
-      size="lg"
-      className="relative flex w-full flex-col items-center gap-16"
-    >
+    <div className="relative flex w-full flex-col items-center gap-16">
       <div className="relative m-auto flex max-w-xl flex-col gap-4 text-center">
         <Typography
           variant="small"
@@ -31,6 +27,6 @@ export const EmailFormSection = () => {
           />
         </div>
       </div>
-    </SectionLayout>
+    </div>
   );
 };

@@ -17,11 +17,17 @@ export const EmailLayout = ({ children }: PropsWithChildren) => {
   const baseUrl = getServerUrl();
   return (
     <Tailwind
-      config={
-        {
-          // Theme can go here
-        }
-      }
+      config={{
+        theme: {
+          colors: {
+            primary: "#000000",
+            secondary: "#000000",
+            accent: "#000000",
+            background: "#000000",
+            text: "#000000",
+          },
+        },
+      }}
     >
       <Html>
         <Head />

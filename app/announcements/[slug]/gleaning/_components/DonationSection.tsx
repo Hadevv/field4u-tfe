@@ -54,6 +54,7 @@ export function DonationSection() {
         </div>
         <Button
           className="w-full"
+          variant="secondary"
           onClick={() => donation.mutate()}
           disabled={donation.isPending}
         >

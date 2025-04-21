@@ -20,7 +20,8 @@ export default function VerifyEmail({ url }: { url: string }) {
       </Section>
       <Text className="text-lg leading-6">
         Best,
-        <br />- {SiteConfig.maker.name} from {SiteConfig.title}
+        <br />
+        {SiteConfig.title}
       </Text>
     </EmailLayout>
   );
