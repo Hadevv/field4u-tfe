@@ -1,12 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { cookies } from "next/headers";
 import { AUTH_COOKIE_NAME } from "@/lib/auth/auth.const";
-import { prisma } from "@/lib/prisma";
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (
+function shouldSkipRoute(pathname: string): boolean {
+  return (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/static") ||
@@ -16,32 +12,43 @@ export async function middleware(request: NextRequest) {
     pathname === "/auth/signup" ||
     pathname === "/auth/signout" ||
     pathname === "/auth/error"
-  ) {
+  );
+}
+
+function isProtectedRoute(pathname: string): boolean {
+  return (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/my-gleanings") ||
+    pathname.startsWith("/announcements/create") ||
+    pathname.startsWith("/(account)") ||
+    pathname.startsWith("/(farmer)")
+  );
+}
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (shouldSkipRoute(pathname)) {
     return NextResponse.next();
   }
   try {
-    const cookieStore = cookies();
-    const sessionToken = (await cookieStore).get(AUTH_COOKIE_NAME)?.value;
+    const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
-    if (sessionToken) {
-      const session = await prisma.session.findUnique({
-        where: {
-          sessionToken,
-        },
-        include: {
-          user: true,
-        },
-      });
+    if (isProtectedRoute(pathname) && !sessionToken) {
+      const redirectUrl = new URL("/auth/signin", request.url);
 
-      if (session?.user && session.user.name === null) {
-        const redirectUrl = new URL("/auth/verify-request", request.url);
-        redirectUrl.searchParams.set("email", session.user.email);
-        return NextResponse.redirect(redirectUrl);
-      }
+      redirectUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (sessionToken && pathname === "/auth") {
+      const redirectUrl = new URL("/", request.url);
+      return NextResponse.redirect(redirectUrl);
     }
   } catch (error) {
     console.error("Erreur dans le middleware:", error);
   }
+
   return NextResponse.next();
 }
 
