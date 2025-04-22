@@ -14,20 +14,19 @@ import { useEffect } from "react";
 
 export default function RouteError({ error, reset }: ErrorParams) {
   useEffect(() => {
-    // Log the error to an error reporting service
     logger.error(error);
   }, [error]);
 
   return (
     <Layout>
       <LayoutHeader>
-        <LayoutTitle>Error</LayoutTitle>
+        <LayoutTitle>Erreur</LayoutTitle>
       </LayoutHeader>
       <LayoutContent>
         <Card variant="error">
           <CardHeader>
             <CardTitle>
-              Sorry, something went wrong. Please try again later.
+              Une erreur est survenue. Veuillez réessayer plus tard.
             </CardTitle>
           </CardHeader>
           <CardFooter>
