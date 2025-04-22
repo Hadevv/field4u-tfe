@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter, usePathname } from "next/navigation";
 import { CreateEditFieldDialog } from "./CreateEditFieldDialog";
 import { Field, User, Farm } from "@prisma/client";
+import { exportToExcel } from "@/lib/export/table-export";
 import {
   Search,
   ChevronLeft,
@@ -88,6 +89,37 @@ export function FieldTableContainer({
     });
   };
 
+  const handleExport = () => {
+    const fieldsToExport = fields.map((field) => {
+      return {
+        ...field,
+        ownerName: field.owner?.name || "non défini",
+        farmName: field.farm?.name || "non défini",
+      };
+    });
+
+    const excludedFields = ["owner", "farm"];
+    const customHeaders = {
+      id: "ID",
+      name: "nom",
+      city: "ville",
+      postalCode: "code postal",
+      surface: "superficie (ha)",
+      latitude: "latitude",
+      longitude: "longitude",
+      ownerName: "propriétaire",
+      farmName: "ferme",
+      createdAt: "date création",
+    };
+
+    exportToExcel(
+      fieldsToExport,
+      "champs-export",
+      excludedFields,
+      customHeaders,
+    );
+  };
+
   return (
     <div className="space-y-6 w-full">
       <Card>
@@ -121,7 +153,7 @@ export function FieldTableContainer({
               variant="outline"
               size="sm"
               className="h-9"
-              onClick={() => {}}
+              onClick={handleExport}
             >
               <FileDown className="size-4 mr-2" />
               exporter

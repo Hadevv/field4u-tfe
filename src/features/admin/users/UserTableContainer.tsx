@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter, usePathname } from "next/navigation";
 import { CreateEditUserDialog } from "./CreateEditUserDialog";
 import { User, UserRole } from "@prisma/client";
+import { exportToExcel } from "@/lib/export/table-export";
 import {
   Search,
   ChevronLeft,
@@ -110,6 +111,27 @@ export function UserTableContainer({
     });
   };
 
+  const handleExport = () => {
+    const excludedFields = [
+      "hashedPassword",
+      "stripeCustomerId",
+      "resendContactId",
+    ];
+    const customHeaders = {
+      id: "ID",
+      name: "nom",
+      email: "email",
+      role: "rôle",
+      createdAt: "date création",
+      city: "ville",
+      postalCode: "code postal",
+      emailVerified: "email vérifié",
+      onboardingCompleted: "onboarding complété",
+    };
+
+    exportToExcel(users, "users-export", excludedFields, customHeaders);
+  };
+
   return (
     <div className="space-y-6 w-full">
       <Card>
@@ -143,7 +165,7 @@ export function UserTableContainer({
               variant="outline"
               size="sm"
               className="h-9"
-              onClick={() => {}}
+              onClick={handleExport}
             >
               <FileDown className="size-4 mr-2" />
               exporter

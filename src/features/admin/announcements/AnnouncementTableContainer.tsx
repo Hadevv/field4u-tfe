@@ -39,6 +39,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { exportToExcel } from "@/lib/export/table-export";
+import { format } from "date-fns";
 
 type AnnouncementWithRelations = Announcement & {
   field: Field & {
@@ -123,7 +125,7 @@ export function AnnouncementTableContainer({
   };
 
   const handleStatusChange = (value: string) => {
-    console.log("Changement de statut:", value); // Pour debug
+    console.log("Changement de statut:", value);
     setStatusFilter(value);
     startTransition(() => {
       const params = new URLSearchParams();
@@ -156,6 +158,67 @@ export function AnnouncementTableContainer({
     startTransition(() => {
       router.push(pathname);
     });
+  };
+
+  const handleExport = () => {
+    const announcementsToExport = announcements.map((announcement) => {
+      return {
+        ...announcement,
+        fieldName: announcement.field.name || "sans nom",
+        fieldCity: announcement.field.city,
+        fieldPostalCode: announcement.field.postalCode,
+        ownerName: announcement.owner.name || announcement.owner.email,
+        cropTypeName: announcement.cropType.name,
+        status:
+          announcement.gleaning?.status ||
+          (announcement.isPublished ? "PUBLISHED" : "DRAFT"),
+        startDate: announcement.startDate
+          ? format(new Date(announcement.startDate), "dd/MM/yyyy")
+          : "non défini",
+        endDate: announcement.endDate
+          ? format(new Date(announcement.endDate), "dd/MM/yyyy")
+          : "non défini",
+        createdAt: format(new Date(announcement.createdAt), "dd/MM/yyyy"),
+      };
+    });
+
+    const excludedFields = [
+      "field",
+      "owner",
+      "cropType",
+      "gleaning",
+      "slug",
+      "qrCode",
+      "fieldId",
+      "cropTypeId",
+      "ownerId",
+      "isPublished",
+      "updatedAt",
+      "images",
+    ];
+
+    const customHeaders = {
+      id: "id",
+      title: "titre",
+      description: "description",
+      quantityAvailable: "quantité disponible",
+      fieldName: "nom du champ",
+      fieldCity: "ville",
+      fieldPostalCode: "code postal",
+      ownerName: "propriétaire",
+      cropTypeName: "type de culture",
+      status: "statut",
+      startDate: "date de début",
+      endDate: "date de fin",
+      createdAt: "date de création",
+    };
+
+    exportToExcel(
+      announcementsToExport,
+      "annonces-export",
+      excludedFields,
+      customHeaders,
+    );
   };
 
   const hasFilters = searchTerm || statusFilter !== "all";
@@ -193,7 +256,7 @@ export function AnnouncementTableContainer({
               variant="outline"
               size="sm"
               className="h-9"
-              onClick={() => {}}
+              onClick={handleExport}
             >
               <FileDown className="size-4 mr-2" />
               exporter

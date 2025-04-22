@@ -6,6 +6,7 @@ import { useState, useEffect, useTransition, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter, usePathname } from "next/navigation";
+import { exportToExcel } from "@/lib/export/table-export";
 import {
   Search,
   ChevronLeft,
@@ -110,6 +111,43 @@ export function GleaningsTableContainer({
 
   const hasFilters = searchTerm || statusFilter;
 
+  const handleExport = () => {
+    // statut lisible pour l'export
+    const statusMap: Record<string, string> = {
+      NOT_STARTED: "non commencé",
+      IN_PROGRESS: "en cours",
+      COMPLETED: "terminé",
+      CANCELLED: "annulé",
+    };
+
+    // préparation des données pour export
+    const gleaningsToExport = gleanings.map((gleaning) => {
+      // obtenir le titre de l'annonce si présent
+      const announcementTitle = gleaning.announcement?.title || "non défini";
+      const field = gleaning.announcement?.field?.name || "non défini";
+
+      return {
+        id: gleaning.id,
+        status: statusMap[gleaning.status] || gleaning.status,
+        announcementTitle,
+        field,
+        createdAt: gleaning.createdAt,
+        participantsCount: gleaning.participations?.length || 0,
+      };
+    });
+
+    const customHeaders = {
+      id: "ID",
+      status: "statut",
+      announcementTitle: "titre annonce",
+      field: "champ",
+      createdAt: "date création",
+      participantsCount: "nombre participants",
+    };
+
+    exportToExcel(gleaningsToExport, "glanages-export", [], customHeaders);
+  };
+
   return (
     <div className="space-y-6 w-full">
       <Card>
@@ -143,7 +181,7 @@ export function GleaningsTableContainer({
               variant="outline"
               size="sm"
               className="h-9"
-              onClick={() => {}}
+              onClick={handleExport}
             >
               <FileDown className="size-4 mr-2" />
               exporter
