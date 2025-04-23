@@ -44,9 +44,18 @@ export function JoinGleaningButton({
       }
     },
     onError: (error) => {
-      toast.error("erreur", {
-        description: error.message,
-      });
+      if (
+        error.message?.includes("Session not found") ||
+        error.message?.includes("Session is not valid") ||
+        error.message?.toLowerCase().includes("auth")
+      ) {
+        toast.error("veuillez vous connecter pour rejoindre le glanage");
+        router.push(`/auth/signin?callbackUrl=/announcements/${slug}`);
+      } else {
+        toast.error("erreur", {
+          description: error.message,
+        });
+      }
     },
   });
 

@@ -4,21 +4,22 @@ import { DashboardNavigation } from "./DashboardNavigation";
 import { isAdmin, auth } from "@/lib/auth/helper";
 import { redirect } from "next/navigation";
 
+export const metadata = {
+  title: "Administration Field4u",
+  description: "Gestion administrative de la plateforme Field4u",
+};
+
 export default async function RouteLayout(
   props: LayoutParams<Record<string, never>>,
 ) {
   try {
-    // Vérifier que l'utilisateur est bien un administrateur
     await isAdmin();
   } catch (error) {
-    // Rediriger vers la page d'accueil si ce n'est pas un admin
     redirect("/");
   }
 
-  // Récupérer les informations de l'utilisateur
   const user = await auth();
 
-  // Passer l'utilisateur au composant DashboardNavigation
   return (
     <DashboardNavigation user={user}>{props.children}</DashboardNavigation>
   );

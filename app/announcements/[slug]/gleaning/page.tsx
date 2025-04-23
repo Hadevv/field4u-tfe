@@ -4,7 +4,6 @@ import { notFound, redirect } from "next/navigation";
 import { format, differenceInHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Metadata } from "next";
-import { ContentSection } from "@/features/layout/ContentSection";
 import { Suspense } from "react";
 import { Announcement, Gleaning, User } from "@prisma/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -70,7 +69,7 @@ async function getGleaningData(slug: string): Promise<{
   const user = await auth();
 
   if (!user) {
-    redirect(`/login?callbackUrl=/announcements/${slug}/gleaning`);
+    redirect(`/auth/login?callbackUrl=/announcements/${slug}/gleaning`);
   }
 
   const announcement = await prisma.announcement.findUnique({

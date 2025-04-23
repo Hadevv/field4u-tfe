@@ -1,12 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { cookies } from "next/headers";
 import { AUTH_COOKIE_NAME } from "@/lib/auth/auth.const";
-import { prisma } from "@/lib/prisma";
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (
+function shouldSkipRoute(pathname: string): boolean {
+  return (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/static") ||
@@ -15,33 +11,71 @@ export async function middleware(request: NextRequest) {
     pathname === "/auth/signin" ||
     pathname === "/auth/signup" ||
     pathname === "/auth/signout" ||
-    pathname === "/auth/error"
-  ) {
+    pathname === "/auth/error" ||
+    pathname === "/auth/onboarding"
+  );
+}
+
+function isProtectedRoute(pathname: string): boolean {
+  return (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/my-gleanings") ||
+    pathname.startsWith("/announcements/create") ||
+    pathname.startsWith("/(account)") ||
+    pathname.startsWith("/(farmer)")
+  );
+}
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (shouldSkipRoute(pathname)) {
     return NextResponse.next();
   }
-  try {
-    const cookieStore = cookies();
-    const sessionToken = (await cookieStore).get(AUTH_COOKIE_NAME)?.value;
 
-    if (sessionToken) {
-      const session = await prisma.session.findUnique({
-        where: {
-          sessionToken,
-        },
-        include: {
-          user: true,
+  try {
+    const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+
+    if (isProtectedRoute(pathname) && !sessionToken) {
+      const redirectUrl = new URL("/auth/signin", request.url);
+      redirectUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (sessionToken && pathname === "/auth") {
+      const redirectUrl = new URL("/", request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (
+      sessionToken &&
+      !pathname.startsWith("/auth/") &&
+      !pathname.startsWith("/api/")
+    ) {
+      const sessionUrl = new URL("/api/v1/auth/session", request.url);
+      const response = await fetch(sessionUrl.toString(), {
+        headers: {
+          cookie: request.headers.get("cookie") || "",
         },
       });
 
-      if (session?.user && session.user.name === null) {
-        const redirectUrl = new URL("/auth/verify-request", request.url);
-        redirectUrl.searchParams.set("email", session.user.email);
-        return NextResponse.redirect(redirectUrl);
+      if (response.ok) {
+        const userData = await response.json();
+
+        if (userData && userData.onboardingCompleted === false) {
+          console.log("redirection vers onboarding pour:", userData.email);
+          const onboardingUrl = new URL("/auth/onboarding", request.url);
+          if (pathname !== "/") {
+            onboardingUrl.searchParams.set("callbackUrl", pathname);
+          }
+          return NextResponse.redirect(onboardingUrl);
+        }
       }
     }
   } catch (error) {
-    console.error("Erreur dans le middleware:", error);
+    console.error("erreur dans le middleware:", error);
   }
+
   return NextResponse.next();
 }
 

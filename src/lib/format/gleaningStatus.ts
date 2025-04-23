@@ -59,15 +59,12 @@ export const getGleaningStatusInfo = (
     };
   }
 
-  const oneDayBefore = new Date(startDate);
-  oneDayBefore.setDate(oneDayBefore.getDate() - 1);
-
-  if (now >= oneDayBefore) {
+  if (now < startDate) {
     return {
       status: "NOT_STARTED",
-      label: "bientôt",
-      color: "bg-yellow-100 text-yellow-800",
-      step: 1,
+      label: "à venir",
+      color: "bg-indigo-100 text-indigo-800",
+      step: 0,
       isPast: false,
       isCurrent: false,
       isFuture: true,

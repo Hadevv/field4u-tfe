@@ -21,11 +21,10 @@ export const getNextAuthConfigProviders = (): Providers => {
           to: email,
           subject: `Connexion à ${SiteConfig.domain}`,
           react: MagicLinkMail({
-            url, // Utiliser l'URL originale pour le lien dans l'email
+            url,
           }),
         });
 
-        // verifie si le resultat est de type CreateEmailResponse et contient une erreur
         if ("error" in result && result.error) {
           logger.error("erreur provider resend auth", result.error);
           throw new Error(`echec envoi email: ${result.error}`);
