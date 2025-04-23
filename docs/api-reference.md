@@ -212,15 +212,9 @@ PUT /notifications
   "ownerId": "string",
   "startDate": "2023-01-01T00:00:00Z",
   "endDate": "2023-01-02T00:00:00Z",
-  "field": {
-    /* Field object */
-  },
-  "cropType": {
-    /* CropType object */
-  },
-  "owner": {
-    /* User object */
-  }
+  "field": {},
+  "cropType": {},
+  "owner": {}
 }
 ```
 
@@ -231,13 +225,7 @@ PUT /notifications
   "id": "string",
   "announcementId": "string",
   "status": "NOT_STARTED",
-  "announcement": {
-    /* Announcement object */
-  },
-  "participations": [
-    {
-      /* Participation objects */
-    }
-  ]
+  "announcement": {},
+  "participations": [{}]
 }
 ```
