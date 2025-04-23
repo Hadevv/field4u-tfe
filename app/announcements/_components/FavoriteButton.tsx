@@ -30,21 +30,11 @@ export function FavoriteButton({
 
   const favoriteMutation = useMutation({
     mutationFn: async () => {
-      try {
-        return resolveActionResult(
-          toggleFavoriteAction({
-            announcementId,
-          }),
-        );
-      } catch (error) {
-        // Si l'erreur est liée à l'authentification
-        if ((error as Error).message?.includes("auth")) {
-          toast.error("veuillez vous connecter pour ajouter aux favoris");
-          router.push(`/auth/signin?callbackUrl=/announcements`);
-          throw new Error("non authentifié");
-        }
-        throw error;
-      }
+      return resolveActionResult(
+        toggleFavoriteAction({
+          announcementId,
+        }),
+      );
     },
     onSuccess: (data) => {
       setIsFavorited(data.favorited);
@@ -55,7 +45,15 @@ export function FavoriteButton({
       }
     },
     onError: (error) => {
-      if (error.message !== "non authentifié") {
+      // vérifier si l'erreur est liée à l'authentification
+      if (
+        error.message?.includes("Session not found") ||
+        error.message?.includes("Session is not valid") ||
+        error.message?.toLowerCase().includes("auth")
+      ) {
+        toast.error("veuillez vous connecter pour ajouter aux favoris");
+        router.push(`/auth/signin?callbackUrl=/announcements`);
+      } else {
         toast.error("une erreur est survenue");
       }
     },

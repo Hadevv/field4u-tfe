@@ -44,7 +44,6 @@ const calculateTimeRemaining = (date: Date) => {
   const now = getCurrentDate();
   const diff = date.getTime() - now.getTime();
 
-  // convertir la différence en jours et heures
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
@@ -111,7 +110,6 @@ async function getAnnouncementData(slug: string, userId?: string) {
     notFound();
   }
 
-  // vérifier si l'utilisateur participe déjà au glanage
   let userIsParticipant = false;
 
   if (userId && announcement.gleaning) {

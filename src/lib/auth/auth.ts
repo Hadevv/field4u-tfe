@@ -41,29 +41,23 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
 
       return typedParams.session;
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (!user.email) return true;
 
-      // recherche d'un utilisateur existant avec le même email
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
         include: { accounts: true },
       });
 
-      // si aucun utilisateur existant, on continue normalement
-      // le nom sera vérifié après la connexion sur la page verify-request
       if (!existingUser) {
         return true;
       }
 
-      // si l'utilisateur existe et que le compte n'existe pas encore
       if (existingUser && account && account.provider) {
-        // vérifier si ce provider est déjà lié à cet utilisateur
         const existingAccount = existingUser.accounts.find(
           (acc) => acc.provider === account.provider,
         );
 
-        // si le provider n'est pas encore lié, crée le lien
         if (!existingAccount) {
           await prisma.account.create({
             data: {
@@ -87,8 +81,6 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
             path: "/",
           });
 
-          // on continue la connexion normalement, mais on modifie user.id
-          // pour utiliser l'id de l'utilisateur existant
           user.id = existingUser.id;
 
           return true;
@@ -101,7 +93,6 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
     },
   },
   events: {
-    // 🔑 Add this line and the import to add credentials provider
     signIn: credentialsSignInCallback(req),
     createUser: async (message) => {
       const user = message.user;
@@ -124,6 +115,5 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
       });
     },
   },
-  // 🔑 Add this line and the import to add credentials provider
   jwt: credentialsOverrideJwt,
 }));

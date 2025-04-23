@@ -34,15 +34,16 @@ export const SignInProviders = () => {
       <Alert>
         <AlertTriangle size={16} />
         <AlertTitle>
-          The provider is not available. It's due to a misconfiguration in the
-          <Typography variant="code">auth.ts</Typography> file.
+          Le provider n'est pas disponible. Cela est dû à une mauvaise
+          configuration dans le fichier
+          <Typography variant="code">auth.ts</Typography> .
         </AlertTitle>
         <AlertDescription>
-          Please go to{" "}
+          Veuillez consulter{" "}
           <Typography variant="link" as={Link} href="">
-            the Now.TS documentation
+            la documentation
           </Typography>{" "}
-          to resolve the issue.
+          pour résoudre le problème.
         </AlertDescription>
       </Alert>
     );
@@ -68,16 +69,15 @@ export const SignInProviders = () => {
       ) : null}
 
       <div className="flex flex-col gap-2">
-        {/* ℹ️ Add provider you want to support here */}
         {providers.github ? <ProviderButton providerId="github" /> : null}
         {providers.google ? <ProviderButton providerId="google" /> : null}
       </div>
 
       {providers.credentials ? (
         <Typography variant="small">
-          You don't have an account?{" "}
+          Vous n'avez pas de compte ?{" "}
           <Typography variant="link" as={Link} href="/auth/signup">
-            Sign up
+            Créer un compte
           </Typography>
         </Typography>
       ) : null}

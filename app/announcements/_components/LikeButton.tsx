@@ -39,20 +39,11 @@ export function LikeButton({
 
   const likeMutation = useMutation({
     mutationFn: async () => {
-      try {
-        return resolveActionResult(
-          toggleLikeAction({
-            announcementId,
-          }),
-        );
-      } catch (error) {
-        if ((error as Error).message?.includes("auth")) {
-          toast.error("veuillez vous connecter pour liker cette annonce");
-          router.push(`/auth/signin?callbackUrl=/announcements`);
-          throw new Error("non authentifié");
-        }
-        throw error;
-      }
+      return resolveActionResult(
+        toggleLikeAction({
+          announcementId,
+        }),
+      );
     },
     onSuccess: (data) => {
       setIsLiked(data.liked);
@@ -67,7 +58,14 @@ export function LikeButton({
       }
     },
     onError: (error) => {
-      if (error.message !== "non authentifié") {
+      if (
+        error.message?.includes("Session not found") ||
+        error.message?.includes("Session is not valid") ||
+        error.message?.toLowerCase().includes("auth")
+      ) {
+        toast.error("veuillez vous connecter pour liker cette annonce");
+        router.push(`/auth/signin?callbackUrl=/announcements`);
+      } else {
         toast.error("une erreur est survenue");
       }
     },
