@@ -11,7 +11,8 @@ function shouldSkipRoute(pathname: string): boolean {
     pathname === "/auth/signin" ||
     pathname === "/auth/signup" ||
     pathname === "/auth/signout" ||
-    pathname === "/auth/error"
+    pathname === "/auth/error" ||
+    pathname === "/auth/onboarding"
   );
 }
 
@@ -31,12 +32,12 @@ export async function middleware(request: NextRequest) {
   if (shouldSkipRoute(pathname)) {
     return NextResponse.next();
   }
+
   try {
     const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
     if (isProtectedRoute(pathname) && !sessionToken) {
       const redirectUrl = new URL("/auth/signin", request.url);
-
       redirectUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
       return NextResponse.redirect(redirectUrl);
     }
@@ -45,8 +46,34 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = new URL("/", request.url);
       return NextResponse.redirect(redirectUrl);
     }
+
+    if (
+      sessionToken &&
+      !pathname.startsWith("/auth/") &&
+      !pathname.startsWith("/api/")
+    ) {
+      const sessionUrl = new URL("/api/v1/auth/session", request.url);
+      const response = await fetch(sessionUrl.toString(), {
+        headers: {
+          cookie: request.headers.get("cookie") || "",
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+
+        if (userData && userData.onboardingCompleted === false) {
+          console.log("redirection vers onboarding pour:", userData.email);
+          const onboardingUrl = new URL("/auth/onboarding", request.url);
+          if (pathname !== "/") {
+            onboardingUrl.searchParams.set("callbackUrl", pathname);
+          }
+          return NextResponse.redirect(onboardingUrl);
+        }
+      }
+    }
   } catch (error) {
-    console.error("Erreur dans le middleware:", error);
+    console.error("erreur dans le middleware:", error);
   }
 
   return NextResponse.next();
