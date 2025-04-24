@@ -35,7 +35,7 @@ pnpm run seed
 
 Un compte administrateur est créé automatiquement :
 
-- Email : admin@glean.be
+- Email : admin@field4u.be
 - Mot de passe : password123
 
 Tous les comptes générés utilisent le même mot de passe : password123
