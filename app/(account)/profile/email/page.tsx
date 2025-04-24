@@ -35,9 +35,10 @@ export default async function MailProfilePage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mail settings</CardTitle>
+        <CardTitle>Paramètres de notifications par email</CardTitle>
         <CardDescription>
-          Update your email notifications settings to match your preferences.
+          Mettez à jour vos paramètres de notifications par email pour
+          correspondre à vos préférences.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -51,9 +52,10 @@ const ErrorComponent = () => {
   return (
     <Card variant="error">
       <CardHeader>
-        <CardTitle>Resend not found</CardTitle>
+        <CardTitle>Contact Resend non trouvé</CardTitle>
         <CardDescription>
-          We couldn't find your Resend contact. Please contact support.
+          Nous n'avons pas trouvé votre contact Resend. Veuillez contacter le
+          support.
         </CardDescription>
       </CardHeader>
       <CardFooter>

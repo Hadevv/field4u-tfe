@@ -5,25 +5,23 @@ import { EmailLayout } from "./utils/EmailLayout";
 export default function SuccessUpgradeEmail() {
   return (
     <EmailLayout>
-      <Preview>
-        You have successfully upgraded your account to ${SiteConfig.title}
-      </Preview>
+      <Preview>Votre compte ${SiteConfig.title} a été mise à jour</Preview>
       <Section className="my-6">
-        <Text className="text-lg leading-6">Hello,</Text>
+        <Text className="text-lg leading-6">Bonjour,</Text>
         <Text className="text-lg leading-6">
-          Great news! Your payment was successful, and you now have full access
-          to all our premium features. Get ready to explore everything we have
-          to offer!
+          Bonnes nouvelles ! Votre paiement a abouti, et vous avez maintenant
+          accès à toutes nos fonctionnalités premium. Prêt à explorer tout ce
+          que nous offrons !
         </Text>
         <Text className="text-lg leading-6">
-          If you have any questions or need assistance as you dive in, feel free
-          to reach out to us. We're here to help you make the most of your
-          experience.
+          Si vous avez des questions ou besoin d'assistance, n'hésitez pas à
+          nous contacter. Nous sommes là pour vous aider à tirer le meilleur
+          parti de votre expérience.
         </Text>
-        <Text className="text-lg leading-6">Happy exploring,</Text>
+        <Text className="text-lg leading-6">Bon exploration,</Text>
       </Section>
       <Text className="text-lg leading-6">
-        Best,
+        A très bientôt,
         <br />
         {SiteConfig.title}
       </Text>

@@ -17,7 +17,7 @@ export const deleteAccountAction = authAction.action(async ({ ctx }) => {
   });
 
   if (!user) {
-    throw new ActionError("You don't have an account!");
+    throw new ActionError("Vous n'avez pas de compte!");
   }
 
   await prisma.user.delete({
@@ -40,7 +40,7 @@ export const deleteAccountAction = authAction.action(async ({ ctx }) => {
 
   await sendEmail({
     from: SiteConfig.email.from,
-    subject: "Your account has been deleted",
+    subject: "Votre compte a été supprimé",
     to: user.email,
     react: DeleteAccountEmail({
       email: user.email,

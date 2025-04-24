@@ -7,37 +7,39 @@ import { EmailLayout } from "./utils/EmailLayout";
 export default function SubscribtionDowngradeEmail() {
   return (
     <EmailLayout>
-      <Preview>Your Premium Access Has Been Paused</Preview>
+      <Preview>Votre accès premium a été suspendu</Preview>
       <Section className="my-6">
-        <Text className="text-lg leading-6">Hello,</Text>
+        <Text className="text-lg leading-6">Bonjour,</Text>
         <Text className="text-lg leading-6">
-          We're reaching out to inform you that your account has reverted to our
-          basic access level. This change is due to the recent issues with your
-          premium subscription payment.
+          Nous vous informons que votre compte a été réduit à notre niveau
+          d'accès de base. Cette modification est due aux problèmes récents avec
+          votre paiement de l'abonnement premium.
         </Text>
         <Text className="text-lg leading-6">
-          While you'll still enjoy our core services, access to premium features
-          is now limited. We'd love to have you back in our premium community!
+          Alors que vous continuerez à profiter de nos services de base, l'accès
+          aux fonctionnalités premium est maintenant limité. Nous aimerions vous
+          revoir dans notre communauté premium !
         </Text>
         <Text className="text-lg leading-6">
-          To reactivate your premium status, simply update your payment
-          information here:
+          Pour réactiver votre statut premium, veuillez mettre à jour vos
+          informations ici :
         </Text>
         <Text className="text-lg leading-6">
           <Link
             className="text-sky-500 hover:underline"
             href={`${getServerUrl()}/profile/billing`}
           >
-            Click to Update Payment and Keep Using ${SiteConfig.title}
+            Cliquez ici pour mettre à jour votre paiement et continuer à
+            utiliser ${SiteConfig.title}
           </Link>
         </Text>
         <Text className="text-lg leading-6">
-          If you have any questions or need assistance, our team is always here
-          to help.
+          Si vous avez des questions ou besoin d'assistance, notre équipe est là
+          pour vous aider.
         </Text>
       </Section>
       <Text className="text-lg leading-6">
-        Best,
+        A très bientôt,
         <br />
         {SiteConfig.title}
       </Text>

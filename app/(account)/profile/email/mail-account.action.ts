@@ -13,7 +13,7 @@ export const toggleSubscribedAction = authAction
   .schema(ToggleSubscribedActionSchema)
   .action(async ({ parsedInput: input, ctx }) => {
     if (!ctx.user.resendContactId) {
-      throw new ActionError("User has no resend contact");
+      throw new ActionError("L'utilisateur n'a pas de contact Resend");
     }
 
     if (!env.RESEND_AUDIENCE_ID) {

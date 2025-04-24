@@ -46,23 +46,23 @@ export const editPasswordAction = authAction
     });
 
     if (input.newPassword !== input.confirmPassword) {
-      throw new ActionError("Passwords do not match");
+      throw new ActionError("les mots de passe ne correspondent pas");
     }
 
     if (!hashedPassword) {
-      throw new ActionError("Password hash not found");
+      throw new ActionError("mot de passe invalide");
     }
     const passwordMatch = await comparePassword(
       input.currentPassword,
       hashedPassword,
     );
     if (!passwordMatch) {
-      throw new ActionError("Invalid current password");
+      throw new ActionError("mot de passe invalide");
     }
 
     if (!validatePassword(input.newPassword)) {
       throw new ActionError(
-        "Invalid new password. Must be at least 8 characters, and contain at least one letter and one number",
+        "mot de passe invalide. doit contenir au moins 8 caractères, une lettre et un chiffre",
       );
     }
 

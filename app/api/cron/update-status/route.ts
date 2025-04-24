@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
     logger.info("début de la mise à jour des statuts de glanage");
 
-    // requete pour obtenir tous les glanages avec leurs annonces associées
+    // requete pour obtenir tous les glanages avec leurs annonces lié
     const gleanings = await prisma.gleaning.findMany({
       where: {
         status: {

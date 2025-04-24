@@ -12,24 +12,24 @@ export const VerifyEmailButton = () => {
       const result = await createVerifyEmailAction("");
 
       if (result?.serverError) {
-        toast.error(result.serverError ?? "An error occurred");
+        toast.error(result.serverError ?? "Une erreur est survenue");
         return;
       }
 
-      toast.success("Email sent");
+      toast.success("Email envoyé");
     },
   });
 
   return (
     <LoadingButton
       loading={mutation.isPending}
-      variant="invert"
+      variant="outline"
       className="mt-2"
       onClick={() => mutation.mutate()}
     >
       {mutation.isError ? <X size={16} className="mr-2" /> : null}
       {mutation.isSuccess ? <Check size={16} className="mr-2" /> : null}
-      Verify Email
+      Vérifier mon email
     </LoadingButton>
   );
 };

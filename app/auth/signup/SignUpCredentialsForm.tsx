@@ -36,7 +36,7 @@ export const SignUpCredentialsForm = () => {
         email: values.email,
         password: values.password,
 
-        callbackUrl: `${window.location.origin}/auth/onboarding`, // Redirect to onboarding page after sign up
+        callbackUrl: `${window.location.origin}/auth/onboarding`,
       });
     },
   });

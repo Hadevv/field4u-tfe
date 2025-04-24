@@ -37,7 +37,9 @@ export const buyButtonAction = action
     });
 
     if (!session.url) {
-      throw new ActionError("Something went wrong while creating the session.");
+      throw new ActionError(
+        "une erreur est survenue lors de la création de la session",
+      );
     }
 
     return { url: session.url };

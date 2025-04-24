@@ -32,7 +32,7 @@ export default async function AuthSignInPage(props: PageParams<{}>) {
               width={100}
               height={100}
             />
-            <CardTitle>Sign in to your account</CardTitle>
+            <CardTitle>Connectez-vous à votre compte</CardTitle>
           </CardHeader>
           <CardContent className="mt-8">
             <SignInProviders />

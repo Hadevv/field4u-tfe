@@ -6,9 +6,6 @@ import { requiredAuth } from "@/lib/auth/helper";
 import { logger } from "@/lib/logger";
 import OnboardingForm from "./_components/OnboardingForm";
 
-/**
- * This page is shown when a user logs in. You can add an onboarding process here.
- */
 export default async function OnboardingPage(props: PageParams) {
   const searchParams = await props.searchParams;
   const callbackUrl =
@@ -18,7 +15,6 @@ export default async function OnboardingPage(props: PageParams) {
 
   const user = await requiredAuth();
 
-  // Si l'utilisateur n'a pas de nom défini, le rediriger pour le définir d'abord
   if (!user.name) {
     logger.info("User has no name, redirecting to name definition");
     redirect(`/auth/verify-request?email=${encodeURIComponent(user.email)}`);

@@ -27,9 +27,7 @@ type StandardDialogProps = {
   description?: ReactNode;
   icon?: LucideIcon;
   style?: "default" | "centered";
-  // The user needs to type this text to confirm the action
   confirmText?: string;
-  // Input field for getting user input
   input?: {
     label: string;
     defaultValue?: string;
@@ -107,9 +105,9 @@ export const DialogManagerRendererDialog = (
         {props.confirmText && (
           <div>
             <Typography>
-              Please type{" "}
-              <Typography variant="code">{props.confirmText}</Typography> to
-              confirm the action.
+              Veuillez taper{" "}
+              <Typography variant="code">{props.confirmText}</Typography> pour
+              confirmer l'action.
             </Typography>
             <Input
               value={confirmText}
@@ -132,7 +130,7 @@ export const DialogManagerRendererDialog = (
             disabled={props.loading}
             onClick={props.cancel?.onClick}
           >
-            {props.cancel?.label ?? "Cancel"}
+            {props.cancel?.label ?? "Annuler"}
           </AlertDialogCancel>
 
           {props.action && "label" in props.action ? (

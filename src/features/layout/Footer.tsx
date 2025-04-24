@@ -15,19 +15,19 @@ export const Footer = () => {
               <Typography>{SiteConfig.company.address}</Typography>
             </div>
             <Typography variant="muted" className="italic">
-              © {new Date().getFullYear()} {SiteConfig.company.name} - All
-              rights reserved.
+              © {new Date().getFullYear()} {SiteConfig.company.name} - Tous
+              droits réservés.
             </Typography>
           </div>
           <div className="flex flex-col items-end gap-4">
-            <Typography variant="large">Legal</Typography>
+            <Typography variant="large">Mentions légales</Typography>
             <Typography
               as={Link}
               variant="muted"
               className="hover:underline"
               href="/legal/terms"
             >
-              Terms
+              Conditions d'utilisation
             </Typography>
             <Typography
               as={Link}
@@ -35,7 +35,7 @@ export const Footer = () => {
               className="hover:underline"
               href="/legal/privacy"
             >
-              Privacy
+              Politique de confidentialité
             </Typography>
           </div>
         </LayoutContent>

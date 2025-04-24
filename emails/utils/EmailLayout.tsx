@@ -58,7 +58,9 @@ export const EmailLayout = ({ children }: PropsWithChildren) => {
               className="inline"
               alt={`${SiteConfig.company.name}'s logo`}
             />
-            <Link href={`${baseUrl}/api/emails/unsubscribe`}>Unsubscribe</Link>
+            <Link href={`${baseUrl}/api/emails/unsubscribe`}>
+              Se désinscrire
+            </Link>
             <Text className="ml-1 text-sm text-gray-500">
               {SiteConfig.company.name}
             </Text>

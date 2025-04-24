@@ -112,7 +112,7 @@ export const EmailForm = ({
                 <AlertCircle size={20} />
                 <AlertTitle>{submit.error.message}</AlertTitle>
                 <AlertDescription>
-                  Try another email address or contact us.
+                  Essayez un autre email ou contactez-nous.
                 </AlertDescription>
               </Alert>
             )}

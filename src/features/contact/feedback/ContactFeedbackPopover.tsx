@@ -28,7 +28,9 @@ import { contactSupportAction } from "./contact-feedback.action";
 import type { ContactFeedbackSchemaType } from "./contact-feedback.schema";
 import { ContactFeedbackSchema } from "./contact-feedback.schema";
 
-export type ContactFeedbackPopoverProps = PropsWithChildren<{}>;
+export type ContactFeedbackPopoverProps = PropsWithChildren<{
+  onSuccess?: () => void;
+}>;
 
 export const ContactFeedbackPopover = (props: ContactFeedbackPopoverProps) => {
   const [open, setOpen] = useState(false);
@@ -49,7 +51,7 @@ export const ContactFeedbackPopover = (props: ContactFeedbackPopoverProps) => {
       return;
     }
 
-    toast.success("Your feedback has been sent. Thanks you.");
+    toast.success("Votre feedback a été envoyé. Merci.");
     form.reset();
     setOpen(false);
   };
@@ -116,7 +118,7 @@ export const ContactFeedbackPopover = (props: ContactFeedbackPopoverProps) => {
               )}
             />
             <Button type="submit" variant="outline">
-              Send
+              Envoyer
             </Button>
           </div>
         </Form>
@@ -129,22 +131,22 @@ const ReviewInputItems = [
   {
     value: "1",
     icon: Angry,
-    tooltip: "Extremely Dissatisfied",
+    tooltip: "Très insatisfait",
   },
   {
     value: "2",
     icon: Frown,
-    tooltip: "Somewhat Dissatisfied",
+    tooltip: "Insatisfait",
   },
   {
     value: "3",
     icon: Meh,
-    tooltip: "Neutral",
+    tooltip: "Neutre",
   },
   {
     value: "4",
     icon: SmilePlus,
-    tooltip: "Satisfied",
+    tooltip: "Satisfait",
   },
 ];
 

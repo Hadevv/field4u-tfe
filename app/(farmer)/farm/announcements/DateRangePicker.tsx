@@ -221,7 +221,7 @@ export function DateRangePicker({
                 showOutsideDays={false}
               />
 
-              {/* Boutons d'action */}
+              {/* boutons d'action */}
               <div className="flex justify-end mt-4 border-t pt-4 px-2">
                 <Button
                   variant="outline"

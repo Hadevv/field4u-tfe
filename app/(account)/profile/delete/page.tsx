@@ -16,11 +16,11 @@ export default function DeleteProfilePage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Delete your profile</CardTitle>
+        <CardTitle>Supprimer votre compte</CardTitle>
         <CardDescription>
-          Deleting your account means that all your personal data will be
-          permanently erased and your ongoing subscription will be terminated.
-          Please be aware that this action is irreversible.
+          La suppression de votre compte signifie que toutes vos données
+          personnelles seront définitivement effacées et votre abonnement en
+          cours sera résilié. Veuillez noter que cette action est irréversible.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -28,13 +28,13 @@ export default function DeleteProfilePage() {
           variant="destructive"
           onClick={() => {
             dialogManager.add({
-              title: "Delete your profile", 
-              description: "Are you sure you want to delete your profile?",
+              title: "Supprimer votre compte",
+              description: "Êtes-vous sûr de vouloir supprimer votre compte?",
               action: {
-                label: "Delete",
+                label: "Supprimer",
                 onClick: async () => {
                   await deleteAccountAction();
-                  toast.success("Your profile has been deleted.");
+                  toast.success("Votre compte a été supprimé.");
                 },
               },
             });

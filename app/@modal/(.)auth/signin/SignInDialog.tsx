@@ -31,7 +31,7 @@ export function SignInDialog() {
             width={100}
             height={100}
           />
-          <DialogTitle>Sign in to your account</DialogTitle>
+          <DialogTitle>Connectez-vous à votre compte</DialogTitle>
         </DialogHeader>
         <SignInProviders />
       </DialogContent>

@@ -16,11 +16,11 @@ export default async function RoutePage(props: PageParams<{}>) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Email verified</CardTitle>
+          <CardTitle>Email vérifié</CardTitle>
         </CardHeader>
         <CardFooter>
           <Link className={buttonVariants()} href="/profile">
-            Account
+            Compte
           </Link>
         </CardFooter>
       </Card>
@@ -31,11 +31,11 @@ export default async function RoutePage(props: PageParams<{}>) {
     return (
       <Card variant="error">
         <CardHeader>
-          <CardTitle>Invalid Token</CardTitle>
+          <CardTitle>Token invalide</CardTitle>
         </CardHeader>
         <CardFooter>
           <Link className={buttonVariants()} href="/profile">
-            Account
+            Compte
           </Link>
         </CardFooter>
       </Card>
@@ -54,11 +54,11 @@ export default async function RoutePage(props: PageParams<{}>) {
     return (
       <Card variant="error">
         <CardHeader>
-          <CardTitle>Invalid token</CardTitle>
+          <CardTitle>Token invalide</CardTitle>
         </CardHeader>
         <CardFooter>
           <Link className={buttonVariants()} href="/profile">
-            Account
+            Compte
           </Link>
         </CardFooter>
       </Card>
@@ -75,11 +75,11 @@ export default async function RoutePage(props: PageParams<{}>) {
     return (
       <Card variant="error">
         <CardHeader>
-          <CardTitle>User not found</CardTitle>
+          <CardTitle>Utilisateur non trouvé</CardTitle>
         </CardHeader>
         <CardFooter>
           <Link className={buttonVariants()} href="/profile">
-            Account
+            Compte
           </Link>
         </CardFooter>
       </Card>
@@ -90,11 +90,11 @@ export default async function RoutePage(props: PageParams<{}>) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Email verified.</CardTitle>
+          <CardTitle>Email vérifié.</CardTitle>
         </CardHeader>
         <CardFooter>
           <Link className={buttonVariants()} href="/profile">
-            Account
+            Compte
           </Link>
         </CardFooter>
       </Card>

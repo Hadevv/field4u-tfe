@@ -19,7 +19,6 @@ import { setName } from "../name.action";
 import { toast } from "sonner";
 import { z } from "zod";
 
-// Définir un schéma côté client pour la validation
 const nameSchema = z.object({
   name: z
     .string()
@@ -31,10 +30,10 @@ const nameSchema = z.object({
     ),
 });
 
-interface NameFormProps {
+type NameFormProps = {
   email: string;
   redirectUrl?: string;
-}
+};
 
 export function NameForm({
   email,
@@ -42,7 +41,7 @@ export function NameForm({
 }: NameFormProps) {
   const router = useRouter();
 
-  // extraire le nom à partir de l'email (partie avant @)
+  // extraire le nom à partir de l email
   const suggestedName = email.split("@")[0];
 
   const form = useZodForm({

@@ -17,7 +17,7 @@ export const contactSupportAction = action
     const feedback = await prisma.feedback.create({
       data: {
         message: data.message,
-        review: Number(data.review) || 0,
+        review: data.review,
         userId: user?.id,
         email,
       },
@@ -26,10 +26,10 @@ export const contactSupportAction = action
     await sendEmail({
       from: SiteConfig.email.from,
       to: SiteConfig.email.contact,
-      subject: `New feedback from ${email}`,
-      text: `Review: ${feedback.review}\n\nMessage: ${feedback.message}`,
-      reply_to: email,
+      subject: `Nouveau feedback de ${email}`,
+      text: `Note: ${feedback.review}\n\nMessage: ${feedback.message}`,
+      replyTo: email,
     });
 
-    return { message: "Your feedback has been sent to support." };
+    return { message: "Votre feedback a été envoyé à l'assistance." };
   });

@@ -82,7 +82,7 @@ model Farm {
 model Review {
   id         String   @id @default(nanoid(21)) @db.Char(21)
   userId     String   @map("user_id") @db.Char(21)
-  rating     Int      @db.SmallInt // Gérer coté SQL car prisma ne gere pas le CHECK
+  rating     Int      @db.SmallInt // gérer coté SQL car prisma ne gere pas le CHECK
   content    String?  @db.VarChar(500)
   images     String[] @default([]) @db.VarChar(255) // URL des images 
   createdAt  DateTime @default(now()) @map("created_at")
@@ -145,14 +145,14 @@ model Notification {
 
 model Field {
   id           String         @id @default(nanoid(21)) @db.Char(21)
-  farmId       String?        @map("farm_id") @db.Char(21) // Lien optionnel à une fermes
-  name         String?        @db.VarChar(100) // Nom donné par l'agriculteur (ex : "Champ du Nord")
+  farmId       String?        @map("farm_id") @db.Char(21)
+  name         String?        @db.VarChar(100)
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
   city         String         @db.VarChar(100)
-  surface      Float?         @map("surface") // Surface du champ en hectares (optionnel)
+  surface      Float?         @map("surface")
   postalCode   String         @map("postal_code") @db.VarChar(10)
-  ownerId      String?        @map("owner_id") @db.Char(21) // Propriétaire direct (individu ou ferme)
+  ownerId      String?        @map("owner_id") @db.Char(21)
   latitude     Float
   longitude    Float
   announcement Announcement[]
@@ -193,9 +193,9 @@ model Announcement {
   id                String     @id @default(nanoid(21)) @db.Char(21)
   fieldId           String     @map("field_id") @db.Char(21)
   title             String     @db.VarChar(255)
-  slug              String     @unique @db.VarChar(100) // slug pour url base sur le titre
+  slug              String     @unique @db.VarChar(100) // slug pour URL base sur le titre
   description       String     @db.VarChar(2000)
-  images            String[]   @default([]) @db.VarChar(255) // url des images
+  images            String[]   @default([]) @db.VarChar(255) // URL des images
   createdAt         DateTime   @default(now()) @map("created_at")
   updatedAt         DateTime   @updatedAt @map("updated_at")
   isPublished       Boolean    @default(true) @map("is_published")
@@ -203,13 +203,13 @@ model Announcement {
   quantityAvailable Int?       @map("quantity_available")
   ownerId           String     @map("owner_id") @db.Char(21)
   qrCode            String?    @map("qr_code_url") @db.VarChar(255)
-  startDate         DateTime?  @map("start_date") // Date de début du glanage
-  endDate           DateTime?  @map("end_date") // Date de fin du glanage
+  startDate         DateTime?  @map("start_date") // date de début du glanage
+  endDate           DateTime?  @map("end_date") // date de fin du glanage
   cropType          CropType   @relation(fields: [cropTypeId], references: [id])
   field             Field      @relation(fields: [fieldId], references: [id])
   owner             User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   favorites         Favorite[]
-  gleaning          Gleaning? // Relation one-to-one avec Gleaning
+  gleaning          Gleaning? // relation one-to-one avec Gleaning
   likes             Like[]
 
   //CHECK SQL : Eviter les valeurs négatives pour quantity_available

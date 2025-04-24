@@ -13,15 +13,16 @@ export default function SuccessPaymentPage() {
     <>
       <Layout>
         <LayoutHeader>
-          <LayoutTitle>Thank You for Your Purchase!</LayoutTitle>
+          <LayoutTitle>Merci pour votre achat!</LayoutTitle>
           <LayoutDescription>
-            Your payment was successful! You now have full access to all our
-            premium resources. If you have any questions, we're here to help.
+            Votre paiement a été effectué avec succès! Vous avez maintenant
+            accès à tous nos ressources premium. Si vous avez des questions,
+            nous sommes là pour vous aider.
           </LayoutDescription>
         </LayoutHeader>
         <LayoutContent>
           <Link href="/" className={buttonVariants({ size: "lg" })}>
-            Get Started
+            Commencer
           </Link>
         </LayoutContent>
       </Layout>

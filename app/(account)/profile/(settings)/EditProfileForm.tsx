@@ -40,7 +40,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
       if (values.email !== defaultValues.email) {
         await createVerifyEmailAction("");
         toast.success(
-          "You have updated your email. We have sent you a new email verification link.",
+          "Vous avez mis à jour votre email. Nous vous avons envoyé un nouveau lien de vérification.",
         );
         router.push("/");
         return;
@@ -51,7 +51,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         return;
       }
 
-      toast.success("Profile updated");
+      toast.success("Profil mis à jour");
       router.refresh();
     },
   });
@@ -68,7 +68,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>Nom</FormLabel>
             <FormControl>
               <Input placeholder="" {...field} value={field.value ?? ""} />
             </FormControl>
@@ -85,7 +85,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
             <FormLabel className="flex items-center gap-1">
               <span>Email</span>
               {defaultValues.emailVerified ? (
-                <InlineTooltip title="Email verified. If you change your email, you will need to verify it again.">
+                <InlineTooltip title="Email vérifié. Si vous changez votre email, vous devrez le vérifier à nouveau.">
                   <BadgeCheck size={16} />
                 </InlineTooltip>
               ) : null}
@@ -98,7 +98,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         )}
       />
       <SubmitButton className="w-fit self-end" size="sm">
-        Save
+        Enregistrer
       </SubmitButton>
     </Form>
   );

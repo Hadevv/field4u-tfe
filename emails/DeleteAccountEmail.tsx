@@ -8,23 +8,25 @@ export default function DeleteAccountEmail({ email }: { email: string }) {
       <Section className="my-6">
         <Text className="text-lg leading-6">Hello,</Text>
         <Text className="text-lg leading-6">
-          You account with email{" "}
+          votre compte avec l'email{" "}
           <Link
             className="text-sky-500 hover:underline"
             href={`mailto:${email}`}
           >
             {email}
           </Link>{" "}
-          has been deleted.
+          a été supprimé.
         </Text>
-        <Text className="text-lg leading-6">This action is irreversible.</Text>
         <Text className="text-lg leading-6">
-          If you have any questions, please contact us at{" "}
+          cette action est irréversible.
+        </Text>
+        <Text className="text-lg leading-6">
+          si vous avez des questions, veuillez nous contacter à{" "}
           {SiteConfig.email.contact}.
         </Text>
       </Section>
       <Text className="text-lg leading-6">
-        Best,
+        a très bientôt,
         <br />
         {SiteConfig.title}
       </Text>

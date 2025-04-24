@@ -14,21 +14,22 @@ export default function CancelPaymentPage() {
   return (
     <Layout>
       <LayoutHeader>
-        <Badge variant="outline">Payment failed</Badge>
+        <Badge variant="outline">Paiement annulé</Badge>
         <LayoutTitle>
-          We're sorry, but we couldn't process your payment
+          Nous sommes désolés, mais nous n'avons pas pu traiter votre paiement
         </LayoutTitle>
         <LayoutDescription>
-          We encountered an issue processing your payment.
-          <br /> Please check your payment details and try again. <br />
-          If the problem persists, don't hesitate to contact us for assistance.
-          <br />
-          We're here to help you resolve this smoothly.
+          Nous avons rencontré un problème lors du traitement de votre paiement.
+          <br /> Veuillez vérifier vos coordonnées de paiement et réessayer.
+          <br /> Si le problème persiste, n'hésitez pas à nous contacter pour
+          une assistance.
+          <br /> Nous sommes là pour vous aider à résoudre ce problème de
+          manière fluide.
         </LayoutDescription>
       </LayoutHeader>
       <LayoutContent className="flex items-center gap-2">
-        <Link href="/" className={buttonVariants({ variant: "invert" })}>
-          Home
+        <Link href="/" className={buttonVariants({ variant: "secondary" })}>
+          Retour à l'accueil
         </Link>
         <ContactSupportDialog />
       </LayoutContent>

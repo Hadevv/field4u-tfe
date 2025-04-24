@@ -34,11 +34,11 @@ export function FilesDropzone({
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<FileWithPreview[]>([]);
 
-  // Obtenir le nombre total de fichiers (téléchargés + en attente)
+  // obtenir le nombre total de fichiers
   const totalFiles = value.length + files.length;
   const remainingSlots = maxFiles - totalFiles;
 
-  // Gérer le drop de fichiers
+  // gérer le drop de fichiers
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -49,15 +49,12 @@ export function FilesDropzone({
         return;
       }
 
-      // Convertir FileList en tableau
       const droppedFiles = Array.from(e.dataTransfer.files).slice(
         0,
         remainingSlots,
       );
 
-      // Filtrer les fichiers valides
       const validFiles = droppedFiles.filter((file) => {
-        // Vérifier le type de fichier
         if (!acceptedFileTypes.includes(file.type)) {
           toast.error(`Le type de fichier "${file.type}" n'est pas accepté`, {
             description: `Types acceptés: ${acceptedFileTypes.join(", ")}`,
@@ -65,7 +62,6 @@ export function FilesDropzone({
           return false;
         }
 
-        // Vérifier la taille du fichier
         if (file.size > maxSizeMB * 1024 * 1024) {
           toast.error(`Le fichier "${file.name}" est trop volumineux`, {
             description: `Taille maximale: ${maxSizeMB}MB`,
@@ -78,7 +74,6 @@ export function FilesDropzone({
 
       if (validFiles.length === 0) return;
 
-      // Créer des prévisualisations pour les fichiers valides
       const filesWithPreviews = validFiles.map((file) => ({
         file,
         preview: URL.createObjectURL(file),
@@ -96,12 +91,12 @@ export function FilesDropzone({
     [acceptedFileTypes, maxFiles, maxSizeMB, remainingSlots, onSelectFiles],
   );
 
-  // Gérer la sélection de fichiers via input
+  // gerer la sélection de fichiers via input
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!e.target.files?.length) return;
 
-      // Simuler un drop avec les fichiers sélectionnés
+      // simuler un drop avec les fichiers sélectionnés
       const dummyEvent = {
         preventDefault: () => {},
         dataTransfer: {
@@ -111,22 +106,19 @@ export function FilesDropzone({
 
       handleDrop(dummyEvent);
 
-      // Réinitialiser l'input pour permettre de sélectionner à nouveau le même fichier
       e.target.value = "";
     },
     [handleDrop],
   );
 
-  // Supprimer un fichier de la liste d'attente
   const removeFile = useCallback(
     (index: number) => {
       setFiles((prev) => {
         const newFiles = [...prev];
-        // Libérer l'URL de la prévisualisation pour éviter les fuites mémoire
+
         URL.revokeObjectURL(newFiles[index].preview);
         newFiles.splice(index, 1);
 
-        // mettre à jour le callback avec les fichiers restants
         if (onSelectFiles) {
           onSelectFiles(newFiles.map((f) => f.file));
         }
@@ -137,7 +129,7 @@ export function FilesDropzone({
     [onSelectFiles],
   );
 
-  // Supprimer une image déjà téléchargée
+  // supprimer une image déjà téléchargée
   const removeUploadedFile = useCallback(
     (index: number) => {
       const newValue = [...value];
@@ -149,10 +141,10 @@ export function FilesDropzone({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Zone de prévisualisation des images */}
+      {/* zone de prévisualisation des images */}
       {(value.length > 0 || files.length > 0) && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {/* Images déjà téléchargées */}
+          {/* images déjà téléchargées */}
           {value.map((url, index) => (
             <div
               key={`uploaded-${index}`}
@@ -177,7 +169,7 @@ export function FilesDropzone({
             </div>
           ))}
 
-          {/* Prévisualisations des fichiers en attente d'upload */}
+          {/* prévi des fichiers en attente d'upload */}
           {files.map((file, index) => (
             <div
               key={`preview-${index}`}
@@ -204,10 +196,10 @@ export function FilesDropzone({
         </div>
       )}
 
-      {/* Zone de drop et upload */}
+      {/* zone de drop et upload */}
       {remainingSlots > 0 && (
         <div className="space-y-4">
-          {/* Zone de drop */}
+          {/* zone de drop */}
           <div
             className={cn(
               "border-2 border-dashed rounded-lg p-8 text-center transition-all",
@@ -262,7 +254,7 @@ export function FilesDropzone({
             </div>
           </div>
 
-          {/* Informations sur les fichiers */}
+          {/* informations sur les fichiers */}
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <FileImage className="h-3 w-3" />

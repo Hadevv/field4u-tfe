@@ -83,7 +83,6 @@ export function GleaningStepper({
     return baseUrl;
   };
 
-  // déterminer si une étape est accessible
   const isStepAccessible = (stepId: number) => {
     // si le glanage est terminé, toutes les étapes sont accessibles
     if (isCompleted) return true;

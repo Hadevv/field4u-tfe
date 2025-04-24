@@ -9,16 +9,16 @@ export const EmailFormSection = () => {
           variant="small"
           className="font-extrabold uppercase text-primary"
         >
-          Be the first to use Threader
+          Soyez le premier à utiliser Field4u
         </Typography>
         <Typography variant="h2" className="text-center text-4xl lg:text-5xl">
-          Join the waiting list of{" "}
+          Rejoignez la liste d'attente de{" "}
           <span className="text-gradient bg-gradient-to-r from-orange-600 via-red-400 to-yellow-400 font-mono font-extrabold uppercase">
-            Threader
+            Field4u
           </span>
         </Typography>
         <Typography variant="h3">
-          Get early access, exclusive content and more.
+          Recevez l'accès anticipé, du contenu exclusif et plus encore.
         </Typography>
         <div className="mx-auto mt-6 w-full max-w-md">
           <EmailForm

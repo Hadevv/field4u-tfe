@@ -5,7 +5,7 @@ export default function DeleteProfilePage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Billing information</CardTitle>
+        <CardTitle>Informations de facturation</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <Skeleton className="h-6 w-1/2" />

@@ -4,7 +4,6 @@ import { authAction, ActionError } from "@/lib/backend/safe-actions";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
-// Définir le schéma en interne plutôt que l'exporter
 const nameSchema = z.object({
   name: z
     .string()
@@ -16,7 +15,6 @@ const nameSchema = z.object({
     ),
 });
 
-// Exporter uniquement la fonction asynchrone
 export const setName = authAction
   .schema(nameSchema)
   .action(async ({ parsedInput: input, ctx }) => {

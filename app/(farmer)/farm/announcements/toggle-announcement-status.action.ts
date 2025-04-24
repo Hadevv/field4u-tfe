@@ -15,7 +15,7 @@ export const toggleAnnouncementStatusAction = authAction
   .action(async ({ parsedInput: input, ctx }) => {
     const user = ctx.user;
 
-    // vérification du rôle
+    // vérification du role
     if (user.role !== UserRole.FARMER) {
       throw new Error(
         "Vous devez être agriculteur pour effectuer cette action",

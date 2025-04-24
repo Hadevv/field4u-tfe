@@ -9,13 +9,13 @@ export const FloatingLegalFooter = () => {
         className="text-xs text-muted-foreground hover:underline"
         href="/legal/privacy"
       >
-        Privacy
+        Politique de confidentialité
       </Link>
       <Link
         className="text-xs text-muted-foreground hover:underline"
         href="/legal/terms"
       >
-        Terms
+        Conditions d'utilisation
       </Link>
       <Image src={favicon} width={20} height={20} alt="app icon" />
     </div>

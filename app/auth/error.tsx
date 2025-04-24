@@ -16,11 +16,11 @@ export default function RouteError({ error, reset }: ErrorParams) {
     <Card>
       <CardHeader>
         <CardTitle>
-          Sorry, something went wrong. Please try again later.
+          Désolé, une erreur est survenue. Veuillez réessayer plus tard.
         </CardTitle>
       </CardHeader>
       <CardFooter>
-        <Button onClick={reset}>Try again</Button>
+        <Button onClick={reset}>Réessayer</Button>
       </CardFooter>
     </Card>
   );
