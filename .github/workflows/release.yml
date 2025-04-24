@@ -1,0 +1,68 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: build artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: setup node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21.5.0
+          cache: pnpm
+
+      - name: extract version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: build application
+        run: pnpm build
+
+      - name: setup environment variables
+        run: |
+          cp .env.example .env.production
+
+      - name: prepare artifacts
+        run: |
+          # create artifacts directory
+          mkdir -p artifacts
+
+          # include necessary files
+          INCLUDE_FILES=(
+            ".next"
+            "public"
+            "prisma"
+            "package.json"
+            "pnpm-lock.yaml"
+            ".env.example"
+            "README.md"
+            "next.config.js"
+            "postcss.config.js"
+            "tailwind.config.js"
+            "tsconfig.json"
+          )
+
+          # create tar archive
+          tar -czf "artifacts/field4u-v${{ steps.version.outputs.version }}.tar.gz" "${INCLUDE_FILES[@]}"
+
+          # create zip archive
+          zip -r "artifacts/field4u-v${{ steps.version.outputs.version }}.zip" "${INCLUDE_FILES[@]}"
