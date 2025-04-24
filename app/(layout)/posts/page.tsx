@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
@@ -55,11 +56,7 @@ export default async function RoutePage(props: PageParams<{}>) {
               },
             }}
           >
-            <Badge
-              variant={
-                activeTags?.includes(tag) ? "default" : "outline"
-              }
-            >
+            <Badge variant={activeTags?.includes(tag) ? "default" : "outline"}>
               {tag}
             </Badge>
           </Link>

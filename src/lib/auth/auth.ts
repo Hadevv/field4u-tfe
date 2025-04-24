@@ -74,10 +74,9 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
             },
           });
 
-          // définir un cookie pour indiquer qu'un compte a été lié
           const cookieStore = cookies();
           (await cookieStore).set("account-linked", "true", {
-            maxAge: 60 * 5, // 5 minutes
+            maxAge: 60 * 5,
             path: "/",
           });
 
