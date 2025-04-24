@@ -58,9 +58,6 @@ jobs:
             "tsconfig.json"
           )
 
-          cp .env.example .env.production
-          INCLUDE_FILES+=(".env.production")
-
           tar -czf "artifacts/field4u-v${{ steps.version.outputs.version }}.tar.gz" "${INCLUDE_FILES[@]}"
           zip -r "artifacts/field4u-v${{ steps.version.outputs.version }}.zip" "${INCLUDE_FILES[@]}"
 
@@ -69,43 +66,3 @@ jobs:
         with:
           name: dist
           path: artifacts/
-
-      - name: create release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: field4u v${{ steps.version.outputs.version }}
-          draft: false
-          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') || contains(github.ref, 'rc') }}
-          files: |
-            artifacts/field4u-v${{ steps.version.outputs.version }}.tar.gz
-            artifacts/field4u-v${{ steps.version.outputs.version }}.zip
-          body: |
-            ## field4u v${{ steps.version.outputs.version }}
-
-            ### installation
-
-            ```bash
-            # décompresser l'archive
-            tar -xzf field4u-v${{ steps.version.outputs.version }}.tar.gz
-            # ou
-            unzip field4u-v${{ steps.version.outputs.version }}.zip
-
-            # installer les dépendances
-            pnpm install --prod
-
-            # configurer les variables d'environnement
-            cp .env.example .env
-            # éditer .env avec vos configurations
-
-            # démarrer l'application
-            pnpm start
-            ```
-
-            ### contenu
-
-            - build next.js optimisé
-            - fichiers statiques
-            - schémas prisma
-            - fichiers de configuration
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
