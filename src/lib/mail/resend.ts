@@ -1,52 +1,39 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Resend } from "resend";
 import { env } from "../env";
 
-const createResendMock = (): Resend => {
-  const mockMethod = async () => ({
+// si pas de clé API valide, utiliser une clé de test qui rendra toutes les requêtes
+// avec une erreur de notre mock mais qui n'échouera pas à l'initialisation
+export const resend = new Resend(env.RESEND_API_KEY || "re_mockkey_notvalid");
+
+// intercepter les appels à l'API si nous sommes en mode mock
+if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "re_123456") {
+  const mockResponse = {
     data: null,
-    error: { message: "resend api key not configured", statusCode: 500 },
-  });
+    error: {
+      message: "resend api key not configured",
+      statusCode: 500,
+      name: "ResendError",
+    },
+  };
 
-  return {
-    emails: {
-      send: mockMethod,
-    },
-    apiKeys: {
-      create: mockMethod,
-      list: mockMethod,
-      get: mockMethod,
-      update: mockMethod,
-      remove: mockMethod,
-    },
-    contacts: {
-      create: mockMethod,
-      list: mockMethod,
-      get: mockMethod,
-      update: mockMethod,
-      remove: mockMethod,
-    },
-    audiences: {
-      create: mockMethod,
-      list: mockMethod,
-      get: mockMethod,
-      remove: mockMethod,
-    },
-    domains: {
-      create: mockMethod,
-      verify: mockMethod,
-      list: mockMethod,
-      get: mockMethod,
-      remove: mockMethod,
-    },
-    batch: {
-      send: mockMethod,
-    },
-    apiUrl: "",
-    headers: {},
-  } as unknown as Resend;
-};
+  // @ts-expect-error - ignorer les erreurs de type pour les mocks
+  resend.emails.send = async () => mockResponse;
 
-export const resend =
-  env.RESEND_API_KEY && env.RESEND_API_KEY !== "re_123456"
-    ? new Resend(env.RESEND_API_KEY)
-    : createResendMock();
+  // surcharger les autres méthodes avec @ts-expect-error
+  if (resend.contacts) {
+    // @ts-expect-error
+    resend.contacts.create = async () => mockResponse;
+    // @ts-expect-error
+    resend.contacts.list = async () => ({
+      data: [],
+      error: mockResponse.error,
+    });
+    // @ts-expect-error
+    resend.contacts.get = async () => mockResponse;
+    // @ts-expect-error
+    resend.contacts.update = async () => mockResponse;
+    // @ts-expect-error
+    resend.contacts.remove = async () => mockResponse;
+  }
+}

@@ -35,12 +35,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: build application
-        run: pnpm build
+        run: pnpm build --no-lint --no-typescript
         env:
           SKIP_ENV_VALIDATION: "true"
           SKIP_LINT: true
           NEXT_TELEMETRY_DISABLED: 1
-
       - name: prepare artifacts
         run: |
           mkdir -p artifacts

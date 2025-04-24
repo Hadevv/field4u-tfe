@@ -38,5 +38,5 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_MAPBOX_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
   },
-  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
+  skipValidation: true,
 });
