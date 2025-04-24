@@ -14,13 +14,13 @@ export const env = createEnv({
     GITHUB_SECRET: z.string().optional(),
     GOOGLE_ID: z.string().optional(),
     GOOGLE_SECRET: z.string().optional(),
-    RESEND_API_KEY: z.string().min(1),
+    RESEND_API_KEY: z.string().optional(),
     RESEND_AUDIENCE_ID: z.string().optional(),
-    STRIPE_SECRET_KEY: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().optional(),
     NODE_ENV: z.enum(["development", "production", "test"]),
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
-    NEXTAUTH_SECRET: z.string().min(1),
-    UPLOADTHING_TOKEN: z.string().min(1),
+    NEXTAUTH_SECRET: z.string().optional(),
+    UPLOADTHING_TOKEN: z.string().optional(),
     INNGEST_EVENT_KEY: z.string().optional(),
     INNGEST_SIGNING_KEY: z.string().optional(),
     USE_MAILHOG: z.enum(["true", "false"]).optional().default("false"),
@@ -30,8 +30,8 @@ export const env = createEnv({
    * `experimental__runtimeEnv` as well.
    */
   client: {
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
-    NEXT_PUBLIC_MAPBOX_TOKEN: z.string().min(1),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+    NEXT_PUBLIC_MAPBOX_TOKEN: z.string().optional(),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
