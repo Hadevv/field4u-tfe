@@ -10,13 +10,17 @@ export type ServerMdxProps = {
   className?: string;
 };
 
-// * If you want to add custom component, such as an "EmailForm", you can add it to the MdxComponent object.
 const MdxComponent = {} satisfies Record<string, React.ComponentType>;
 
 export const ServerMdx = (props: ServerMdxProps) => {
   return (
     <ErrorBoundary>
-      <div className={cn("prose dark:prose-invert", props.className)}>
+      <div
+        className={cn(
+          "prose dark:prose-invert text-muted-foreground",
+          props.className,
+        )}
+      >
         <Suspense fallback={<Loader />}>
           <RenderMdx {...props} />
         </Suspense>
