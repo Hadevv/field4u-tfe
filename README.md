@@ -6,8 +6,13 @@
 
 - Node.js v21.5.0
 - pnpm
+- PostgreSQL
 
 ### Installation
+
+```bash
+git clone https://github.com/arikchakma/maily.to
+```
 
 ```bash
 pnpm install
@@ -16,13 +21,19 @@ pnpm install
 ### Configuration
 
 1. Créez un fichier `.env` avec vos variables d'environnement
-2. Configurez une base de données [Neon DB](https://neon.tech) (recommandée)
-3. Ajoutez l'URL de connexion database dans le fichier `.env`
+2. Configurez une base de données [Neon DB](https://neon.tech) (recommandée) ou récuper le dump.sql à la racine du projet
+3. Ajoutez l'URL de connexion database dans le fichier `.env` DATABASE_URL="postgresql://user:password@localhost:5432/nom_de_ta_db"
 4. Configurez [UploadThing](https://uploadthing.com) pour la gestion des fichiers
 
 ### Base de données
 
-- Appliquer les migrations :
+- synchroniser le client Prisma avec ton schéma de base de données :
+
+```bash
+npx prisma generate
+```
+
+- Appliquer les migrations : (modification)
 
 ```bash
 pnpm prisma migrate dev
@@ -43,9 +54,14 @@ pnpm prisma studio
 - Exporter la base de données :
 
 ```bash
-pnpm prisma db pull
-ou
+psql -h pg.neon.tech
 pg_dump -h pg.neon.tech -d Field4u -f dump.sql
+```
+
+- Importer la base de données :
+
+```bash
+pnpm prisma db pull
 ```
 
 ### Utilisateurs par défaut
