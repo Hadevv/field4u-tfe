@@ -8,4 +8,10 @@ module.exports = {
       },
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: process.env.SKIP_LINT === "true",
+  },
+  typescript: {
+    ignoreBuildErrors: process.env.SKIP_LINT === "true",
+  },
 };

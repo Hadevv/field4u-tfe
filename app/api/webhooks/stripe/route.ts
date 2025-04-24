@@ -26,7 +26,7 @@ export const POST = async (req: NextRequest) => {
   const body = await req.text();
   const headerList = headers();
 
-  const stripeSignature = headerList.get("stripe-signature");
+  const stripeSignature = (await headerList).get("stripe-signature");
 
   let event: Stripe.Event | null = null;
   try {
