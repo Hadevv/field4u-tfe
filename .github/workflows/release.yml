@@ -35,7 +35,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: build application
-        run: pnpm build --no-lint --no-typescript
+        run: pnpm build
         env:
           SKIP_ENV_VALIDATION: "true"
           SKIP_LINT: true
