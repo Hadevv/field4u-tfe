@@ -14,7 +14,7 @@ type Providers = NonNullable<NextAuthConfig["providers"]>;
 export const getNextAuthConfigProviders = (): Providers => {
   const providers: Providers = [
     Resend({
-      apiKey: env.RESEND_API_KEY,
+      apiKey: env.RESEND_API_KEY || "re_mockkey_notvalid",
       sendVerificationRequest: async ({ identifier: email, url, provider }) => {
         const result = await sendEmail({
           from: SiteConfig.email.from,
