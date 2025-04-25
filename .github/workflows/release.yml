@@ -35,7 +35,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: build application
-        run: pnpm build
+        run: NEXT_PHASE=phase-production-build pnpm build
         env:
           SKIP_ENV_VALIDATION: "true"
           SKIP_LINT: true

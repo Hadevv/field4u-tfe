@@ -1,15 +1,62 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PrismaClient } from "@prisma/client";
 
-const prismaClientSingleton = () => {
-  return new PrismaClient();
-};
+let prismaGlobal: PrismaClient | undefined;
 
-type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
+export function getPrismaClient() {
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return getMockPrismaClient();
+  }
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClientSingleton | undefined;
-};
+  if (!prismaGlobal) {
+    prismaGlobal = new PrismaClient();
+  }
 
-export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
+  return prismaGlobal;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+function getMockPrismaClient() {
+  const mock = {} as PrismaClient;
+  const handler = {
+    get: (target: any, prop: string) => {
+      if (
+        [
+          "$connect",
+          "$disconnect",
+          "$on",
+          "$transaction",
+          "$use",
+          "$extends",
+        ].includes(prop)
+      ) {
+        return () => Promise.resolve(undefined);
+      }
+
+      return new Proxy(
+        {},
+        {
+          get: () => {
+            return new Proxy(() => {}, {
+              get: () => {
+                return new Proxy(() => {}, {
+                  get: () => () => Promise.resolve([]),
+                  apply: () => Promise.resolve([]),
+                });
+              },
+              apply: () => Promise.resolve([]),
+            });
+          },
+          apply: () => Promise.resolve([]),
+        },
+      );
+    },
+  };
+
+  return new Proxy(mock, handler);
+}
+
+export const prisma = new Proxy({} as PrismaClient, {
+  get: (target, prop) => {
+    return getPrismaClient()[prop as keyof PrismaClient];
+  },
+});
