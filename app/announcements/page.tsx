@@ -23,7 +23,9 @@ export default async function AnnouncementsPage() {
 
   return (
     <div className="container mx-auto pt-4">
-      <SearchWizard cropTypes={cropTypes} />
+      <Suspense fallback={<div className="h-20"></div>}>
+        <SearchWizard cropTypes={cropTypes} />
+      </Suspense>
       <Suspense fallback={null}>
         <DynamicAnnouncementResults />
       </Suspense>
