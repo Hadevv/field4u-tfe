@@ -1,3 +1,5 @@
+"use client";
+
 import { cancelGleaningAction } from "./actions";
 import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { useMutation } from "@tanstack/react-query";

@@ -1,5 +1,4 @@
 module.exports = {
-  output: "standalone",
   images: {
     remotePatterns: [
       {
@@ -7,5 +6,11 @@ module.exports = {
         hostname: "yzrv5nd8tn.ufs.sh",
       },
     ],
+  },
+  eslint: {
+    ignoreDuringBuilds: process.env.SKIP_LINT === "true",
+  },
+  typescript: {
+    ignoreBuildErrors: process.env.SKIP_LINT === "true",
   },
 };

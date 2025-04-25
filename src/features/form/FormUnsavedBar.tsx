@@ -71,7 +71,7 @@ export const FormUnsavedBar = <T extends FieldValues>(props: FormProps<T>) => {
                 <LoadingButton
                   size="sm"
                   loading={props.disabled ?? props.form.formState.isSubmitting}
-                  variant="success"
+                  variant="default"
                   onClick={() => {
                     submit();
                   }}

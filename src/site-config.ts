@@ -18,4 +18,8 @@ export const SiteConfig = {
   auth: {
     password: true as boolean,
   },
+  maker: {
+    name: "Field4u Team",
+    website: "https://field4u.app",
+  },
 };

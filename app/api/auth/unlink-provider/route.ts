@@ -7,7 +7,6 @@ export async function POST(request: Request) {
     const user = await requiredAuth();
     const { providerId } = await request.json();
 
-    // vérifier si c'est le dernier moyen de connexion
     const accounts = await prisma.account.findMany({
       where: {
         userId: user.id,
@@ -24,7 +23,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // le providerId "credentials" est spécial et signifie le mot de passe
     if (providerId === "credentials") {
       await prisma.user.update({
         where: {

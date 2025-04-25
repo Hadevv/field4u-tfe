@@ -17,7 +17,7 @@ export const contactSupportAction = action
     const feedback = await prisma.feedback.create({
       data: {
         message: data.message,
-        review: data.review,
+
         userId: user?.id,
         email,
       },
@@ -27,7 +27,7 @@ export const contactSupportAction = action
       from: SiteConfig.email.from,
       to: SiteConfig.email.contact,
       subject: `Nouveau feedback de ${email}`,
-      text: `Note: ${feedback.review}\n\nMessage: ${feedback.message}`,
+      text: `Note:\nMessage: ${feedback.message}`,
       replyTo: email,
     });
 
