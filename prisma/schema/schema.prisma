@@ -203,17 +203,17 @@ model Announcement {
   quantityAvailable Int?       @map("quantity_available")
   ownerId           String     @map("owner_id") @db.Char(21)
   qrCode            String?    @map("qr_code_url") @db.VarChar(255)
-  startDate         DateTime?  @map("start_date") // date de début du glanage
+  startDate         DateTime?  @map("start_date") // date de debut du glanage
   endDate           DateTime?  @map("end_date") // date de fin du glanage
+  suggestedPrice    Decimal?   @map("suggested_price") @db.Decimal(10, 2) // prix libre suggéré pour le glanage
   cropType          CropType   @relation(fields: [cropTypeId], references: [id])
   field             Field      @relation(fields: [fieldId], references: [id])
   owner             User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   favorites         Favorite[]
-  gleaning          Gleaning? // relation one-to-one avec Gleaning
+  gleaning          Gleaning? // relation one to one avec Gleaning
   likes             Like[]
 
   //CHECK SQL : Eviter les valeurs négatives pour quantity_available
-
   @@index([slug])
   @@index([fieldId, cropTypeId])
   @@map("announcements")
@@ -234,12 +234,13 @@ model Gleaning {
 
 // table de liaison entre un utilisateur et un glanage
 model Participation {
-  id         String   @id @default(nanoid(21)) @db.Char(21)
-  userId     String   @map("user_id") @db.Char(21)
-  gleaningId String   @map("gleaning_id") @db.Char(21)
-  createdAt  DateTime @default(now()) @map("created_at")
-  gleaning   Gleaning @relation(fields: [gleaningId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String                 @id @default(nanoid(21)) @db.Char(21)
+  userId     String                 @map("user_id") @db.Char(21)
+  gleaningId String                 @map("gleaning_id") @db.Char(21)
+  createdAt  DateTime               @default(now()) @map("created_at")
+  gleaning   Gleaning               @relation(fields: [gleaningId], references: [id], onDelete: Cascade)
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments   ParticipationPayment[]
 
   @@unique([userId, gleaningId])
   @@map("participations")

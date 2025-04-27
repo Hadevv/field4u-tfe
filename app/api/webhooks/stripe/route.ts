@@ -16,8 +16,7 @@ import {
 } from "./premium.helper";
 
 /**
- * Stripe Webhooks
- *
+ * stripe webhooks
  * @docs
  * - https://stripe.com/docs/webhooks
  * - https://stripe.com/docs/api/events/types
@@ -25,115 +24,86 @@ import {
 export const POST = async (req: NextRequest) => {
   const body = await req.text();
   const headerList = headers();
-
-  const stripeSignature = (await headerList).get("stripe-signature");
+  const stripeSignature = (await headerList).get("stripe-signature") || "";
 
   let event: Stripe.Event | null = null;
   try {
     event = stripe.webhooks.constructEvent(
       body,
-      stripeSignature ?? "",
+      stripeSignature,
       env.STRIPE_WEBHOOK_SECRET ?? "",
     );
-  } catch {
-    logger.error("Request Failed - STRIPE_WEBHOOK_SECRET may be invalid");
-    return NextResponse.json({ error: "invalid" }, { status: 400 });
+  } catch (error) {
+    logger.error("signature stripe invalide", error);
+    return NextResponse.json({ error: "signature invalide" }, { status: 400 });
   }
 
-  switch (event.type) {
-    case "checkout.session.completed":
-      await onCheckoutSessionCompleted(event.data.object);
-      break;
+  logger.info(`webhook reçu: ${event.type}`, { id: event.id });
 
-    case "checkout.session.expired":
-      await onCheckoutSessionExpired(event.data.object);
-      break;
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+        await handleCheckoutSessionCompleted(event.data.object);
+        break;
+      case "invoice.paid":
+        await handleInvoicePaid(event.data.object);
+        break;
+      case "invoice.payment_failed":
+        await handleInvoicePaymentFailed(event.data.object);
+        break;
+      case "customer.subscription.deleted":
+        await handleSubscriptionDeleted(event.data.object);
+        break;
+      case "customer.subscription.updated":
+        await handleSubscriptionUpdated(event.data.object);
+        break;
+    }
 
-    case "invoice.paid":
-      await onInvoicePaid(event.data.object);
-      break;
-
-    case "invoice.payment_failed":
-      await onInvoicePaymentFailed(event.data.object);
-      break;
-
-    case "customer.subscription.deleted":
-      await onCustomerSubscriptionDeleted(event.data.object);
-      break;
-
-    case "customer.subscription.updated":
-      await onCustomerSubscriptionUpdated(event.data.object);
-      break;
-
-    default:
-      return NextResponse.json({
-        ok: true,
-      });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logger.error(`erreur webhook: ${event.type}`, error);
+    return NextResponse.json({ error: "erreur serveur" }, { status: 500 });
   }
-
-  return NextResponse.json({
-    ok: true,
-  });
 };
 
-async function onCheckoutSessionCompleted(object: Stripe.Checkout.Session) {
-  // The user paid and the subscription is active
-  // ✅ Grant access to your service
+// gestion des webhooks d'abonnement
+async function handleCheckoutSessionCompleted(object: Stripe.Checkout.Session) {
+  if (!object.customer) return;
   const user = await findUserFromCustomer(object.customer);
-
   const lineItems = await stripe.checkout.sessions.listLineItems(object.id, {
     limit: 1,
   });
-  logger.debug("Line-items", lineItems);
-
   await upgradeUserToPlan(user.id, await getPlanFromLineItem(lineItems.data));
   await notifyUserOfPremiumUpgrade(user);
 }
 
-async function onCheckoutSessionExpired(object: Stripe.Checkout.Session) {
-  // The user stop the checkout process
-  // 📤 Send email if you want
-  logger.debug("Checkout session expired", object);
-}
-
-async function onInvoicePaid(object: Stripe.Invoice) {
-  // A payment was made through the invoice (usually a recurring payment for a subscription)
-  // ✅ Give access to your service
+async function handleInvoicePaid(object: Stripe.Invoice) {
+  if (!object.customer) return;
   const user = await findUserFromCustomer(object.customer);
-
   if (user.plan !== "FREE") return;
-
   await upgradeUserToPlan(
     user.id,
-    // TODO :Verify if it's right values
     await getPlanFromLineItem(object.lines.data),
   );
 }
 
-async function onInvoicePaymentFailed(object: Stripe.Invoice) {
-  // A payment failed, usually a recurring payment for a subscription
-  // ❌ Revoke access to your service
-  // OR send email to user to pay/update payment method
-  // and wait for 'customer.subscription.deleted' event to revoke access
-
+async function handleInvoicePaymentFailed(object: Stripe.Invoice) {
+  if (!object.customer) return;
   const user = await findUserFromCustomer(object.customer);
-
   await downgradeUserFromPlan(user.id);
   await notifyUserOfPaymentFailure(user);
 }
 
-async function onCustomerSubscriptionDeleted(object: Stripe.Subscription) {
-  // The subscription was canceled
-  // ❌ Revoke access to your service
-
+async function handleSubscriptionDeleted(object: Stripe.Subscription) {
+  if (!object.customer) return;
   const user = await findUserFromCustomer(object.customer);
   await downgradeUserFromPlan(user.id);
   await notifyUserOfPremiumDowngrade(user);
 }
 
-async function onCustomerSubscriptionUpdated(object: Stripe.Subscription) {
+async function handleSubscriptionUpdated(object: Stripe.Subscription) {
+  if (!object.customer) return;
   const user = await findUserFromCustomer(object.customer);
-
   await upgradeUserToPlan(
     user.id,
     await getPlanFromLineItem(object.items.data),
