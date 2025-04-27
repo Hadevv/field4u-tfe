@@ -129,3 +129,34 @@ pnpm stripe-webhooks
 - Next.js 15
 - Prisma
 - TailwindCSS
+
+## Paiement par Stripe
+
+La plateforme intègre désormais un système de paiement pour les glaneurs basé sur Stripe, permettant aux participants de soutenir financièrement les agriculteurs via un mécanisme de don à prix libre.
+
+### Fonctionnalités de paiement
+
+- Prix libre suggéré par l'agriculteur pour chaque annonce
+- Interface de paiement sécurisée via Stripe
+- Enregistrement des paiements liés à chaque participation
+- Webhooks pour le suivi des paiements en temps réel
+
+### Évolution future : Stripe Connect
+
+Une évolution prévue pour l'application sera l'intégration de Stripe Connect pour permettre aux agriculteurs de recevoir directement les paiements sur leur compte Stripe.
+
+#### Flux de paiement avec Stripe Connect
+
+```
+┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+│   Gleaner   │ ──────> │   Field4u   │ ──────> │   Farmer    │
+│  (donateur) │         │  (plateforme)│         │ (bénéficiaire) │
+└─────────────┘         └─────────────┘         └─────────────┘
+       │                       │                      │
+       │ Paiement              │                      │
+       ▼                       │                      │
+┌─────────────┐         ┌─────────────┐              │
+│   Stripe    │ ──────> │Stripe Connect│ ────────────┘
+│  Payment    │         │   Account    │
+└─────────────┘         └─────────────┘
+```
