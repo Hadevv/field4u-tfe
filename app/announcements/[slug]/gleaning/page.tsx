@@ -65,6 +65,7 @@ async function getGleaningData(slug: string): Promise<{
   userIsParticipant: boolean;
   participantsCount: number;
   participants: ParticipantInfo[];
+  participationId: string; // nouvel id de participation
 }> {
   const user = await auth();
 
@@ -171,6 +172,7 @@ async function getGleaningData(slug: string): Promise<{
     userIsParticipant,
     participantsCount,
     participants: participantsList,
+    participationId: participation.id,
   };
 }
 
@@ -189,8 +191,13 @@ export default async function GleaningPage(
 }
 
 async function GleaningContent({ slug }: { slug: string }) {
-  const { announcement, gleaning, userIsParticipant, participantsCount } =
-    await getGleaningData(slug);
+  const {
+    announcement,
+    gleaning,
+    userIsParticipant,
+    participantsCount,
+    participationId,
+  } = await getGleaningData(slug);
 
   const formattedDate = announcement.startDate
     ? format(announcement.startDate, "EEEE d MMMM à HH:mm", { locale: fr })
@@ -242,7 +249,14 @@ async function GleaningContent({ slug }: { slug: string }) {
                 <div className="h-[150px] bg-muted animate-pulse rounded-lg" />
               }
             >
-              <DonationSection />
+              <DonationSection
+                participationId={participationId}
+                suggestedPrice={
+                  announcement.suggestedPrice
+                    ? Number(announcement.suggestedPrice)
+                    : undefined
+                }
+              />
             </Suspense>
           </div>
         </TabsContent>

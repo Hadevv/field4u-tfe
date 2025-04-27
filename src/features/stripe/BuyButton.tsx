@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { ButtonProps } from "../../components/ui/button";
 import { Button } from "../../components/ui/button";
 import { buyButtonAction } from "./buy-button.action";
+import { resolveActionResult } from "@/lib/backend/actions-utils";
 
 export type BuyButtonProps = {
   priceId: string;
@@ -27,16 +28,23 @@ export const BuyButton = ({ priceId, ...props }: BuyButtonProps) => {
   const router = useRouter();
   const mutation = useMutation({
     mutationFn: async () => {
-      const result = await buyButtonAction({
-        priceId: priceId,
-      });
-
-      if (result?.data) {
-        router.push(result.data.url);
-        return;
+      return resolveActionResult(
+        buyButtonAction({
+          priceId: priceId,
+        }),
+      );
+    },
+    onSuccess: (data) => {
+      if (data?.url) {
+        router.push(data.url);
+      } else {
+        toast.error("erreur lors de la redirection vers la page de paiement");
       }
-
-      toast.error(result?.serverError ?? "Something went wrong");
+    },
+    onError: (error: Error) => {
+      toast.error("erreur lors de la création de la session de paiement", {
+        description: error.message || "veuillez réessayer plus tard",
+      });
     },
   });
 
