@@ -1,6 +1,6 @@
 "use client";
 
-import { Announcement } from "@prisma/client";
+import { Announcement, Prisma } from "@prisma/client";
 import {
   Form,
   FormControl,
@@ -61,6 +61,7 @@ type ExtendedAnnouncement = Announcement & {
     startDate: Date;
     endDate: Date;
   }>;
+  suggestedPrice?: Prisma.Decimal;
 };
 
 type AnnouncementFormProps = {
@@ -70,6 +71,8 @@ type AnnouncementFormProps = {
   fields: OptionType[];
   cropTypes: OptionType[];
   farm: FarmType;
+  initialData?: ExtendedAnnouncement;
+  userId: string;
 };
 
 export function AnnouncementForm({
@@ -79,6 +82,8 @@ export function AnnouncementForm({
   fields,
   cropTypes,
   farm,
+  initialData,
+  userId,
 }: AnnouncementFormProps) {
   const router = useRouter();
   const isEditing = !!announcement;
@@ -94,10 +99,13 @@ export function AnnouncementForm({
       title: announcement?.title || "",
       description: announcement?.description || "",
       fieldId: announcement?.fieldId || defaultFieldId || "",
-      cropTypeId: announcement?.cropTypeId || "",
+      cropTypeId: initialData?.cropTypeId || "",
       quantityAvailable: announcement?.quantityAvailable || undefined,
-      startDate: announcement?.startDate || defaultStartDate,
-      endDate: announcement?.endDate || defaultEndDate,
+      startDate: initialData?.startDate || undefined,
+      endDate: initialData?.endDate || undefined,
+      suggestedPrice: initialData?.suggestedPrice
+        ? Number(initialData.suggestedPrice)
+        : undefined,
       images: announcement?.images || [],
     },
   });
@@ -271,6 +279,35 @@ export function AnnouncementForm({
                             const value = e.target.valueAsNumber;
                             field.onChange(isNaN(value) ? undefined : value);
                           }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="suggestedPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>prix libre suggéré (€)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="5.00"
+                          step="0.01"
+                          min="0"
+                          max="500"
+                          {...field}
+                          onChange={(e) => {
+                            const value =
+                              e.target.value === ""
+                                ? undefined
+                                : Number(e.target.value);
+                            field.onChange(value);
+                          }}
+                          value={field.value === undefined ? "" : field.value}
                         />
                       </FormControl>
                       <FormMessage />

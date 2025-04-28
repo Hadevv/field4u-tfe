@@ -78,6 +78,46 @@ async function seedUsers() {
     },
   });
 
+  // glaneur
+  await prisma.user.create({
+    data: {
+      id: nanoid(21),
+      email: "gleaner@field4u.be",
+      name: "Gleaner Field4u",
+      role: UserRole.GLEANER,
+      language: Language.FRENCH,
+      hashedPassword,
+      onboardingCompleted: true,
+      rulesAcceptedAt: new Date(),
+      termsAcceptedAt: new Date(),
+      acceptGeolocation: true,
+      plan: UserPlan.PREMIUM,
+      bio: "glaneur de la plateforme Field4u",
+      city: "Bruxelles",
+      postalCode: "1000",
+    },
+  });
+
+  // fermier
+  await prisma.user.create({
+    data: {
+      id: nanoid(21),
+      email: "farmer@field4u.be",
+      name: "Farmer Field4u",
+      role: UserRole.FARMER,
+      language: Language.FRENCH,
+      hashedPassword,
+      onboardingCompleted: true,
+      rulesAcceptedAt: new Date(),
+      termsAcceptedAt: new Date(),
+      acceptGeolocation: true,
+      plan: UserPlan.PREMIUM,
+      bio: "agriculteur de la plateforme Field4u",
+      city: "Bruxelles",
+      postalCode: "1000",
+    },
+  });
+
   // créer ~SEED_COUNT/2 fermiers et ~SEED_COUNT/2 glaneurs
   const users = [];
 
@@ -281,6 +321,12 @@ async function seedAnnouncements() {
         );
       }
 
+      // Ajouter un prix suggéré à 60% des annonces
+      const hasSuggestedPrice = faker.datatype.boolean({ probability: 0.6 });
+      const suggestedPrice = hasSuggestedPrice
+        ? faker.number.float({ min: 2, max: 20, fractionDigits: 2 })
+        : null;
+
       await prisma.announcement.create({
         data: {
           id: nanoid(21),
@@ -294,6 +340,7 @@ async function seedAnnouncements() {
           ownerId: farm!.ownerId,
           startDate: startDate,
           endDate: endDate,
+          suggestedPrice: suggestedPrice,
         },
       });
     }
@@ -357,6 +404,63 @@ async function seedParticipations() {
   }
 
   return await prisma.participation.createMany({ data: participations });
+}
+
+async function seedParticipationPayments() {
+  console.log("🌱 seeding participation payments...");
+  const participations = await prisma.participation.findMany({
+    include: {
+      gleaning: {
+        include: {
+          announcement: true,
+        },
+      },
+    },
+  });
+
+  const payments = [];
+  let count = 0;
+  const targetCount = Math.floor(SEED_COUNT * 0.4); // environ 40% des participations ont un paiement
+
+  // Statuts possibles de paiement Stripe
+  const paymentStatuses = [
+    "succeeded",
+    "processing",
+    "requires_payment_method",
+    "canceled",
+  ];
+
+  for (const participation of participations) {
+    if (count >= targetCount) break;
+
+    // 40% des participations ont un paiement
+    if (faker.datatype.boolean({ probability: 0.4 })) {
+      count++;
+
+      // Déterminer le montant du paiement en utilisant le prix suggéré ou un montant aléatoire
+      const suggestedPrice = participation.gleaning.announcement.suggestedPrice;
+      const baseAmount = suggestedPrice
+        ? Number(suggestedPrice)
+        : faker.number.float({ min: 2, max: 20, fractionDigits: 2 });
+
+      // Variations autour du montant suggéré
+      const amount = suggestedPrice
+        ? baseAmount *
+          faker.number.float({ min: 0.8, max: 1.5, fractionDigits: 2 })
+        : baseAmount;
+
+      payments.push({
+        id: nanoid(21),
+        participationId: participation.id,
+        amount: amount,
+        paymentIntentId: `pi_${nanoid(24)}`,
+        status: faker.helpers.arrayElement(paymentStatuses),
+        createdAt: faker.date.recent({ days: 30 }),
+        updatedAt: faker.date.recent({ days: 10 }),
+      });
+    }
+  }
+  return await prisma.participationPayment.createMany({ data: payments });
 }
 
 async function seedReviews() {
@@ -518,6 +622,7 @@ async function seedFeedbacks() {
           "j'aimerais pouvoir télécharger un certificat après avoir participé",
           "une option pour partager les annonces sur les réseaux sociaux serait un plus",
           "pourrait-on prévoir un système de récompense pour les glaneurs réguliers?",
+          "j'apprécie le système de prix libre pour soutenir les agriculteurs",
         ]),
         email: user.email,
         userId: user.id,
@@ -539,6 +644,7 @@ async function seedFeedbacks() {
         "y a-t-il un moyen de contacter directement un agriculteur?",
         "j'aimerais organiser un groupe de glaneurs dans ma région",
         "existe-t-il des formations pour apprendre à glaner correctement?",
+        "comment fonctionnent les dons pour les agriculteurs?",
       ]),
       email: generateBelgianEmail(),
     });
@@ -668,6 +774,7 @@ async function seedAll() {
     await seedAnnouncements();
     await seedGleanings();
     await seedParticipations();
+    await seedParticipationPayments();
     await seedReviews();
     await seedLikes();
     await seedFavorites();

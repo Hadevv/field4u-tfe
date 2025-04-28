@@ -1,7 +1,6 @@
 import Stripe from "stripe";
 import { env } from "./env";
 
-// utiliser une approche lazy initialization pour éviter l'erreur avec la clé
 let stripeInstance: Stripe | null = null;
 
 export const getStripe = () => {
@@ -16,7 +15,6 @@ export const getStripe = () => {
   return stripeInstance;
 };
 
-// maintenir une compatibilité avec le code existant
 export const stripe = new Proxy({} as Stripe, {
   get: (target, prop) => {
     return getStripe()[prop as keyof Stripe];
