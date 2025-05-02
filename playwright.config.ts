@@ -16,34 +16,57 @@ export default defineConfig({
   },
 
   projects: [
-    {
-      name: "setup-test-data",
-      testMatch: /test\/setup-test-data.ts/,
-    },
+    // setup pour générer les storageState
     {
       name: "setup",
-      testMatch: /auth\.setup\.ts/,
-      dependencies: ["setup-test-data"],
+      testMatch: /.*\.setup\.ts$/,
     },
+    // tests publics (inscription, onboarding, auth, etc.)
     {
-      name: "chromium",
+      name: "public",
       use: { ...devices["Desktop Chrome"] },
-      dependencies: ["setup"],
+      testMatch: [
+        /.*auth\.e2e\.ts$/,
+        /.*onboarding\.e2e\.ts$/,
+        /.*announcement\.e2e\.ts$/,
+      ],
+      testIgnore: [
+        /.*farmer.*\.e2e\.ts$/,
+        /.*admin.*\.e2e\.ts$/,
+        /.*gleaner.*\.e2e\.ts$/,
+        /.*gleaning\.e2e\.ts$/,
+        /.*\.setup\.ts$/,
+      ],
     },
+    // tests accès glaneur
     {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      name: "gleaner",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/user.json",
+      },
       dependencies: ["setup"],
+      testMatch: [/.*gleaner.*\.e2e\.ts$/, /.*gleaning\.e2e\.ts$/],
     },
+    // tests accès farmer
     {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
+      name: "farmer",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/farmer.json",
+      },
       dependencies: ["setup"],
+      testMatch: [/.*farmer.*\.e2e\.ts$/, /.*gleaning\.e2e\.ts$/],
     },
+    // tests accès admin
     {
-      name: "mobile-chrome",
-      use: { ...devices["Pixel 5"] },
+      name: "admin",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/admin.json",
+      },
       dependencies: ["setup"],
+      testMatch: [/.*admin.*\.e2e\.ts$/],
     },
   ],
 

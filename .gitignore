@@ -7,7 +7,12 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
+/playwright
 
+.cursorrules
+.cursor
 # next.js
 /.next/
 /out/
@@ -35,5 +40,5 @@ yarn-error.log*
 
 .env
 
-.cursorrules
-.cursor
+
+
