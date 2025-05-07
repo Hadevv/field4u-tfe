@@ -160,3 +160,26 @@ Une évolution prévue pour l'application sera l'intégration de Stripe Connect 
 │  Payment    │         │   Account    │
 └─────────────┘         └─────────────┘
 ```
+
+## Tests
+
+### Tests unitaires et d'intégration (Vitest)
+
+```bash
+pnpm test
+
+pnpm test:ui
+
+```
+
+### Tests end-to-end (Playwright)
+
+```bash
+npx playwright install
+
+pnpm test:e2e
+
+pnpm test:e2e-ui
+
+pnpm test:e2e-debug
+```
