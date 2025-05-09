@@ -86,7 +86,7 @@ export function DonationSection({
     <Card className="overflow-hidden border border-border bg-card">
       <CardHeader className="bg-muted/20">
         <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
-          <Heart className="h-5 w-5 text-red-500" />
+          <Heart className="h-5 w-5" />
           soutenez cette initiative
         </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">

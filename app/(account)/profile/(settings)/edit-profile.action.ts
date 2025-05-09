@@ -26,6 +26,7 @@ export const updateProfileAction = authAction
         name: input.name,
         email: input.email,
         emailVerified: previousEmail === input.email ? undefined : null,
+        notificationsEnabled: input.notificationsEnabled,
       },
     });
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 export const ProfileFormSchema = z.object({
   name: z.string().optional().nullable(),
   email: z.string(),
+  notificationsEnabled: z.boolean().default(true),
 });
 
 export const EditPasswordFormSchema = z.object({

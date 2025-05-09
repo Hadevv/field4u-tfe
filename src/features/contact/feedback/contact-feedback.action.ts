@@ -6,6 +6,8 @@ import { sendEmail } from "@/lib/mail/sendEmail";
 import { prisma } from "@/lib/prisma";
 import { SiteConfig } from "@/site-config";
 import { ContactFeedbackSchema } from "./contact-feedback.schema";
+import { sendNotificationToUser } from "@/lib/notifications/sendNotification";
+import { NotificationType } from "@prisma/client";
 
 export const contactSupportAction = action
   .schema(ContactFeedbackSchema)
@@ -30,6 +32,20 @@ export const contactSupportAction = action
       text: `Note:\nMessage: ${feedback.message}`,
       replyTo: email,
     });
+
+    // envoyer une notification à l'admin (premier utilisateur admin trouvé)
+    const admin = await prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      select: { id: true },
+    });
+
+    if (admin) {
+      await sendNotificationToUser(
+        admin.id,
+        NotificationType.FEEDBACK_RECEIVED,
+        `nouveau feedback reçu de ${email}`,
+      );
+    }
 
     return { message: "Votre feedback a été envoyé à l'assistance." };
   });
