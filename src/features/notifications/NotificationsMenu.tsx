@@ -15,54 +15,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useState } from "react";
-
-type Notification = {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  read: boolean;
-};
+import { useNotifications } from "@/hooks/use-notifications";
+import { useSession } from "next-auth/react";
 
 export function NotificationsMenu() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      title: "Nouveau champ disponible",
-      description:
-        "Un nouveau champ de carottes est disponible près de chez vous.",
-      date: "Il y a 2 heures",
-      read: false,
-    },
-    {
-      id: "2",
-      title: "Rappel de glanage",
-      description:
-        "Votre session de glanage à la Ferme des Champs Libres est demain.",
-      date: "Il y a 5 heures",
-      read: false,
-    },
-    {
-      id: "3",
-      title: "Nouvelle inscription",
-      description: "3 personnes se sont inscrites à votre annonce de glanage.",
-      date: "Hier",
-      read: false,
-    },
-  ]);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
-  };
-
-  const markAsRead = (id: string) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
-  };
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const { notifications, unreadCount, markAsRead, markAllAsRead } =
+    useNotifications(userId);
 
   return (
     <Popover>
@@ -81,7 +41,7 @@ export function NotificationsMenu() {
           <CardHeader className="flex flex-row items-center justify-between px-4 pb-2 pt-4">
             <div>
               <CardTitle className="text-base">Notifications</CardTitle>
-              <CardDescription>Vos dernières notifications</CardDescription>
+              <CardDescription>vos dernières notifications</CardDescription>
             </div>
             {unreadCount > 0 && (
               <Button
@@ -90,7 +50,7 @@ export function NotificationsMenu() {
                 onClick={markAllAsRead}
                 className="h-8 px-2 text-xs"
               >
-                Tout marquer comme lu
+                tout marquer comme lu
               </Button>
             )}
           </CardHeader>
@@ -99,34 +59,34 @@ export function NotificationsMenu() {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`cursor-pointer px-4 py-3 transition-colors hover:bg-muted/50 ${notification.read ? "opacity-70" : ""}`}
+                  className={`cursor-pointer px-4 py-3 transition-colors hover:bg-muted/50 ${notification.isRead ? "opacity-70" : ""}`}
                   onClick={() => markAsRead(notification.id)}
                 >
                   <div className="mb-1 flex items-start justify-between">
                     <div className="flex items-center gap-2 text-sm font-medium">
-                      {notification.title}
-                      {!notification.read && (
+                      {notification.type}
+                      {!notification.isRead && (
                         <span className="size-2 rounded-full bg-primary" />
                       )}
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {notification.date}
+                      {new Date(notification.createdAt).toLocaleString()}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {notification.description}
+                    {notification.message}
                   </p>
                 </div>
               ))
             ) : (
               <div className="py-8 text-center text-muted-foreground">
-                Aucune notification
+                aucune notification
               </div>
             )}
           </CardContent>
           <CardFooter className="justify-center border-t p-2">
             <Button variant="link" size="sm" className="text-xs">
-              Voir toutes les notifications
+              voir toutes les notifications
             </Button>
           </CardFooter>
         </Card>
