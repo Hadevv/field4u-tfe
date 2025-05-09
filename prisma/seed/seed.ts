@@ -25,9 +25,15 @@ import {
   belgianCrops,
 } from "./utils/faker";
 import { generateSlug } from "../../src/lib/format/id";
+import {
+  setupStripeCustomer,
+  setupResendCustomer,
+} from "../../src/lib/auth/auth-config-setup";
 
 const prisma = new PrismaClient();
 const SEED_COUNT = 100;
+const USER_COUNT = 120;
+const CROPTYPE_COUNT = 100;
 
 async function cleanDatabase() {
   const tablenames = await prisma.$queryRaw<Array<{ tablename: string }>>`
@@ -58,12 +64,15 @@ async function seedUsers() {
   console.log("🌱 seeding users...");
   const hashedPassword = await bcrypt.hash("password123", 10);
 
-  // compte admin
+  // admin
+  const adminUser = { email: "admin@field4u.be", name: "Admin Field4u" };
+  const adminStripeId = await setupStripeCustomer(adminUser);
+  const adminResendId = await setupResendCustomer(adminUser);
   await prisma.user.create({
     data: {
       id: nanoid(21),
-      email: "admin@field4u.be",
-      name: "Admin Field4u",
+      email: adminUser.email,
+      name: adminUser.name,
       role: UserRole.ADMIN,
       language: Language.FRENCH,
       hashedPassword,
@@ -75,15 +84,21 @@ async function seedUsers() {
       bio: "administrateur de la plateforme Field4u",
       city: "Bruxelles",
       postalCode: "1000",
+      stripeCustomerId: adminStripeId ?? undefined,
+      resendContactId: adminResendId ?? undefined,
+      notificationsEnabled: true,
     },
   });
 
-  // glaneur
+  // gleaner
+  const gleanerUser = { email: "gleaner@field4u.be", name: "Gleaner Field4u" };
+  const gleanerStripeId = await setupStripeCustomer(gleanerUser);
+  const gleanerResendId = await setupResendCustomer(gleanerUser);
   await prisma.user.create({
     data: {
       id: nanoid(21),
-      email: "gleaner@field4u.be",
-      name: "Gleaner Field4u",
+      email: gleanerUser.email,
+      name: gleanerUser.name,
       role: UserRole.GLEANER,
       language: Language.FRENCH,
       hashedPassword,
@@ -95,15 +110,21 @@ async function seedUsers() {
       bio: "glaneur de la plateforme Field4u",
       city: "Bruxelles",
       postalCode: "1000",
+      stripeCustomerId: gleanerStripeId ?? undefined,
+      resendContactId: gleanerResendId ?? undefined,
+      notificationsEnabled: true,
     },
   });
 
-  // fermier
+  // farmer
+  const farmerUser = { email: "farmer@field4u.be", name: "Farmer Field4u" };
+  const farmerStripeId = await setupStripeCustomer(farmerUser);
+  const farmerResendId = await setupResendCustomer(farmerUser);
   await prisma.user.create({
     data: {
       id: nanoid(21),
-      email: "farmer@field4u.be",
-      name: "Farmer Field4u",
+      email: farmerUser.email,
+      name: farmerUser.name,
       role: UserRole.FARMER,
       language: Language.FRENCH,
       hashedPassword,
@@ -115,18 +136,20 @@ async function seedUsers() {
       bio: "agriculteur de la plateforme Field4u",
       city: "Bruxelles",
       postalCode: "1000",
+      stripeCustomerId: farmerStripeId ?? undefined,
+      resendContactId: farmerResendId ?? undefined,
+      notificationsEnabled: true,
     },
   });
 
-  // créer ~SEED_COUNT/2 fermiers et ~SEED_COUNT/2 glaneurs
+  // créer USER_COUNT/2 fermiers et USER_COUNT/2 glaneurs
   const users = [];
 
   // agriculteurs
-  for (let i = 0; i < Math.floor(SEED_COUNT / 2); i++) {
+  for (let i = 0; i < Math.floor(USER_COUNT / 2); i++) {
     const firstName = faker.helpers.arrayElement(belgianFirstNames);
     const lastName = faker.helpers.arrayElement(belgianLastNames);
     const city = getRandomBelgianCity();
-
     users.push({
       id: nanoid(21),
       email: generateBelgianEmail(firstName, lastName),
@@ -146,11 +169,10 @@ async function seedUsers() {
   }
 
   // glaneurs
-  for (let i = 0; i < Math.ceil(SEED_COUNT / 2); i++) {
+  for (let i = 0; i < Math.ceil(USER_COUNT / 2); i++) {
     const firstName = faker.helpers.arrayElement(belgianFirstNames);
     const lastName = faker.helpers.arrayElement(belgianLastNames);
     const city = getRandomBelgianCity();
-
     users.push({
       id: nanoid(21),
       email: generateBelgianEmail(firstName, lastName),
@@ -182,27 +204,34 @@ async function seedUsers() {
 
 async function seedCropTypes() {
   console.log("🌱 seeding crop types...");
-
-  // utiliser la liste des cultures belges
-  const cropTypes = belgianCrops.map((crop) => ({
-    id: nanoid(21),
-    name: crop.name,
-    category:
-      crop.category === "VEGETABLE"
-        ? CropCategory.VEGETABLE
-        : CropCategory.FRUIT,
-    season:
-      crop.season === "SPRING"
-        ? CropSeason.SPRING
-        : crop.season === "SUMMER"
-          ? CropSeason.SUMMER
-          : crop.season === "FALL"
-            ? CropSeason.FALL
-            : crop.season === "WINTER"
-              ? CropSeason.WINTER
-              : CropSeason.YEAR_ROUND,
-  }));
-
+  // générer CROPTYPE_COUNT cropTypes uniques
+  const cropTypes = [];
+  const usedNames = new Set();
+  while (cropTypes.length < CROPTYPE_COUNT) {
+    const crop: { name: string; category: string; season: string } =
+      faker.helpers.arrayElement(belgianCrops);
+    const cropName: string = `${crop.name} ${faker.word.adjective()}${cropTypes.length}`;
+    if (usedNames.has(cropName)) continue;
+    usedNames.add(cropName);
+    cropTypes.push({
+      id: nanoid(21),
+      name: cropName,
+      category:
+        crop.category === "VEGETABLE"
+          ? CropCategory.VEGETABLE
+          : CropCategory.FRUIT,
+      season:
+        crop.season === "SPRING"
+          ? CropSeason.SPRING
+          : crop.season === "SUMMER"
+            ? CropSeason.SUMMER
+            : crop.season === "FALL"
+              ? CropSeason.FALL
+              : crop.season === "WINTER"
+                ? CropSeason.WINTER
+                : CropSeason.YEAR_ROUND,
+    });
+  }
   return await prisma.cropType.createMany({ data: cropTypes });
 }
 
@@ -468,25 +497,17 @@ async function seedReviews() {
   const completedGleanings = await prisma.gleaning.findMany({
     where: { status: GleaningStatus.COMPLETED },
   });
-
   const reviews = [];
   let count = 0;
-  const targetCount = Math.min(completedGleanings.length * 2, SEED_COUNT);
-
+  const targetCount = Math.max(SEED_COUNT, completedGleanings.length * 2, 100);
   for (const gleaning of completedGleanings) {
     if (count >= targetCount) break;
-
     const participants = await prisma.participation.findMany({
-      where: {
-        gleaningId: gleaning.id,
-      },
+      where: { gleaningId: gleaning.id },
     });
-
     for (const participant of participants) {
       if (count >= targetCount) break;
-
-      // 80% de chance qu'un participant laisse un avis
-      if (faker.datatype.boolean({ probability: 0.8 })) {
+      if (faker.datatype.boolean({ probability: 0.8 }) || count < 100) {
         count++;
         reviews.push({
           id: nanoid(21),
@@ -509,7 +530,23 @@ async function seedReviews() {
       }
     }
   }
-
+  // compléter si < 100
+  while (reviews.length < 100) {
+    reviews.push({
+      id: nanoid(21),
+      userId: nanoid(21),
+      gleaningId: nanoid(21),
+      rating: faker.helpers.weightedArrayElement([
+        { weight: 1, value: 3 },
+        { weight: 2, value: 4 },
+        { weight: 3, value: 5 },
+        { weight: 0.5, value: 2 },
+        { weight: 0.1, value: 1 },
+      ]),
+      content: generateComment(),
+      images: [],
+    });
+  }
   return await prisma.review.createMany({ data: reviews });
 }
 
@@ -681,25 +718,35 @@ async function seedNotifications() {
           message = `nouvelle opportunité de glanage près de ${city}`;
           break;
         }
-        case NotificationType.RESERVATION_REQUEST:
-          {
-            message = "nouvelle demande de participation à votre annonce";
-          }
+        case NotificationType.PARTICIPATION_JOINED:
+          message = "un glaneur a rejoint votre glanage";
           break;
-        case NotificationType.GLEANING_ACCEPTED:
-          message = "votre demande de participation a été acceptée";
+        case NotificationType.ANNOUNCEMENT_REPORTED:
+          message = "une de vos annonces a été signalée";
           break;
-        case NotificationType.NEW_REVIEW:
-          message = "un glaneur a laissé un avis sur votre annonce";
-          break;
-        case NotificationType.GLEANING_REMINDER:
+        case NotificationType.GLEANING_REMINDER_SENT:
           message = "rappel : vous avez une session de glanage demain";
           break;
-        case NotificationType.GLEANING_CANCELLED:
+        case NotificationType.GLEANING_CANCELED:
           message = "une session de glanage a été annulée";
           break;
-        case NotificationType.FIELD_UPDATED:
-          message = "un champ que vous suivez a été mis à jour";
+        case NotificationType.REVIEW_POSTED:
+          message = "un glaneur a laissé un avis sur votre annonce";
+          break;
+        case NotificationType.ACCOUNT_BANNED:
+          message = "votre compte a été banni";
+          break;
+        case NotificationType.FEEDBACK_RECEIVED:
+          message = "vous avez reçu un nouveau feedback";
+          break;
+        case NotificationType.INFO_REVEALED:
+          message = "une information importante a été révélée";
+          break;
+        case NotificationType.NEW_MESSAGE:
+          message = "vous avez reçu un nouveau message";
+          break;
+        case NotificationType.PAYMENT_RECEIVED:
+          message = "paiement reçu pour votre annonce";
           break;
         default:
           message = "nouvelle notification";
