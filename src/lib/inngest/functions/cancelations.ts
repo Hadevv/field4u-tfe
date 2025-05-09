@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/mail/sendEmail";
 import GleaningCanceledEmail from "@email/GleaningCanceledEmail";
 import { getServerUrl } from "@/lib/server-url";
+import { sendNotificationToUser } from "@/lib/notifications/sendNotification";
+import { NotificationType } from "@prisma/client";
 
 export const cancelationsFunction = inngest.createFunction(
   { id: "gleaning-cancelations" },
@@ -19,6 +21,7 @@ export const cancelationsFunction = inngest.createFunction(
             user: {
               select: {
                 email: true,
+                id: true,
               },
             },
           },
@@ -60,9 +63,19 @@ export const cancelationsFunction = inngest.createFunction(
             }),
           }),
         );
-
         return Promise.all(emailPromises);
       });
+
+      // envoyer une notification à chaque participant
+      for (const participant of participants) {
+        if (participant.user?.email) {
+          await sendNotificationToUser(
+            participant.user.id,
+            NotificationType.GLEANING_CANCELED,
+            `la session de glanage ${announcementTitle} a été annulée`,
+          );
+        }
+      }
 
       return {
         success: true,

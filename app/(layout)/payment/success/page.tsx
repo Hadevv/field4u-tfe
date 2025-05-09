@@ -11,6 +11,8 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import Link from "next/link";
 import type { PageParams } from "@/types/next";
+import { sendNotificationToUser } from "@/lib/notifications/sendNotification";
+import { NotificationType } from "@prisma/client";
 
 async function updatePaymentStatus(paymentIntentId: string) {
   try {
@@ -23,6 +25,20 @@ async function updatePaymentStatus(paymentIntentId: string) {
 
     const payment = await prisma.participationPayment.findFirst({
       where: { paymentIntentId },
+      include: {
+        participation: {
+          select: {
+            userId: true,
+            gleaning: {
+              select: {
+                announcement: {
+                  select: { title: true },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!payment) {
@@ -43,6 +59,16 @@ async function updatePaymentStatus(paymentIntentId: string) {
         old_status: payment.status,
         new_status: intent.status,
       });
+
+      if (intent.status === "succeeded" && payment.participation.userId) {
+        const announcementTitle =
+          payment.participation.gleaning?.announcement?.title || "glanage";
+        await sendNotificationToUser(
+          payment.participation.userId,
+          NotificationType.PAYMENT_RECEIVED,
+          `votre paiement pour "${announcementTitle}" a été reçu avec succès`,
+        );
+      }
     } else {
       logger.info(`statut déjà à jour à la redirection`, {
         id: payment.id,
