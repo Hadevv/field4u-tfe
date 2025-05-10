@@ -84,16 +84,15 @@ export function GleaningStepper({
   };
 
   const isStepAccessible = (stepId: number) => {
-    // si le glanage est terminé, toutes les étapes sont accessibles
-    if (isCompleted) return true;
-
     // l'étape 1 (annonce) est toujours accessible
     if (stepId === 1) return true;
 
     // l'étape 2 (glanage) est accessible uniquement si l'utilisateur est participant
     if (stepId === 2) return isParticipant;
 
-    // l'étape 3 (évaluation) n'est accessible que si le glanage est terminé
+    // l'étape 3 (évaluation) n'est accessible que si le glanage est terminé ET l'utilisateur est participant
+    if (stepId === 3) return isParticipant && gleaningStatus === "COMPLETED";
+
     return false;
   };
 

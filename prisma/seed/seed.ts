@@ -7,6 +7,7 @@ import {
   CropSeason,
   GleaningStatus,
   NotificationType,
+  MessageType,
 } from "@prisma/client";
 import { nanoid } from "nanoid";
 import bcrypt from "bcrypt";
@@ -33,7 +34,7 @@ import {
 const prisma = new PrismaClient();
 const SEED_COUNT = 100;
 const USER_COUNT = 120;
-const CROPTYPE_COUNT = 100;
+const CROPTYPE_COUNT = 30;
 
 async function cleanDatabase() {
   const tablenames = await prisma.$queryRaw<Array<{ tablename: string }>>`
@@ -208,9 +209,9 @@ async function seedCropTypes() {
   const cropTypes = [];
   const usedNames = new Set();
   while (cropTypes.length < CROPTYPE_COUNT) {
-    const crop: { name: string; category: string; season: string } =
-      faker.helpers.arrayElement(belgianCrops);
-    const cropName: string = `${crop.name} ${faker.word.adjective()}${cropTypes.length}`;
+
+    const crop = faker.helpers.arrayElement(belgianCrops);
+    const cropName = crop.name; // pas d'adjectif ni de numéro
     if (usedNames.has(cropName)) continue;
     usedNames.add(cropName);
     cropTypes.push({
@@ -492,11 +493,62 @@ async function seedParticipationPayments() {
   return await prisma.participationPayment.createMany({ data: payments });
 }
 
+async function seedMessages() {
+  console.log("🌱 seeding messages...");
+  const gleanings = await prisma.gleaning.findMany();
+  const users = await prisma.user.findMany();
+  const messages = [];
+  let count = 0;
+  for (const gleaning of gleanings) {
+    // 5 à 15 messages par glanage
+    const numMessages = Math.floor(Math.random() * 11) + 5;
+    const participants = await prisma.participation.findMany({
+      where: { gleaningId: gleaning.id },
+      include: { user: true },
+    });
+    const ownerId = (
+      await prisma.announcement.findUnique({
+        where: { id: gleaning.announcementId },
+        select: { ownerId: true },
+      })
+    )?.ownerId;
+    for (let i = 0; i < numMessages; i++) {
+      const isGroup = Math.random() < 0.7;
+      let senderId = null;
+      if (isGroup && participants.length > 0) {
+        senderId =
+          participants[Math.floor(Math.random() * participants.length)].userId;
+      } else if (ownerId) {
+        senderId = ownerId;
+      } else {
+        senderId = users[Math.floor(Math.random() * users.length)].id;
+      }
+      messages.push({
+        id: nanoid(21),
+        gleaningId: gleaning.id,
+        senderId,
+        type: isGroup ? MessageType.GROUP : MessageType.OWNER,
+        content: isGroup
+          ? faker.lorem.sentence()
+          : "message privé à l'agriculteur",
+        createdAt: faker.date.recent({ days: 30 }),
+      });
+      count++;
+    }
+  }
+  return await prisma.message.createMany({ data: messages });
+}
+
 async function seedReviews() {
   console.log("🌱 seeding reviews...");
   const completedGleanings = await prisma.gleaning.findMany({
     where: { status: GleaningStatus.COMPLETED },
   });
+
+  const users = await prisma.user.findMany();
+  const allGleaningIds = completedGleanings.map((g) => g.id);
+  const allUserIds = users.map((u) => u.id);
+
   const reviews = [];
   let count = 0;
   const targetCount = Math.max(SEED_COUNT, completedGleanings.length * 2, 100);
@@ -507,7 +559,8 @@ async function seedReviews() {
     });
     for (const participant of participants) {
       if (count >= targetCount) break;
-      if (faker.datatype.boolean({ probability: 0.8 }) || count < 100) {
+      if (faker.datatype.boolean({ probability: 0.8 }) || count < 50) {
+
         count++;
         reviews.push({
           id: nanoid(21),
@@ -530,12 +583,13 @@ async function seedReviews() {
       }
     }
   }
-  // compléter si < 100
-  while (reviews.length < 100) {
+
+  // compléter si < 100 avec des ids valides
+  while (reviews.length < 100 && allGleaningIds.length && allUserIds.length) {
     reviews.push({
       id: nanoid(21),
-      userId: nanoid(21),
-      gleaningId: nanoid(21),
+      userId: faker.helpers.arrayElement(allUserIds),
+      gleaningId: faker.helpers.arrayElement(allGleaningIds),
       rating: faker.helpers.weightedArrayElement([
         { weight: 1, value: 3 },
         { weight: 2, value: 4 },
@@ -822,6 +876,7 @@ async function seedAll() {
     await seedGleanings();
     await seedParticipations();
     await seedParticipationPayments();
+    await seedMessages();
     await seedReviews();
     await seedLikes();
     await seedFavorites();

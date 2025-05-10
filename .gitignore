@@ -37,6 +37,10 @@ yarn-error.log*
 *.tsbuildinfo
 
 .env
+.env.local
+.env.development
+.env.production
+.env.test
 
 .cursorrules
 .cursor

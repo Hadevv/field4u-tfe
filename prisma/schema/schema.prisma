@@ -44,6 +44,7 @@ model User {
   reviews              Review[]
   sessions             Session[]
   statistics           Statistic[]
+  messages             Message[]
 
   @@index([createdAt])
   @@index([email])
@@ -215,7 +216,9 @@ model Gleaning {
   updatedAt      DateTime        @updatedAt @map("updated_at")
   announcement   Announcement    @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   participations Participation[]
+  messages       Message[]
   reviews        Review[]
+
 
   @@map("gleanings")
 }
@@ -231,6 +234,19 @@ model Participation {
 
   @@unique([userId, gleaningId])
   @@map("participations")
+}
+
+model Message {
+  id         String      @id @default(nanoid(21)) @db.Char(21)
+  gleaningId String      @db.Char(21)
+  senderId   String      @db.Char(21)
+  type       MessageType
+  content    String      @db.VarChar(1000)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  gleaning   Gleaning    @relation(fields: [gleaningId], references: [id], onDelete: Cascade)
+  sender     User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }
 
 enum UserPlan {
@@ -282,4 +298,9 @@ enum CropSeason {
   FALL
   WINTER
   YEAR_ROUND
+}
+
+enum MessageType {
+  GROUP
+  OWNER
 }
