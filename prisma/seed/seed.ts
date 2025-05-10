@@ -209,6 +209,7 @@ async function seedCropTypes() {
   const cropTypes = [];
   const usedNames = new Set();
   while (cropTypes.length < CROPTYPE_COUNT) {
+
     const crop = faker.helpers.arrayElement(belgianCrops);
     const cropName = crop.name; // pas d'adjectif ni de numéro
     if (usedNames.has(cropName)) continue;
@@ -543,9 +544,11 @@ async function seedReviews() {
   const completedGleanings = await prisma.gleaning.findMany({
     where: { status: GleaningStatus.COMPLETED },
   });
+
   const users = await prisma.user.findMany();
   const allGleaningIds = completedGleanings.map((g) => g.id);
   const allUserIds = users.map((u) => u.id);
+
   const reviews = [];
   let count = 0;
   const targetCount = Math.max(SEED_COUNT, completedGleanings.length * 2, 100);
@@ -557,6 +560,7 @@ async function seedReviews() {
     for (const participant of participants) {
       if (count >= targetCount) break;
       if (faker.datatype.boolean({ probability: 0.8 }) || count < 50) {
+
         count++;
         reviews.push({
           id: nanoid(21),
@@ -579,6 +583,7 @@ async function seedReviews() {
       }
     }
   }
+
   // compléter si < 100 avec des ids valides
   while (reviews.length < 100 && allGleaningIds.length && allUserIds.length) {
     reviews.push({

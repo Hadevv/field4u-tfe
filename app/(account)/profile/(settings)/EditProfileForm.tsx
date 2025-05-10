@@ -21,6 +21,7 @@ import { createVerifyEmailAction } from "../verify-email/verify-email.action";
 import { updateProfileAction } from "./edit-profile.action";
 import type { ProfileFormType } from "./edit-profile.schema";
 import { ProfileFormSchema } from "./edit-profile.schema";
+import { Switch } from "@/components/ui/switch";
 
 type EditProfileFormProps = {
   defaultValues: User;
@@ -29,7 +30,11 @@ type EditProfileFormProps = {
 export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
   const form = useZodForm({
     schema: ProfileFormSchema,
-    defaultValues: defaultValues,
+    defaultValues: {
+      email: defaultValues.email,
+      name: defaultValues.name,
+      notificationsEnabled: defaultValues.notificationsEnabled,
+    },
   });
   const router = useRouter();
 
@@ -40,7 +45,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
       if (values.email !== defaultValues.email) {
         await createVerifyEmailAction("");
         toast.success(
-          "Vous avez mis à jour votre email. Nous vous avons envoyé un nouveau lien de vérification.",
+          "vous avez mis à jour votre email. nous vous avons envoyé un nouveau lien de vérification.",
         );
         router.push("/");
         return;
@@ -51,7 +56,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         return;
       }
 
-      toast.success("Profil mis à jour");
+      toast.success("profil mis à jour");
       router.refresh();
     },
   });
@@ -68,7 +73,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nom</FormLabel>
+            <FormLabel>nom</FormLabel>
             <FormControl>
               <Input placeholder="" {...field} value={field.value ?? ""} />
             </FormControl>
@@ -83,9 +88,9 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel className="flex items-center gap-1">
-              <span>Email</span>
+              <span>email</span>
               {defaultValues.emailVerified ? (
-                <InlineTooltip title="Email vérifié. Si vous changez votre email, vous devrez le vérifier à nouveau.">
+                <InlineTooltip title="email vérifié. si vous changez votre email, vous devrez le vérifier à nouveau.">
                   <BadgeCheck size={16} />
                 </InlineTooltip>
               ) : null}
@@ -97,8 +102,26 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
           </FormItem>
         )}
       />
+      <FormField
+        control={form.control}
+        name="notificationsEnabled"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center gap-2 py-2">
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                id="notificationsEnabled"
+              />
+            </FormControl>
+            <FormLabel htmlFor="notificationsEnabled" className="text-sm">
+              activer les notifications
+            </FormLabel>
+          </FormItem>
+        )}
+      />
       <SubmitButton className="w-fit self-end" size="sm">
-        Enregistrer
+        enregistrer
       </SubmitButton>
     </Form>
   );

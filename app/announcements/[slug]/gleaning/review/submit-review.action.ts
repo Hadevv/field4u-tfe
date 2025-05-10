@@ -4,6 +4,8 @@ import { authAction } from "@/lib/backend/safe-actions";
 import { prisma } from "@/lib/prisma";
 import { ReviewSchema } from "./submit-review.schema";
 import { uploadManager } from "@/features/upload/upload-new";
+import { sendNotificationToUser } from "@/lib/notifications/sendNotification";
+import { NotificationType } from "@prisma/client";
 
 export const submitReviewAction = authAction
   .schema(ReviewSchema)
@@ -78,6 +80,23 @@ export const submitReviewAction = authAction
         images: imageUrls,
       },
     });
+
+    // notification à l'agriculteur (owner de l'annonce)
+    const gleaning = await prisma.gleaning.findUnique({
+      where: { id: gleaningId },
+      select: {
+        announcement: {
+          select: { ownerId: true, title: true },
+        },
+      },
+    });
+    if (gleaning?.announcement?.ownerId) {
+      await sendNotificationToUser(
+        gleaning.announcement.ownerId,
+        NotificationType.REVIEW_POSTED,
+        `un glaneur a laissé un avis sur votre annonce "${gleaning.announcement.title ?? ""}"`,
+      );
+    }
 
     return review;
   });

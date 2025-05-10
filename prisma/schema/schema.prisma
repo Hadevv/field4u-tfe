@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["prismaSchemaFolder", "postgresqlExtensions"]
+  previewFeatures = ["postgresqlExtensions", "prismaSchemaFolder"]
 }
 
 datasource db {
@@ -9,15 +9,6 @@ datasource db {
   extensions = [postgis, unaccent]
 }
 
-// -- Contraintes CHECK pour les tables
-// ALTER TABLE "reviews" ADD CONSTRAINT rating_range CHECK (rating BETWEEN 1 AND 5);
-// ALTER TABLE "gleanings" ADD CONSTRAINT quantity_non_negative CHECK (quantity_available >= 0);
-// ALTER TABLE "gleaning_periods" ADD CONSTRAINT valid_date_range CHECK (start_date < end_date);
-// ALTER TABLE "fields" ADD CONSTRAINT ownership_check CHECK (
-//     (farm_id IS NOT NULL AND owner_id IS NULL) 
-//     OR 
-//     (farm_id IS NULL AND owner_id IS NOT NULL)
-// );
 model User {
   id                   String          @id @default(nanoid(21)) @db.Char(21)
   name                 String?         @db.VarChar(100)
@@ -62,17 +53,17 @@ model User {
 
 model Farm {
   id          String   @id @default(nanoid(21)) @db.Char(21)
-  ownerId     String   @map("owner_id") @db.Char(21)
   name        String   @db.VarChar(255)
   slug        String   @unique @db.VarChar(100)
   description String?  @db.VarChar(500)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
   city        String?  @db.VarChar(100)
+  postalCode  String?  @map("postal_code") @db.VarChar(10)
   contactInfo String?  @map("contact_info") @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+  ownerId     String   @map("owner_id") @db.Char(21)
+  updatedAt   DateTime @updatedAt @map("updated_at")
   latitude    Float?
   longitude   Float?
-  postalCode  String?  @map("postal_code") @db.VarChar(10)
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   fields      Field[]
 
@@ -83,26 +74,24 @@ model Farm {
 
 model Review {
   id         String   @id @default(nanoid(21)) @db.Char(21)
-  userId     String   @map("user_id") @db.Char(21)
-  rating     Int      @db.SmallInt // gérer coté SQL car prisma ne gere pas le CHECK
+  rating     Int      @db.SmallInt
   content    String?  @db.VarChar(500)
-  images     String[] @default([]) @db.VarChar(255) // URL des images 
   createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
   gleaningId String   @map("gleaning_id") @db.Char(21)
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  userId     String   @map("user_id") @db.Char(21)
+  images     String[] @default([]) @db.VarChar(255)
   gleaning   Gleaning @relation(fields: [gleaningId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  //CHECK SQL : Rating est limiter à 1-5
 
   @@map("reviews")
 }
 
 model Like {
   id             String       @id @default(nanoid(21)) @db.Char(21)
-  userId         String       @map("user_id") @db.Char(21)
   announcementId String       @map("announcement_id") @db.Char(21)
   createdAt      DateTime     @default(now()) @map("created_at")
+  userId         String       @map("user_id") @db.Char(21)
   announcement   Announcement @relation(fields: [announcementId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
 
@@ -111,9 +100,9 @@ model Like {
 
 model Favorite {
   id             String       @id @default(nanoid(21)) @db.Char(21)
-  userId         String       @map("user_id") @db.Char(21)
   announcementId String       @map("announcement_id") @db.Char(21)
   createdAt      DateTime     @default(now()) @map("created_at")
+  userId         String       @map("user_id") @db.Char(21)
   announcement   Announcement @relation(fields: [announcementId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
 
@@ -124,9 +113,9 @@ model Feedback {
   id        String   @id @default(nanoid(21)) @db.Char(21)
   message   String   @db.VarChar(1000)
   email     String?  @db.VarChar(254)
-  userId    String?  @map("user_id") @db.Char(21)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  userId    String?  @map("user_id") @db.Char(21)
   user      User?    @relation(fields: [userId], references: [id])
 
   @@map("feedbacks")
@@ -134,12 +123,12 @@ model Feedback {
 
 model Notification {
   id        String           @id @default(nanoid(21)) @db.Char(21)
-  userId    String           @map("user_id") @db.Char(21)
   type      NotificationType
   message   String           @db.VarChar(255)
-  isRead    Boolean          @default(false) @map("is_read")
   createdAt DateTime         @default(now()) @map("created_at")
+  isRead    Boolean          @default(false) @map("is_read")
   updatedAt DateTime         @updatedAt @map("updated_at")
+  userId    String           @map("user_id") @db.Char(21)
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
@@ -147,21 +136,20 @@ model Notification {
 
 model Field {
   id           String         @id @default(nanoid(21)) @db.Char(21)
-  farmId       String?        @map("farm_id") @db.Char(21)
   name         String?        @db.VarChar(100)
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
   city         String         @db.VarChar(100)
-  surface      Float?         @map("surface")
   postalCode   String         @map("postal_code") @db.VarChar(10)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  farmId       String?        @map("farm_id") @db.Char(21)
   ownerId      String?        @map("owner_id") @db.Char(21)
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  surface      Float?         @map("surface")
   latitude     Float
   longitude    Float
   announcement Announcement[]
   farm         Farm?          @relation(fields: [farmId], references: [id], onDelete: Cascade)
   owner        User?          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  //CHECK SQL : un champ doit être lié à une ferme OU à un utilisateur, pas les deux
   @@index([latitude, longitude])
   @@map("fields")
 }
@@ -169,8 +157,8 @@ model Field {
 model CropType {
   id           String         @id @default(nanoid(21)) @db.Char(21)
   name         String         @unique @db.VarChar(100)
-  category     CropCategory
   season       CropSeason
+  category     CropCategory
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
   announcement Announcement[]
@@ -180,12 +168,12 @@ model CropType {
 
 model Statistic {
   id                 String   @id @default(nanoid(21)) @db.Char(21)
+  lastUpdated        DateTime @updatedAt @map("last_updated")
+  totalAnnouncements Int      @default(0) @map("total_announcements")
+  totalFields        Int      @default(0) @map("total_fields")
+  totalFoodSaved     Float    @default(0) @map("total_food_saved")
   userId             String   @map("user_id") @db.Char(21)
   totalGleanings     Int      @default(0) @map("total_gleanings")
-  totalFoodSaved     Float    @default(0) @map("total_food_saved")
-  totalFields        Int      @default(0) @map("total_fields")
-  totalAnnouncements Int      @default(0) @map("total_announcements")
-  lastUpdated        DateTime @updatedAt @map("last_updated")
   user               User     @relation(fields: [userId], references: [id])
 
   @@map("statistics")
@@ -193,29 +181,28 @@ model Statistic {
 
 model Announcement {
   id                String     @id @default(nanoid(21)) @db.Char(21)
-  fieldId           String     @map("field_id") @db.Char(21)
   title             String     @db.VarChar(255)
-  slug              String     @unique @db.VarChar(100) // slug pour URL base sur le titre
+  slug              String     @unique @db.VarChar(100)
   description       String     @db.VarChar(2000)
-  images            String[]   @default([]) @db.VarChar(255) // URL des images
   createdAt         DateTime   @default(now()) @map("created_at")
-  updatedAt         DateTime   @updatedAt @map("updated_at")
-  isPublished       Boolean    @default(true) @map("is_published")
   cropTypeId        String     @map("crop_type_id") @db.Char(21)
-  quantityAvailable Int?       @map("quantity_available")
+  fieldId           String     @map("field_id") @db.Char(21)
+  isPublished       Boolean    @default(true) @map("is_published")
   ownerId           String     @map("owner_id") @db.Char(21)
+  quantityAvailable Int?       @map("quantity_available")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  images            String[]   @default([]) @db.VarChar(255)
   qrCode            String?    @map("qr_code_url") @db.VarChar(255)
-  startDate         DateTime?  @map("start_date") // date de debut du glanage
-  endDate           DateTime?  @map("end_date") // date de fin du glanage
-  suggestedPrice    Decimal?   @map("suggested_price") @db.Decimal(10, 2) // prix libre suggéré pour le glanage
+  endDate           DateTime?  @map("end_date")
+  startDate         DateTime?  @map("start_date")
+  suggestedPrice    Decimal?   @map("suggested_price") @db.Decimal(10, 2)
   cropType          CropType   @relation(fields: [cropTypeId], references: [id])
   field             Field      @relation(fields: [fieldId], references: [id])
   owner             User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   favorites         Favorite[]
-  gleaning          Gleaning? // relation one to one avec Gleaning
+  gleaning          Gleaning?
   likes             Like[]
 
-  //CHECK SQL : Eviter les valeurs négatives pour quantity_available
   @@index([slug])
   @@index([fieldId, cropTypeId])
   @@map("announcements")
@@ -228,22 +215,22 @@ model Gleaning {
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
   announcement   Announcement    @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-  reviews        Review[]
   participations Participation[]
   messages       Message[]
+  reviews        Review[]
+
 
   @@map("gleanings")
 }
 
-// table de liaison entre un utilisateur et un glanage
 model Participation {
   id         String                 @id @default(nanoid(21)) @db.Char(21)
+  createdAt  DateTime               @default(now()) @map("created_at")
   userId     String                 @map("user_id") @db.Char(21)
   gleaningId String                 @map("gleaning_id") @db.Char(21)
-  createdAt  DateTime               @default(now()) @map("created_at")
+  payments   ParticipationPayment[]
   gleaning   Gleaning               @relation(fields: [gleaningId], references: [id], onDelete: Cascade)
   user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  payments   ParticipationPayment[]
 
   @@unique([userId, gleaningId])
   @@map("participations")

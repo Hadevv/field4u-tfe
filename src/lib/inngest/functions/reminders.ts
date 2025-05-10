@@ -4,6 +4,8 @@ import { sendEmail } from "@/lib/mail/sendEmail";
 import GleaningReminderEmail from "@email/GleaningReminderEmail";
 import { addHours, differenceInHours } from "date-fns";
 import { getServerUrl } from "@/lib/server-url";
+import { sendNotificationToUser } from "@/lib/notifications/sendNotification";
+import { NotificationType } from "@prisma/client";
 
 export const remindersFunction = inngest.createFunction(
   { id: "gleaning-reminders" },
@@ -75,6 +77,13 @@ export const remindersFunction = inngest.createFunction(
           }),
         });
       });
+
+      // envoyer une notification en base et temps réel
+      await sendNotificationToUser(
+        userId,
+        NotificationType.GLEANING_REMINDER_SENT,
+        `rappel pour votre glanage: ${announcement.title}`,
+      );
 
       return { success: true, email: user.email };
     } catch (error) {
