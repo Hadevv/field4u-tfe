@@ -6,7 +6,7 @@ L'API Field4u permet d'interagir avec la plateforme de glanage via des endpoints
 
 ## Base URL
 
-```
+```bash
 https://field4u.vercel.app/api/v1
 ```
 
@@ -26,7 +26,7 @@ Les cookies de session sont automatiquement inclus dans les requêtes API suivan
 
 ### Récupérer la session utilisateur
 
-```
+```bash
 GET /auth/session
 ```
 
@@ -49,7 +49,7 @@ Réponse:
 
 #### Récupérer les annonces
 
-```
+```bash
 GET /announcements
 ```
 
@@ -65,7 +65,7 @@ Paramètres de requête:
 
 #### Récupérer une annonce spécifique
 
-```
+```bash
 GET /announcements/{id}
 ```
 
@@ -73,7 +73,7 @@ GET /announcements/{id}
 
 #### Récupérer les glanages
 
-```
+```bash
 GET /gleanings
 ```
 
@@ -85,7 +85,7 @@ Paramètres de requête:
 
 #### Participer à un glanage
 
-```
+```bash
 POST /gleanings/participation
 ```
 
@@ -99,7 +99,7 @@ Corps de la requête:
 
 #### Se désinscrire d'un glanage
 
-```
+```bash
 DELETE /gleanings/participation
 ```
 
@@ -113,7 +113,7 @@ Corps de la requête:
 
 ### Types de cultures
 
-```
+```bash
 GET /crop-types
 ```
 
@@ -126,13 +126,13 @@ Paramètres de requête:
 
 #### Récupérer le profil
 
-```
+```bash
 GET /profile
 ```
 
 #### Mettre à jour le profil
 
-```
+```bash
 PATCH /profile
 ```
 
@@ -155,7 +155,7 @@ Corps de la requête (tous les champs sont optionnels):
 
 #### Récupérer les notifications
 
-```
+```bash
 GET /notifications
 ```
 
@@ -167,7 +167,7 @@ Paramètres de requête:
 
 #### Marquer une notification comme lue
 
-```
+```bash
 PATCH /notifications
 ```
 
@@ -182,7 +182,7 @@ Corps de la requête:
 
 #### Marquer toutes les notifications comme lues
 
-```
+```bash
 PUT /notifications
 ```
 

@@ -19,39 +19,41 @@ datasource db {
 //     (farm_id IS NULL AND owner_id IS NOT NULL)
 // );
 model User {
-  id                  String          @id @default(nanoid(21)) @db.Char(21)
-  name                String?         @db.VarChar(100)
-  email               String          @unique @db.VarChar(254)
-  emailVerified       DateTime?       @map("email_verified")
-  image               String?         @db.VarChar(500)
-  bio                 String?         @db.VarChar(500)
-  city                String?         @db.VarChar(50)
-  postalCode          String?         @map("postal_code") @db.VarChar(10)
-  termsAcceptedAt     DateTime?       @map("terms_accepted_at")
-  rulesAcceptedAt     DateTime?       @map("rules_accepted_at")
-  acceptGeolocation   Boolean         @default(false) @map("accept_geolocation")
-  onboardingCompleted Boolean         @default(false) @map("onboarding_completed")
-  createdAt           DateTime        @default(now()) @map("created_at")
-  updatedAt           DateTime        @updatedAt @map("updated_at")
-  deletedAt           DateTime?       @map("deleted_at")
-  stripeCustomerId    String?         @map("stripe_customer_id") @db.VarChar(255)
-  plan                UserPlan        @default(FREE)
-  resendContactId     String?         @map("resend_contact_id") @db.VarChar(255)
-  hashedPassword      String?         @map("password_hash") @db.VarChar(255) // nullable car j'utilise OAuth
-  role                UserRole        @default(GLEANER)
-  language            Language        @default(FRENCH)
-  accounts            Account[]
-  announcements       Announcement[]
-  farms               Farm[]
-  favorites           Favorite[]
-  feedbacks           Feedback[]
-  fields              Field[]
-  likes               Like[]
-  notifications       Notification[]
-  participations      Participation[]
-  reviews             Review[]
-  sessions            Session[]
-  statistics          Statistic[]
+  id                   String          @id @default(nanoid(21)) @db.Char(21)
+  name                 String?         @db.VarChar(100)
+  email                String          @unique @db.VarChar(254)
+  image                String?         @db.VarChar(500)
+  bio                  String?         @db.VarChar(500)
+  plan                 UserPlan        @default(FREE)
+  role                 UserRole        @default(GLEANER)
+  language             Language        @default(FRENCH)
+  createdAt            DateTime        @default(now()) @map("created_at")
+  deletedAt            DateTime?       @map("deleted_at")
+  emailVerified        DateTime?       @map("email_verified")
+  hashedPassword       String?         @map("password_hash") @db.VarChar(255)
+  resendContactId      String?         @map("resend_contact_id") @db.VarChar(255)
+  stripeCustomerId     String?         @map("stripe_customer_id") @db.VarChar(255)
+  updatedAt            DateTime        @updatedAt @map("updated_at")
+  onboardingCompleted  Boolean         @default(false) @map("onboarding_completed")
+  acceptGeolocation    Boolean         @default(false) @map("accept_geolocation")
+  city                 String?         @db.VarChar(50)
+  postalCode           String?         @map("postal_code") @db.VarChar(10)
+  rulesAcceptedAt      DateTime?       @map("rules_accepted_at")
+  termsAcceptedAt      DateTime?       @map("terms_accepted_at")
+  notificationsEnabled Boolean         @default(true) @map("notifications_enabled")
+  accounts             Account[]
+  announcements        Announcement[]
+  farms                Farm[]
+  favorites            Favorite[]
+  feedbacks            Feedback[]
+  fields               Field[]
+  likes                Like[]
+  notifications        Notification[]
+  participations       Participation[]
+  reviews              Review[]
+  sessions             Session[]
+  statistics           Statistic[]
+  messages             Message[]
 
   @@index([createdAt])
   @@index([email])
@@ -228,6 +230,7 @@ model Gleaning {
   announcement   Announcement    @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   reviews        Review[]
   participations Participation[]
+  messages       Message[]
 
   @@map("gleanings")
 }
@@ -244,6 +247,19 @@ model Participation {
 
   @@unique([userId, gleaningId])
   @@map("participations")
+}
+
+model Message {
+  id         String      @id @default(nanoid(21)) @db.Char(21)
+  gleaningId String      @db.Char(21)
+  senderId   String      @db.Char(21)
+  type       MessageType
+  content    String      @db.VarChar(1000)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  gleaning   Gleaning    @relation(fields: [gleaningId], references: [id], onDelete: Cascade)
+  sender     User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }
 
 enum UserPlan {
@@ -266,12 +282,16 @@ enum GleaningStatus {
 
 enum NotificationType {
   NEW_ANNOUNCEMENT
-  RESERVATION_REQUEST
-  FIELD_UPDATED
-  GLEANING_ACCEPTED
-  NEW_REVIEW
-  GLEANING_REMINDER
-  GLEANING_CANCELLED
+  PARTICIPATION_JOINED
+  ANNOUNCEMENT_REPORTED
+  GLEANING_REMINDER_SENT
+  GLEANING_CANCELED
+  REVIEW_POSTED
+  ACCOUNT_BANNED
+  FEEDBACK_RECEIVED
+  INFO_REVEALED
+  NEW_MESSAGE
+  PAYMENT_RECEIVED
 }
 
 enum Language {
@@ -291,4 +311,9 @@ enum CropSeason {
   FALL
   WINTER
   YEAR_ROUND
+}
+
+enum MessageType {
+  GROUP
+  OWNER
 }
