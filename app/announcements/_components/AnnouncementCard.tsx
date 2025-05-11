@@ -87,7 +87,7 @@ export function AnnouncementCard({
             </Badge>
             {statusInfo.label && (
               <Badge
-                variant="outline"
+                variant="default"
                 className={`${statusInfo.color} shadow-sm`}
               >
                 {statusInfo.label}
