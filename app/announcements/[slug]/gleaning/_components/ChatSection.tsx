@@ -88,10 +88,28 @@ export function ChatSection({
     onError: (error: { message?: string }) => {
       toast.error(error.message || "erreur d'envoi");
     },
-    onSuccess: () => {
+    onSuccess: (message) => {
       toast.success("message envoyé");
       setGroupMessage("");
       setOwnerMessage("");
+      if (message) {
+        const newMessage: MessageType = {
+          id: message.id,
+          senderId: message.senderId,
+          senderName: message.sender?.name ?? userName ?? null,
+          type: message.type,
+          content: message.content,
+          createdAt:
+            typeof message.createdAt === "string"
+              ? message.createdAt
+              : new Date(message.createdAt).toISOString(),
+        };
+        setMessages((prev) =>
+          prev.some((m) => m.id === newMessage.id)
+            ? prev
+            : [...prev, newMessage],
+        );
+      }
     },
   });
 
