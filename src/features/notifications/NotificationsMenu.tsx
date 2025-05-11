@@ -21,8 +21,12 @@ import { useSession } from "next-auth/react";
 export function NotificationsMenu() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications(userId);
+  const {
+    notifications = [],
+    unreadCount = 0,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications(userId);
 
   return (
     <Popover>

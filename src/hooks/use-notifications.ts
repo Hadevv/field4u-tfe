@@ -31,8 +31,8 @@ export function useNotifications(userId: string | undefined) {
 
   useEffect(() => {
     if (data) {
-      setNotifications(data.data);
-      setUnreadCount(data.meta.unreadCount);
+      setNotifications(data.data || []);
+      setUnreadCount(data.meta?.unreadCount || 0);
     }
   }, [data]);
 
