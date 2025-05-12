@@ -84,7 +84,7 @@ export const ProviderButton = (props: ProviderButtonProps) => {
         "border-gray-500 bg-black text-white hover:bg-gray-950":
           data.name === "Github",
       })}
-      size="lg"
+      size="sm"
       onClick={() => {
         githubSignInMutation.mutate();
       }}

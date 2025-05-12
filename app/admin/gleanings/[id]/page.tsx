@@ -97,7 +97,7 @@ export default async function GleaningDetailsPage(
         <LayoutTitle>détails du glanage</LayoutTitle>
       </LayoutHeader>
       <LayoutActions>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" size="sm">
           <Link href="/admin/gleanings">
             <ArrowLeft className="mr-2 h-4 w-4" />
             retour aux glanages

@@ -1,14 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use server";
 
 import { authAction } from "@/lib/backend/safe-actions";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
 import { inngest } from "@/lib/inngest/client";
-
-export const CancelGleaningSchema = z.object({
-  gleaningId: z.string(),
-  announcementId: z.string(),
-});
+import { CancelGleaningSchema } from "./cancel-gleaning.schema";
 
 export const cancelGleaningAction = authAction
   .schema(CancelGleaningSchema)
@@ -52,7 +48,7 @@ export const cancelGleaningAction = authAction
         data: { status: "CANCELLED" },
       });
 
-      // envoyer l'event d'annulation au serveur d'inngest
+      // envoyer l'event d'annulation au job
       await inngest.send({
         name: "glanage.canceled",
         data: {

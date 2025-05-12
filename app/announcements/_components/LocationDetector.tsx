@@ -149,7 +149,7 @@ export function LocationDetector({
   return (
     <Button
       variant={variant}
-      size={size}
+      size="sm"
       className={className}
       onClick={handleGetLocation}
       disabled={disabled || isLoading}

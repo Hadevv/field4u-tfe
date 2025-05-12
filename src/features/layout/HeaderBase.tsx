@@ -41,13 +41,13 @@ export function HeaderBase({
             </Link>
             {!isVerifyRequest && (
               <nav className="hidden items-center space-x-2 md:flex">
-                <Button asChild variant="ghost" className="gap-2">
+                <Button asChild variant="ghost" size="sm">
                   <Link href="/announcements/">
                     <MapPin className="size-4" />
                     Explorer la carte
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" className="gap-2">
+                <Button asChild variant="ghost" size="sm">
                   <Link href="/my-gleanings">
                     <Heart className="size-4" />
                     Mes glanages

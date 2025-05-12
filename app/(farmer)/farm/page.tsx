@@ -61,6 +61,7 @@ export default async function FarmerDashboardPage() {
                     asChild
                     variant="outline"
                     className="w-full justify-start"
+                    size="sm"
                   >
                     <Link href="/farm/details">
                       <Tractor className="mr-2 h-4 w-4" />
@@ -84,6 +85,7 @@ export default async function FarmerDashboardPage() {
                     asChild
                     variant="outline"
                     className="w-full justify-start"
+                    size="sm"
                   >
                     <Link href="/farm/fields">
                       <MapPin className="mr-2 h-4 w-4" />
@@ -94,6 +96,7 @@ export default async function FarmerDashboardPage() {
                     asChild
                     variant="outline"
                     className="w-full justify-start"
+                    size="sm"
                   >
                     <Link href="/farm/fields/new">
                       <Plus className="mr-2 h-4 w-4" />
@@ -117,6 +120,7 @@ export default async function FarmerDashboardPage() {
                     asChild
                     variant="outline"
                     className="w-full justify-start"
+                    size="sm"
                   >
                     <Link href="/farm/announcements">
                       <FileText className="mr-2 h-4 w-4" />
@@ -127,6 +131,7 @@ export default async function FarmerDashboardPage() {
                     asChild
                     variant="outline"
                     className="w-full justify-start"
+                    size="sm"
                   >
                     <Link href="/farm/announcements/new">
                       <Plus className="mr-2 h-4 w-4" />
@@ -164,7 +169,7 @@ async function FarmCard({ userId }: { userId: string }) {
               {farm.city || "Aucune ville"}
             </p>
             <div className="mt-4">
-              <Button asChild variant="default" className="w-full">
+              <Button asChild variant="default" className="w-full" size="sm">
                 <Link href="/farm/details">Gérer mon exploitation</Link>
               </Button>
             </div>
@@ -175,7 +180,7 @@ async function FarmCard({ userId }: { userId: string }) {
               Vous n'avez pas encore créé d'exploitation.
             </p>
             <div className="mt-4">
-              <Button asChild variant="default" className="w-full">
+              <Button asChild variant="default" className="w-full" size="sm">
                 <Link href="/farm/details">Créer mon exploitation</Link>
               </Button>
             </div>
@@ -226,10 +231,10 @@ async function FieldsCard({ userId }: { userId: string }) {
           <p className="text-sm text-muted-foreground">Champs enregistrés</p>
         </div>
         <div className="mt-4 space-y-2">
-          <Button asChild variant="default" className="w-full">
+          <Button asChild variant="default" className="w-full" size="sm">
             <Link href="/farm/fields">Voir mes champs</Link>
           </Button>
-          <Button asChild variant="outline" className="w-full">
+          <Button asChild variant="outline" className="w-full" size="sm">
             <Link href="/farm/fields/new">Ajouter un champ</Link>
           </Button>
         </div>
@@ -289,10 +294,10 @@ async function AnnouncementsCard({ userId }: { userId: string }) {
           </div>
         </div>
         <div className="mt-4 space-y-2">
-          <Button asChild variant="default" className="w-full">
+          <Button asChild variant="default" className="w-full" size="sm">
             <Link href="/farm/announcements">Voir mes annonces</Link>
           </Button>
-          <Button asChild variant="outline" className="w-full">
+          <Button asChild variant="outline" className="w-full" size="sm">
             <Link href="/farm/announcements/new">Créer une annonce</Link>
           </Button>
         </div>

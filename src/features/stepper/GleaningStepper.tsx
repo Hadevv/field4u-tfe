@@ -16,17 +16,17 @@ type GleaningStep = {
 const defaultSteps: GleaningStep[] = [
   {
     id: 1,
-    label: "annonce",
+    label: "Annonce",
     description: "détails du glanage",
   },
   {
     id: 2,
-    label: "glanage",
+    label: "Glanage",
     description: "joindre le glanage",
   },
   {
     id: 3,
-    label: "evaluation",
+    label: "Evaluation",
     description: "évaluation du glanage",
   },
 ];
@@ -48,7 +48,7 @@ export function GleaningStepper({
 }: GleaningStepperProps) {
   const pathname = usePathname();
 
-  // déterminer l'étape actuelle basée sur le chemin
+  // déterminer l'étape actuelle
   const getCurrentStep = () => {
     if (pathname.includes("/gleaning/review")) return 3;
     if (pathname.includes("/gleaning")) return 2;
@@ -57,16 +57,11 @@ export function GleaningStepper({
 
   const currentStep = getCurrentStep();
 
-  // vérifier si le glanage est terminé
-  const isCompleted = gleaningStatus === "COMPLETED";
-
-  // construire l'URL de base et les URLs des étapes
   const getBaseUrl = () => {
     const pathParts = pathname.split("/");
     // trouver l'index de "announcements" et ajouter 1 pour obtenir l'index du slug
     const slugIndex =
       pathParts.findIndex((part) => part === "announcements") + 1;
-    // extraire le slug de l'URL
     const slug = pathParts[slugIndex];
 
     if (!slug) return "/";
@@ -90,7 +85,7 @@ export function GleaningStepper({
     // l'étape 2 (glanage) est accessible uniquement si l'utilisateur est participant
     if (stepId === 2) return isParticipant;
 
-    // l'étape 3 (évaluation) n'est accessible que si le glanage est terminé ET l'utilisateur est participant
+    // l'étape 3 (évaluation) n'est accessible que si l'utilisateur est participant
     if (stepId === 3) return isParticipant && gleaningStatus === "COMPLETED";
 
     return false;

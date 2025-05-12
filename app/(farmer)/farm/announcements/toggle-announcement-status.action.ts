@@ -1,14 +1,9 @@
 "use server";
 
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authAction } from "@/lib/backend/safe-actions";
 import { UserRole } from "@prisma/client";
-
-const ToggleAnnouncementStatusSchema = z.object({
-  announcementId: z.string(),
-  isPublished: z.boolean(),
-});
+import { ToggleAnnouncementStatusSchema } from "./toggle-announcement-status.schema";
 
 export const toggleAnnouncementStatusAction = authAction
   .schema(ToggleAnnouncementStatusSchema)

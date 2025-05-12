@@ -18,7 +18,7 @@ export default async function MyGleaningsPage() {
   return (
     <div className="container mx-auto py-8 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">mes glanages</h1>
+        <h1 className="text-2xl font-bold mb-2">Mes glanages</h1>
         <p className="text-muted-foreground">
           gérer vos participations, favoris et évaluations
         </p>

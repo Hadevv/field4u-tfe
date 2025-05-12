@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { LocationField } from "./LocationField";
-import { useSearch } from "../_hooks/useSearch";
+import { useSearch } from "../../../src/hooks/useSearch";
 import {
   FilterBadgeProps,
   PERIOD_LABELS,
@@ -143,6 +143,7 @@ export function SearchWizard({
               <PopoverTrigger asChild>
                 <Button
                   type="button"
+                  size="sm"
                   variant="ghost"
                   className={cn(
                     "w-full sm:w-auto rounded-full px-4 h-10 flex justify-start border-none",
@@ -203,6 +204,7 @@ export function SearchWizard({
             >
               <PopoverTrigger asChild>
                 <Button
+                  size="sm"
                   type="button"
                   variant="ghost"
                   className={cn(
@@ -237,6 +239,7 @@ export function SearchWizard({
             >
               <PopoverTrigger asChild>
                 <Button
+                  size="sm"
                   type="button"
                   variant="ghost"
                   className={cn(
@@ -387,6 +390,7 @@ export function SearchWizard({
 
             {/* bouton de recherche */}
             <Button
+              size="sm"
               type="submit"
               className="w-full sm:w-auto rounded-full px-4 h-10"
               disabled={results.isLoading}

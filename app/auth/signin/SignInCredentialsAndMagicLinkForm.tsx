@@ -158,7 +158,12 @@ export const SignInCredentialsAndMagicLinkForm = () => {
         </Typography>
       )}
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button
+        size="sm"
+        type="submit"
+        className="w-full"
+        disabled={isSubmitting}
+      >
         {isUsingCredentials
           ? "connexion avec mot de passe"
           : "connexion avec un lien magique"}

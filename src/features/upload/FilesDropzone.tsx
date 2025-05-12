@@ -81,7 +81,6 @@ export function FilesDropzone({
 
       setFiles((prev) => {
         const newFiles = [...prev, ...filesWithPreviews];
-        // appeler le callback avec les fichiers bruts
         if (onSelectFiles) {
           onSelectFiles(newFiles.map((f) => f.file));
         }

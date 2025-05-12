@@ -50,23 +50,17 @@ export function GleaningProgress({
   const timeRemaining = calculateTimeRemaining();
   const progressPercentage = getProgressPercentage();
 
-  // rendu compact combinant statut et progression
+  // rendu dela progression
   return (
     <div className="p-3 rounded-lg border border-border bg-card mb-4">
       <div className="flex items-center justify-between mb-2">
         {/* statut du glanage */}
         <div className="flex items-center">
-          {status === "IN_PROGRESS" && (
-            <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-          )}
-          {status === "COMPLETED" && (
-            <CheckCircle className="h-4 w-4 mr-2 text-muted-foreground" />
-          )}
-          {status === "NOT_STARTED" && (
-            <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-          )}
+          {status === "IN_PROGRESS" && <Clock className="h-5 w-5 mr-2" />}
+          {status === "COMPLETED" && <CheckCircle className="h-5 w-5 mr-2" />}
+          {status === "NOT_STARTED" && <Calendar className="h-5 w-5 mr-2" />}
 
-          <span className="font-medium text-sm">
+          <span className="font-semibold text-lg">
             {status === "IN_PROGRESS" && "glanage en cours"}
             {status === "COMPLETED" && "glanage terminé"}
             {status === "NOT_STARTED" &&
@@ -78,17 +72,17 @@ export function GleaningProgress({
 
         {/* bouton d'action selon statut */}
         {status === "IN_PROGRESS" && (
-          <Button size="sm" variant="outline" className="text-xs h-7 px-2">
+          <Button size="sm" variant="outline" className="text-sm h-7 px-2">
             instructions
           </Button>
         )}
         {status === "COMPLETED" && (
-          <Button size="sm" variant="outline" className="text-xs h-7 px-2">
+          <Button size="sm" variant="outline" className="text-sm h-7 px-2">
             bilan
           </Button>
         )}
         {startDate && status === "NOT_STARTED" && (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-sm">
             {startDate.toLocaleDateString("fr-FR", {
               day: "numeric",
               month: "long",
@@ -100,7 +94,7 @@ export function GleaningProgress({
       </div>
 
       {/* barre de progression et infos */}
-      <div className="flex justify-between text-xs text-muted-foreground">
+      <div className="flex justify-between text-sm text-muted-foreground">
         <span>glanage {formattedDate}</span>
         <span>{progressPercentage}% complété</span>
       </div>

@@ -224,6 +224,7 @@ export function DateRangePicker({
               {/* boutons d'action */}
               <div className="flex justify-end mt-4 border-t pt-4 px-2">
                 <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => setIsPopoverOpen(false)}
                   className="mr-2"
@@ -231,6 +232,7 @@ export function DateRangePicker({
                   Annuler
                 </Button>
                 <Button
+                  size="sm"
                   onClick={onApply}
                   disabled={!selectedRange?.from || !selectedRange?.to}
                 >

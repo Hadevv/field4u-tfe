@@ -64,7 +64,9 @@ export const ContactSupportDialog = (props: ContactSupportDialogProps) => {
         {props.children ? (
           props.children
         ) : (
-          <Button variant="outline">Contact support</Button>
+          <Button size="sm" variant="outline">
+            Contact support
+          </Button>
         )}
       </DialogTrigger>
       <DialogContent>
@@ -127,7 +129,9 @@ export const ContactSupportDialog = (props: ContactSupportDialogProps) => {
               </FormItem>
             )}
           />
-          <Button type="submit">Send</Button>
+          <Button type="submit" size="sm">
+            Send
+          </Button>
         </Form>
       </DialogContent>
     </Dialog>

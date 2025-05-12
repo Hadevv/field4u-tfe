@@ -8,7 +8,7 @@ import {
   buildPeriodQuery,
   searchAnnouncementsByTitle,
   searchAnnouncementsByLocation,
-} from "../../announcements/_queries/announcement.query";
+} from "../../../src/query/announcement.query";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@prisma/client";
 

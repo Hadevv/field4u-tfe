@@ -78,6 +78,7 @@ function PaymentForm({ clientSecret }: { clientSecret: string }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <PaymentElement />
         <Button
+          size="sm"
           type="submit"
           className="w-full"
           disabled={isLoading || !stripe || !elements}

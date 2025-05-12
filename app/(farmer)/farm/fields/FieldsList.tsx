@@ -60,7 +60,7 @@ export async function FieldsList({ userId, farmId }: FieldsListProps) {
           glanage.
         </p>
         <div className="mt-6">
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/farm/fields/new">
               <MapPin className="mr-2 h-4 w-4" />
               Ajouter un champ
@@ -114,13 +114,6 @@ export async function FieldsList({ userId, farmId }: FieldsListProps) {
 
           <CardFooter className="flex justify-between border-t pt-4">
             <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/farm/fields/${field.id}`}>
-                  <Eye className="mr-2 h-3.5 w-3.5" />
-                  Voir
-                </Link>
-              </Button>
-
               <Button asChild variant="outline" size="sm">
                 <Link href={`/farm/announcements/new?fieldId=${field.id}`}>
                   <FileText className="mr-2 h-3.5 w-3.5" />

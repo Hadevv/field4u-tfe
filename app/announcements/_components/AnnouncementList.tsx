@@ -23,7 +23,12 @@ function EmptyState() {
         d'ajuster vos filtres ou de réinitialiser votre recherche.
       </p>
       <div className="flex flex-wrap gap-3 justify-center">
-        <Button variant="outline" asChild className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          asChild
+          size="sm"
+          className="flex items-center gap-2"
+        >
           <Link href="/announcements">
             <RefreshCw className="h-4 w-4" />
             Réinitialiser les filtres

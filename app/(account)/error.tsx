@@ -19,7 +19,7 @@ export default function RouteError({ error }: ErrorParams) {
         </CardTitle>
       </CardHeader>
       <CardFooter>
-        <SignInButton variant="default" size="lg" />
+        <SignInButton variant="default" size="sm" />
       </CardFooter>
     </Card>
   );

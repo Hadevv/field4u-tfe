@@ -25,6 +25,7 @@ export default function DeleteProfilePage() {
       </CardHeader>
       <CardContent>
         <Button
+          size="sm"
           variant="destructive"
           onClick={() => {
             dialogManager.add({
@@ -40,7 +41,7 @@ export default function DeleteProfilePage() {
             });
           }}
         >
-          Delete
+          Supprimer
         </Button>
       </CardContent>
     </Card>

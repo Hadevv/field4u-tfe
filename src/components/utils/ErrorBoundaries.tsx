@@ -70,6 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
         </CardHeader>
         <CardFooter>
           <Button
+            size="sm"
             variant="outline"
             onClick={() => {
               this.setState({ hasError: false });

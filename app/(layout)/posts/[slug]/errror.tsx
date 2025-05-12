@@ -8,7 +8,6 @@ import { useEffect } from "react";
 
 export default function RouteError({ error, reset }: ErrorParams) {
   useEffect(() => {
-    // Log the error to an error reporting service
     logger.error(error);
   }, [error]);
 
@@ -16,12 +15,14 @@ export default function RouteError({ error, reset }: ErrorParams) {
     <Card variant="error">
       <CardHeader>
         <CardTitle>
-          Sorry, the post you are looking for doesn't work as expected. Please
-          try again later.
+          désolé, l'article que vous recherchez ne fonctionne pas comme prévu.
+          veuillez réessayer plus tard.
         </CardTitle>
       </CardHeader>
       <CardFooter>
-        <Button onClick={reset}>Try again</Button>
+        <Button size="sm" onClick={reset}>
+          réessayer
+        </Button>
       </CardFooter>
     </Card>
   );

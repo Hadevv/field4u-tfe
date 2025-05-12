@@ -93,7 +93,9 @@ export function FarmerNavigation({ children, user }: FarmerNavigationProps) {
               {/* Desktop header */}
               <nav className="flex items-center space-x-1 max-lg:hidden">
                 <ContactFeedbackPopover>
-                  <Button variant="outline">Feedback</Button>
+                  <Button variant="outline" size="sm">
+                    Feedback
+                  </Button>
                 </ContactFeedbackPopover>
                 <ThemeToggle />
               </nav>
@@ -115,7 +117,9 @@ export function FarmerNavigation({ children, user }: FarmerNavigationProps) {
               <LayoutContent className="flex gap-4">
                 <SignInButton />
                 <ContactSupportDialog>
-                  <Button variant="secondary">Contacter le support</Button>
+                  <Button variant="secondary" size="sm">
+                    Contacter le support
+                  </Button>
                 </ContactSupportDialog>
               </LayoutContent>
             </Layout>

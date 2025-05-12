@@ -32,12 +32,13 @@ export function HeroSection() {
               des produits frais près de chez vous.
             </p>
             <div className="relative z-10 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
-              <Button variant="secondary" asChild>
+              <Button variant="secondary" asChild size="sm">
                 <Link href="/announcements/">Commencez à Glaner !</Link>
               </Button>
               {session.data?.user ? (
                 <Button
                   variant="outline"
+                  size="sm"
                   className="cursor-not-allowed text-base opacity-70"
                   disabled
                 >
@@ -46,6 +47,7 @@ export function HeroSection() {
               ) : (
                 <Button
                   variant="outline"
+                  size="sm"
                   className="text-base transition-colors hover:bg-accent"
                   asChild
                 >

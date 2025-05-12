@@ -262,7 +262,7 @@ export function AnnouncementsTable({
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="icon">
+                          <Button variant="outline" size="sm">
                             <MoreHorizontal className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>

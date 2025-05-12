@@ -62,7 +62,9 @@ export const ContactFeedbackPopover = (props: ContactFeedbackPopoverProps) => {
         {props.children ? (
           props.children
         ) : (
-          <Button variant="outline">Feedback</Button>
+          <Button variant="outline" size="sm">
+            Feedback
+          </Button>
         )}
       </PopoverTrigger>
       <PopoverContent className="p-0">
@@ -117,7 +119,7 @@ export const ContactFeedbackPopover = (props: ContactFeedbackPopoverProps) => {
                 </FormItem>
               )}
             />
-            <Button type="submit" variant="outline">
+            <Button type="submit" variant="outline" size="sm">
               Envoyer
             </Button>
           </div>

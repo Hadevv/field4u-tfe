@@ -9,11 +9,20 @@ import {
   LayoutActions,
 } from "@/features/page/layout";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Eye, Edit } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { AnnouncementsList } from "./AnnouncementsList";
 import { AnnouncementsListSkeleton } from "./AnnouncementsListSkeleton";
+import { DeleteAnnouncementButton } from "./DeleteAnnouncementButton";
+import { ToggleAnnouncementStatus } from "./ToggleAnnouncementStatus";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
 export default async function AnnouncementsPage() {
   const user = await auth();
@@ -33,50 +42,44 @@ export default async function AnnouncementsPage() {
       <LayoutHeader>
         <LayoutTitle>Mes annonces</LayoutTitle>
         <LayoutDescription>
-          Gérez vos annonces de glanage et suivez leur activité
+          gérez vos annonces de glanage et suivez leur activité
         </LayoutDescription>
       </LayoutHeader>
 
       <LayoutActions>
         {hasFields ? (
-          <Button asChild className="bg-primary">
+          <Button asChild className="bg-primary" size="sm">
             <Link href="/farm/announcements/new">
               <Plus className="mr-2 h-4 w-4" />
-              Créer une annonce
+              créer une annonce
             </Link>
           </Button>
         ) : (
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" size="sm">
             <Link href="/farm/fields/new">
               <Plus className="mr-2 h-4 w-4" />
-              Créer d'abord un champ
+              créer d'abord un champ
             </Link>
           </Button>
         )}
       </LayoutActions>
 
       <LayoutContent>
-        {hasFields ? (
-          <Suspense fallback={<AnnouncementsListSkeleton />}>
-            <AnnouncementsList userId={user.id} />
-          </Suspense>
-        ) : (
-          <div className="rounded-lg border p-8">
-            <h2 className="text-xl font-semibold">Créez d'abord un champ</h2>
-            <p className="mt-2 text-muted-foreground">
-              Vous devez créer un champ avant de pouvoir publier des annonces de
-              glanage.
-            </p>
-            <div className="mt-6">
-              <Button asChild>
-                <Link href="/farm/fields/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Créer un champ
-                </Link>
-              </Button>
-            </div>
-          </div>
-        )}
+        <div className="grid gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>toutes mes annonces</CardTitle>
+              <CardDescription>
+                liste de toutes vos annonces de glanage
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <AnnouncementsList />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </LayoutContent>
     </Layout>
   );

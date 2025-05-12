@@ -313,6 +313,7 @@ export function CreateEditAnnouncementDialog({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            size="sm"
                             variant="outline"
                             className={cn(
                               "pl-3 text-left font-normal",
@@ -358,6 +359,7 @@ export function CreateEditAnnouncementDialog({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            size="sm"
                             variant="outline"
                             className={cn(
                               "pl-3 text-left font-normal",
@@ -422,12 +424,13 @@ export function CreateEditAnnouncementDialog({
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
               annuler
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button size="sm" type="submit" disabled={isPending}>
               {isEditing ? "mettre à jour" : "créer"}
             </Button>
           </div>

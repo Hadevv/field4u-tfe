@@ -82,7 +82,7 @@ export function LikeButton({
   return (
     <Button
       variant="outline"
-      size={showCount ? "default" : "icon"}
+      size={showCount ? "sm" : "icon"}
       className={cn(
         "bg-background border shadow-sm hover:bg-background/80 transition-all",
         isLiked

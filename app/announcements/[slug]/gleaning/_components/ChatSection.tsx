@@ -118,7 +118,7 @@ export function ChatSection({
       <Card className="overflow-hidden border border-border bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
-            <MessageSquare className="h-5 w-5 text-muted-foreground" />
+            <MessageSquare className="h-5 w-5" />
             discussion
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
@@ -133,7 +133,7 @@ export function ChatSection({
     <Card className="overflow-hidden border border-border bg-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
-          <MessageSquare className="h-5 w-5 text-muted-foreground" />
+          <MessageSquare className="h-5 w-5" />
           discussion
         </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
@@ -153,14 +153,14 @@ export function ChatSection({
                 value="group"
                 className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground"
               >
-                <Users className="h-4 w-4 mr-2" />
+                <Users className="h-5 w-5 mr-2" />
                 groupe de glaneurs
               </TabsTrigger>
               <TabsTrigger
                 value="owner"
                 className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground"
               >
-                <UserIcon className="h-4 w-4 mr-2" />
+                <UserIcon className="h-5 w-5 mr-2" />
                 propriétaire
               </TabsTrigger>
             </TabsList>
@@ -179,7 +179,7 @@ export function ChatSection({
                     >
                       {m.senderId !== userId && (
                         <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 flex items-center justify-center">
-                          <UserIcon className="h-4 w-4 text-muted-foreground" />
+                          <UserIcon className="h-5 w-5 text-muted-foreground" />
                         </div>
                       )}
                       <div
@@ -204,7 +204,7 @@ export function ChatSection({
                       </div>
                       {m.senderId === userId && (
                         <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 flex items-center justify-center">
-                          <UserIcon className="h-4 w-4 text-muted-foreground" />
+                          <UserIcon className="h-5 w-5 text-muted-foreground" />
                         </div>
                       )}
                     </div>
@@ -253,7 +253,7 @@ export function ChatSection({
                     >
                       {m.senderId !== userId && (
                         <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 flex items-center justify-center">
-                          <UserIcon className="h-4 w-4 text-muted-foreground" />
+                          <UserIcon className="h-5 w-5 text-muted-foreground" />
                         </div>
                       )}
                       <div
@@ -330,10 +330,11 @@ export function ChatSection({
       <CardFooter>
         <Button
           variant="secondary"
+          size="sm"
           className="w-full flex items-center justify-center"
         >
-          <Users className="h-4 w-4 mr-2" />
-          voir les participants ({participantsCount})
+          <Users className="h-5 w-5 mr-2" />
+          nombre de participants ({participantsCount})
         </Button>
       </CardFooter>
     </Card>

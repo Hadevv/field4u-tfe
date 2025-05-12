@@ -89,6 +89,7 @@ export default async function FieldsPage(props: PageParams<{}>) {
             createButtonSlot={
               <Button
                 variant="default"
+                size="sm"
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
               >
                 <Plus className="mr-2 size-4" />

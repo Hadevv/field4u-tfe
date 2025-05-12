@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useNotifications } from "@/hooks/use-notifications";
+import { useNotifications } from "@/hooks/useNotifications";
 import { useSession } from "next-auth/react";
 
 export function NotificationsMenu() {

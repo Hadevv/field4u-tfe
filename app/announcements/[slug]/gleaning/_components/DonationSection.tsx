@@ -9,7 +9,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, InfoIcon } from "lucide-react";
+import { HandCoins, InfoIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,6 @@ export function DonationSection({
   const [amount, setAmount] = useState<number>(suggestedPrice);
   const router = useRouter();
 
-  // mettre à jour le montant lorsque le prix suggéré change
   useEffect(() => {
     if (suggestedPrice) {
       setAmount(suggestedPrice);
@@ -86,7 +85,7 @@ export function DonationSection({
     <Card className="overflow-hidden border border-border bg-card">
       <CardHeader className="bg-muted/20">
         <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
-          <Heart className="h-5 w-5" />
+          <HandCoins className="h-5 w-5" />
           soutenez cette initiative
         </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">

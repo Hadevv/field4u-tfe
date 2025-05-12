@@ -154,12 +154,17 @@ export function FarmForm({ farm }: FarmFormProps) {
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={() => router.push("/farm")}
                 disabled={updateFarmMutation.isPending}
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={updateFarmMutation.isPending}>
+              <Button
+                type="submit"
+                disabled={updateFarmMutation.isPending}
+                size="sm"
+              >
                 {updateFarmMutation.isPending
                   ? "Enregistrement..."
                   : "Mettre à jour"}

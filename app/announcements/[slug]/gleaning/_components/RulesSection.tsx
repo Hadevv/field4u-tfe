@@ -14,7 +14,7 @@ export function RulesSection() {
     <Card className="overflow-hidden border border-border bg-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
-          <Paperclip className="h-5 w-5 text-muted-foreground" />
+          <Paperclip className="h-5 w-5" />
           règles du glanage
         </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
