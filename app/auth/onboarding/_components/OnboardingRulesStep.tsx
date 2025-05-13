@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -22,28 +23,54 @@ export function OnboardingRulesStep({ role }: OnboardingRulesStepProps) {
       toast.error("Failed to accept rules");
     }
   };
-
+  // TODO: utiliser du mdx pour les règles
   const rules =
     role === "FARMER" ? (
       <>
         <p>
-          <strong>Règle 1 pour les fermiers</strong>: Description de la règle 1
-          pour les fermiers.
+          <strong>Règle 1 pour les fermiers</strong> : Respectez les engagements
+          pris lors de la création du glanage (date, heure, quantité, accès au
+          champ).
         </p>
         <p>
-          <strong>Règle 2 pour les fermiers</strong>: Description de la règle 2
-          pour les fermiers.
+          <strong>Règle 2</strong> : Préparez un accueil minimal (consignes de
+          sécurité, balisage si nécessaire).
+        </p>
+        <p>
+          <strong>Règle 3</strong> : Signalez toute modification ou annulation
+          dès que possible via la plateforme.
+        </p>
+        <p>
+          <strong>Règle 4</strong> : Le lieu du glanage n’est affiché que 24h
+          avant automatiquement pour limiter le maraudage.
+        </p>
+        <p>
+          <strong>Règle 5</strong> : Restez courtois et respectueux envers les
+          glaneurs, même en cas d’imprévus.
         </p>
       </>
     ) : (
       <>
         <p>
-          <strong>Règle 1 pour les glaneurs</strong>: Description de la règle 1
-          pour les glaneurs.
+          <strong>Règle 1 pour les glaneurs</strong> : Inscrivez-vous uniquement
+          si vous êtes certain de pouvoir venir.
         </p>
         <p>
-          <strong>Règle 2 pour les glaneurs</strong>: Description de la règle 2
-          pour les glaneurs.
+          <strong>Règle 2</strong> : Respectez les consignes données par le
+          fermier sur place.
+        </p>
+        <p>
+          <strong>Règle 3</strong> : Soyez ponctuel et adoptez un comportement
+          responsable sur le terrain.
+        </p>
+        <p>
+          <strong>Règle 4</strong> : L’emplacement exact du champ est communiqué
+          24h avant ; il est strictement interdit d’utiliser les récoltes à des
+          fins commerciales.
+        </p>
+        <p>
+          <strong>Règle 5</strong> : Laissez le champ propre après votre
+          passage.
         </p>
       </>
     );

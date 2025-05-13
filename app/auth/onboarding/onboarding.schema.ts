@@ -17,6 +17,9 @@ export const FarmFormSchema = z.object({
     .email("Email invalide")
     .or(z.string().regex(/^\+?[0-9\s]+$/, "Numéro invalide"))
     .optional(),
+  acceptGeolocation: z.boolean().optional(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
   termsAcceptedAt: z.date().optional().nullable(),
 });
 
@@ -32,6 +35,8 @@ export const GleanerFormSchema = z.object({
     .refine((val) => /^[1-9]\d{3}$/.test(val), "Code postal invalide")
     .optional(),
   acceptGeolocation: z.boolean().optional(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
   termsAcceptedAt: z.date().optional().nullable(),
 });
 
