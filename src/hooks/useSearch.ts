@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useQueryState } from "nuqs";
@@ -14,7 +15,7 @@ type SearchResults = {
   mapAnnouncements: MapAnnouncement[];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// utiliser dans la page de recherche d'annonce de glanage
 export const useSearch = (initialFilters?: SearchFilters) => {
   // états url
   const [query, setQuery] = useQueryState("q", {
@@ -111,23 +112,55 @@ export const useSearch = (initialFilters?: SearchFilters) => {
       params.set("_t", Date.now().toString());
 
       console.log(`Envoi de la requête: /api/search?${params.toString()}`);
-      const response = await fetch(`/api/search?${params.toString()}`);
 
-      if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: "erreur inconnue" }));
-        const errorMessage = errorData.message || `erreur: ${response.status}`;
-        throw new Error(errorMessage);
-      }
+      try {
+        const response = await fetch(`/api/search?${params.toString()}`);
 
-      const rawData = await response.json();
-      const data = convertDates(rawData as SearchResults);
-      setResults(data);
+        if (!response.ok) {
+          // gérer spécifiquement les erreurs 404
+          if (response.status === 404) {
+            console.error("route api introuvable: /api/search");
+            // créer un résultat vide fallback
+            const emptyResults = { announcements: [], mapAnnouncements: [] };
+            setResults(emptyResults);
 
-      // mettre a jour
-      if (window.updateAnnouncementResults) {
-        window.updateAnnouncementResults(data);
+            if (window.updateAnnouncementResults) {
+              window.updateAnnouncementResults(emptyResults);
+            }
+            throw new Error(`erreur 404: api de recherche non trouvée`);
+          }
+
+          // tenter de récupérer le message d'erreur json
+          let errorData;
+          try {
+            errorData = await response.json();
+          } catch {
+            errorData = { error: "erreur inconnue" };
+          }
+
+          const errorMessage =
+            errorData.message || `erreur: ${response.status}`;
+          throw new Error(errorMessage);
+        }
+
+        const rawData = await response.json();
+        const data = convertDates(rawData as SearchResults);
+        setResults(data);
+
+        // mettre a jour la carte via le mécanisme global
+        if (window.updateAnnouncementResults) {
+          window.updateAnnouncementResults(data);
+        }
+      } catch (networkError) {
+        console.error("erreur réseau lors de la recherche:", networkError);
+
+        // en cas d'erreur réseau, afficher un message spécifique
+        const errorMsg =
+          networkError instanceof Error
+            ? networkError.message
+            : "erreur de connexion au serveur";
+
+        throw new Error(`erreur de communication avec le serveur: ${errorMsg}`);
       }
     } catch (err) {
       console.error("erreur de recherche:", err);
@@ -136,6 +169,7 @@ export const useSearch = (initialFilters?: SearchFilters) => {
       const emptyResults = { announcements: [], mapAnnouncements: [] };
       setResults(emptyResults);
 
+      // même en cas d'erreur, on met à jour la carte pour afficher un état vide
       if (window.updateAnnouncementResults) {
         window.updateAnnouncementResults(emptyResults);
       }
@@ -177,12 +211,20 @@ export const useSearch = (initialFilters?: SearchFilters) => {
       const processedData = convertDates(data as SearchResults);
       setResults(processedData);
 
-      // mettre a jour les resultats globaux
+      // mettre a jour les resultats globaux et la carte
       if (window.updateAnnouncementResults) {
         window.updateAnnouncementResults(processedData);
       }
     } catch (error) {
       console.error("erreur lors de la réinitialisation:", error);
+
+      // en cas d'erreur, afficher une liste vide
+      const emptyResults = { announcements: [], mapAnnouncements: [] };
+      setResults(emptyResults);
+
+      if (window.updateAnnouncementResults) {
+        window.updateAnnouncementResults(emptyResults);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -9,11 +9,9 @@ export const revalidate = 0;
 
 export async function GET(request: Request) {
   try {
-    // verifier le secret api
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get("secret");
 
-    // verifier que le secret
     if (!secret || secret !== process.env.CRON_SECRET) {
       logger.warn(
         "tentative d'accès non autorisée à la mise à jour des statuts",
@@ -23,7 +21,6 @@ export async function GET(request: Request) {
 
     logger.info("début de la mise à jour des statuts de glanage");
 
-    // requete pour obtenir tous les glanages avec leurs annonces lié
     const gleanings = await prisma.gleaning.findMany({
       where: {
         status: {
@@ -44,7 +41,6 @@ export async function GET(request: Request) {
 
     logger.info(`nombre de glanages à vérifier: ${gleanings.length}`);
 
-    // compteur de mises à jour
     let updatedCount = 0;
     let errorCount = 0;
 
@@ -60,7 +56,7 @@ export async function GET(request: Request) {
           return;
         }
 
-        // determiner le nouveau statut en utilisant directement les fonctions d'utilitaire
+        // determiner le statut
         let newStatus: GleaningStatus;
 
         if (isPastDate(gleaning.announcement.endDate)) {

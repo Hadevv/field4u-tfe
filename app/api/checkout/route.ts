@@ -5,7 +5,7 @@ import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
-import { CheckoutSchema } from "./checkout.schema";
+import { CheckoutSchema } from "./_schemas/checkout.schema";
 import { logger } from "@/lib/logger";
 
 export const POST = authRoute

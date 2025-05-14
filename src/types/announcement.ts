@@ -36,6 +36,7 @@ export type MapAnnouncement = {
   latitude: number;
   longitude: number;
   slug: string;
+  cropType?: string;
 };
 
 export type CropType = {

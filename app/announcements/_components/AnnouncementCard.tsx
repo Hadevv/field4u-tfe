@@ -13,11 +13,17 @@ import { useRouter } from "next/navigation";
 type AnnouncementCardProps = {
   announcement: Announcement;
   isLiked?: boolean;
+  onHighlight?: (id: string) => void;
+  onUnhighlight?: () => void;
+  isHighlighted?: boolean;
 };
 
 export function AnnouncementCard({
   announcement,
   isLiked = false,
+  onHighlight,
+  onUnhighlight,
+  isHighlighted = false,
 }: AnnouncementCardProps) {
   const router = useRouter();
 
@@ -62,11 +68,25 @@ export function AnnouncementCard({
     router.push(`/announcements/${slug}`);
   };
 
+  const handleMouseEnter = () => {
+    if (onHighlight) {
+      onHighlight(id);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (onUnhighlight) {
+      onUnhighlight();
+    }
+  };
+
   const quantityText = getQuantityAndType();
   return (
     <Card
-      className="overflow-hidden rounded-lg mb-4 cursor-pointer transition-shadow hover:shadow-md"
+      className={`overflow-hidden rounded-lg mb-4 cursor-pointer transition-all hover:shadow-md ${isHighlighted ? "ring-2 ring-amber-500 shadow-md" : ""}`}
       onClick={handleCardClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex">
         {/* image à gauche */}

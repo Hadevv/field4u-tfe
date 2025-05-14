@@ -8,7 +8,7 @@ import {
   buildPeriodQuery,
   searchAnnouncementsByTitle,
   searchAnnouncementsByLocation,
-} from "../../../src/query/announcement.query";
+} from "@/query/announcement.query";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@prisma/client";
 
@@ -18,7 +18,7 @@ const SearchParamsSchema = z.object({
   location: z.string().optional(),
   radius: z.string().optional().default("25"),
   period: z.enum(["today", "week", "month"]).optional(),
-  _t: z.string().optional(), // timestamp pour eviter la mise en cache
+  _t: z.string().optional(),
   initial: z.string().optional(),
   reset: z.string().optional(),
 });
@@ -31,17 +31,13 @@ export const GET = route
       logger.debug(`Recherche initiée avec paramètres:`, query);
 
       const user = await auth();
-
-      // determiner si c'est un chargement initial ou une reset
       const isInitial = query.initial === "true";
       const isReset = query.reset === "true";
 
-      // normalisation des params
       const searchTerm = isInitial || isReset ? null : query.q || null;
       const locationTerm = isInitial || isReset ? null : query.location || null;
       const periodTerm = isInitial || isReset ? null : query.period || null;
 
-      // convertir les params en filtre
       const filters = {
         query: searchTerm,
         cropTypeId: isInitial || isReset ? null : query.crop || null,
@@ -52,17 +48,16 @@ export const GET = route
 
       logger.debug(`Filtres appliqués:`, filters);
 
-      // requete de base avec la structure prisma
       const where: Prisma.AnnouncementWhereInput = {
         isPublished: true,
       };
 
-      // ajouter le filtre par type de culture
+      // filtre par type de culture
       if (filters.cropTypeId) {
         where.cropTypeId = filters.cropTypeId;
       }
 
-      // ajouter le filtre par période
+      // filtre par période
       if (filters.period) {
         const periodQuery = buildPeriodQuery(filters.period);
         if (Object.keys(periodQuery).length > 0) {
@@ -239,13 +234,13 @@ export const GET = route
           return 0;
         });
 
-        // prepare data pour la map
         const mapAnnouncements = sortedAnnouncements.map((announcement) => ({
           id: announcement.id,
           title: announcement.title,
           latitude: announcement.field.latitude,
           longitude: announcement.field.longitude,
           slug: announcement.slug,
+          cropType: announcement.cropType.name,
         }));
 
         const endTime = Date.now();

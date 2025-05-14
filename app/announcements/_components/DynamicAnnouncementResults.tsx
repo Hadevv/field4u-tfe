@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { AnnouncementList } from "./AnnouncementList";
-import { AnnouncementMap } from "./AnnouncementMap";
+import { AnnouncementMap } from "./_map/AnnouncementMap";
 import { AnnouncementTabs } from "./AnnouncementTabs";
 import { Announcement, MapAnnouncement } from "@/types/announcement";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -106,6 +106,10 @@ export function DynamicAnnouncementResults() {
     mapAnnouncements: MapAnnouncement[];
   } | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  // état pour suivre l'ID de l'annonce survolée - déplacé ici pour respecter les règles des hooks
+  const [highlightedAnnouncementId, setHighlightedAnnouncementId] = useState<
+    string | null
+  >(null);
 
   // convertir les chaines de date en objets date
   const convertAnnouncementDates = (
@@ -125,6 +129,11 @@ export function DynamicAnnouncementResults() {
         createdAt: new Date(announcement.createdAt),
       })) as Announcement[],
     };
+  };
+
+  // fonction pour gérer la mise en évidence des annonces
+  const handleHighlightAnnouncement = (id: string | null) => {
+    setHighlightedAnnouncementId(id);
   };
 
   // chargement initial
@@ -217,14 +226,25 @@ export function DynamicAnnouncementResults() {
     return (
       <>
         <div className="md:hidden mt-2">
-          <AnnouncementList announcements={[]} />
+          <AnnouncementList
+            announcements={[]}
+            onHighlightAnnouncement={handleHighlightAnnouncement}
+            highlightedAnnouncementId={highlightedAnnouncementId}
+          />
         </div>
         <div className="hidden md:grid md:grid-cols-12 gap-4 mt-2">
           <div className="md:col-span-6 lg:col-span-5">
-            <AnnouncementList announcements={[]} />
+            <AnnouncementList
+              announcements={[]}
+              onHighlightAnnouncement={handleHighlightAnnouncement}
+              highlightedAnnouncementId={highlightedAnnouncementId}
+            />
           </div>
           <div className="md:col-span-6 lg:col-span-7">
-            <AnnouncementMap announcements={[]} />
+            <AnnouncementMap
+              announcements={[]}
+              highlightedAnnouncementId={highlightedAnnouncementId}
+            />
           </div>
         </div>
       </>
@@ -241,17 +261,35 @@ export function DynamicAnnouncementResults() {
     <>
       <div className="md:hidden mt-2">
         <AnnouncementTabs
-          listContent={<AnnouncementList announcements={announcements} />}
-          mapContent={<AnnouncementMap announcements={mapAnnouncements} />}
+          listContent={
+            <AnnouncementList
+              announcements={announcements}
+              onHighlightAnnouncement={handleHighlightAnnouncement}
+              highlightedAnnouncementId={highlightedAnnouncementId}
+            />
+          }
+          mapContent={
+            <AnnouncementMap
+              announcements={mapAnnouncements}
+              highlightedAnnouncementId={highlightedAnnouncementId}
+            />
+          }
         />
       </div>
 
       <div className="hidden md:grid md:grid-cols-12 gap-4 mt-2">
         <div className="md:col-span-6 lg:col-span-5">
-          <AnnouncementList announcements={announcements} />
+          <AnnouncementList
+            announcements={announcements}
+            onHighlightAnnouncement={handleHighlightAnnouncement}
+            highlightedAnnouncementId={highlightedAnnouncementId}
+          />
         </div>
         <div className="md:col-span-6 lg:col-span-7">
-          <AnnouncementMap announcements={mapAnnouncements} />
+          <AnnouncementMap
+            announcements={mapAnnouncements}
+            highlightedAnnouncementId={highlightedAnnouncementId}
+          />
         </div>
       </div>
     </>

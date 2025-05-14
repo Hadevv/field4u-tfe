@@ -101,7 +101,7 @@ export function GleaningStepper({
   if (variant === "horizontal") {
     return (
       <div className={cn("w-full p-4", className)}>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center text-sm">
           {steps.map((stepItem, index) => (
             <React.Fragment key={stepItem.id}>
               <Step
@@ -157,7 +157,7 @@ export function GleaningStepper({
     <div className={cn("w-full", className)}>
       <h3 className="text-sm font-medium text-muted-foreground mb-6">étapes</h3>
 
-      <div className="flex flex-col items-start space-y-8 w-full">
+      <div className="flex flex-col items-start space-y-8 w-full text-sm">
         {steps.map((stepItem, index) => (
           <React.Fragment key={stepItem.id}>
             <Step
@@ -232,7 +232,7 @@ function Step({ step, state, url, showLabel = true }: StepProps) {
           <span className={cn("text-sm font-medium", styles.text)}>
             {step.label}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             {step.description}
           </span>
         </div>

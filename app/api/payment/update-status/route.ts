@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+// TODO supprimer passé par le webhook stripe
 const UpdateStatusSchema = z.object({
   paymentIntentId: z.string(),
   status: z.string(),
