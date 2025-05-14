@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Announcement, Prisma } from "@prisma/client";
 import {
   Form,
   FormControl,
@@ -25,6 +25,7 @@ import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { createAnnouncementAction } from "./new/create-announcement.action";
+import { updateAnnouncementAction } from "./[slug]/edit/update-announcement.action";
 import {
   AnnouncementSchema,
   AnnouncementSchemaType,
@@ -56,12 +57,32 @@ type FarmType = {
   name: string;
 } | null;
 
-type ExtendedAnnouncement = Announcement & {
+type ExtendedAnnouncement = {
+  id: string;
+  title: string;
+  description: string;
+  slug: string;
+  cropTypeId: string;
+  fieldId: string;
+  isPublished: boolean;
+  ownerId: string;
+  quantityAvailable: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  images: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+  suggestedPrice?: number | string | null;
+  qrCode?: string | null;
+  cropType?: {
+    id: string;
+    name: string;
+    [key: string]: any;
+  };
   gleaningPeriods?: Array<{
     startDate: Date;
     endDate: Date;
   }>;
-  suggestedPrice?: Prisma.Decimal;
 };
 
 type AnnouncementFormProps = {
@@ -83,13 +104,11 @@ export function AnnouncementForm({
   cropTypes,
   farm,
   initialData,
-  userId,
 }: AnnouncementFormProps) {
   const router = useRouter();
   const isEditing = !!announcement;
   const [showFieldDialog, setShowFieldDialog] = useState(false);
 
-  const defaultStartDate = new Date();
   const defaultEndDate = new Date();
   defaultEndDate.setDate(defaultEndDate.getDate() + 7);
 
@@ -101,10 +120,14 @@ export function AnnouncementForm({
       fieldId: announcement?.fieldId || defaultFieldId || "",
       cropTypeId: initialData?.cropTypeId || "",
       quantityAvailable: announcement?.quantityAvailable || undefined,
-      startDate: initialData?.startDate || undefined,
-      endDate: initialData?.endDate || undefined,
-      suggestedPrice: initialData?.suggestedPrice
-        ? Number(initialData.suggestedPrice)
+      startDate: announcement?.startDate
+        ? new Date(announcement.startDate)
+        : undefined,
+      endDate: announcement?.endDate
+        ? new Date(announcement.endDate)
+        : undefined,
+      suggestedPrice: announcement?.suggestedPrice
+        ? Number(announcement.suggestedPrice)
         : undefined,
       images: announcement?.images || [],
     },
@@ -114,40 +137,35 @@ export function AnnouncementForm({
 
   const createMutation = useMutation({
     mutationFn: async (data: AnnouncementSchemaType) => {
-      // recupérer les fichiers à envoyer directement
-      const formData = new FormData();
-
-      const fileElements = document.querySelectorAll("#file-upload");
-      if (fileElements.length > 0) {
-        const fileInput = fileElements[0] as HTMLInputElement;
-        if (fileInput.files && fileInput.files.length > 0) {
-          Array.from(fileInput.files).forEach((file) => {
-            formData.append("files", file);
-          });
-        }
-      }
-
-      // creer les données à envoyer
-      const submitData = {
-        ...data,
-        imageFiles: formData.has("files") ? formData : undefined,
-      };
-
-      return resolveActionResult(createAnnouncementAction(submitData));
-    },
-    onSuccess: () => {
-      toast.success(
-        isEditing ? "Annonce mise à jour" : "Annonce créée avec succès",
-      );
-      if (onSuccess) {
-        onSuccess();
+      if (isEditing) {
+        return resolveActionResult(
+          updateAnnouncementAction({
+            ...data,
+            announcementId: announcement.id,
+          }),
+        );
       } else {
-        router.push("/farm/announcements");
+        return resolveActionResult(createAnnouncementAction(data));
       }
-      router.refresh();
     },
     onError: (error) => {
       toast.error(error.message);
+    },
+    onSuccess: (data) => {
+      if (isEditing) {
+        toast.success("annonce mise à jour avec succès");
+        if ("slug" in data) {
+          router.push(`/farm/announcements/${data.slug}`);
+        } else {
+          router.push("/farm/announcements");
+        }
+      } else {
+        toast.success("annonce créée avec succès");
+        router.push("/farm/announcements");
+      }
+      if (onSuccess) {
+        onSuccess();
+      }
     },
   });
 
@@ -156,12 +174,12 @@ export function AnnouncementForm({
       <Card>
         <CardHeader>
           <CardTitle>
-            {isEditing ? "Modifier l'annonce" : "Créer une nouvelle annonce"}
+            {isEditing ? "modifier l'annonce" : "créer une nouvelle annonce"}
           </CardTitle>
           <CardDescription>
             {isEditing
-              ? "Modifiez les informations de votre annonce de glanage"
-              : "Publiez une nouvelle opportunité de glanage pour partager vos surplus de récolte"}
+              ? "modifiez les informations de votre annonce de glanage"
+              : "publiez une nouvelle opportunité de glanage pour partager vos surplus de récolte"}
           </CardDescription>
           {farm && (
             <Badge className="bg-primary mt-2 mb-2 w-fit">
@@ -212,6 +230,7 @@ export function AnnouncementForm({
                             </FormControl>
                             <Button
                               type="button"
+                              size="sm"
                               variant="outline"
                               className="flex-shrink-0"
                               onClick={() => setShowFieldDialog(true)}
@@ -223,6 +242,7 @@ export function AnnouncementForm({
                         ) : (
                           <Button
                             asChild
+                            size="sm"
                             variant="outline"
                             className="w-full"
                             onClick={() => setShowFieldDialog(true)}
@@ -396,14 +416,19 @@ export function AnnouncementForm({
               <div className="flex justify-end gap-4 pt-4">
                 <Button
                   type="button"
+                  size="sm"
                   variant="outline"
                   onClick={() => router.push("/farm/announcements")}
                   disabled={createMutation.isPending}
                 >
                   Annuler
                 </Button>
-                <LoadingButton type="submit" loading={createMutation.isPending}>
-                  {isEditing ? "Mettre à jour" : "Publier l'annonce"}
+                <LoadingButton
+                  type="submit"
+                  loading={createMutation.isPending}
+                  disabled={createMutation.isPending}
+                >
+                  {isEditing ? "mettre à jour" : "créer l'annonce"}
                 </LoadingButton>
               </div>
             </div>
