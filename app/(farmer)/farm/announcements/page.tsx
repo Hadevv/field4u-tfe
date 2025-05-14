@@ -9,13 +9,9 @@ import {
   LayoutActions,
 } from "@/features/page/layout";
 import { Button } from "@/components/ui/button";
-import { Plus, Eye, Edit } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
 import { AnnouncementsList } from "./AnnouncementsList";
-import { AnnouncementsListSkeleton } from "./AnnouncementsListSkeleton";
-import { DeleteAnnouncementButton } from "./DeleteAnnouncementButton";
-import { ToggleAnnouncementStatus } from "./ToggleAnnouncementStatus";
 import {
   Card,
   CardHeader,

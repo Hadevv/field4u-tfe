@@ -27,7 +27,6 @@ import { useRouter } from "next/navigation";
 import { FieldSchema, FieldSchemaType } from "./new/create-field.schema";
 import { MapPin } from "lucide-react";
 import { MapboxField } from "@/components/mapbox/MapboxField";
-import { useState } from "react";
 import { BelgianPostalSearch } from "@/features/form/BelgianPostalSearch";
 
 type GeolocationResult = {
@@ -72,10 +71,6 @@ export function FieldForm({
     },
   });
 
-  const [locationInfo, setLocationInfo] = useState<GeolocationResult | null>(
-    null,
-  );
-
   const handleLocationChange = (
     lat: number,
     lng: number,
@@ -89,7 +84,6 @@ export function FieldForm({
       if (info.postalCode) {
         form.setValue("postalCode", info.postalCode);
       }
-      setLocationInfo(info);
     }
   };
 

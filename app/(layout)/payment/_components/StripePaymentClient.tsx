@@ -34,12 +34,12 @@ export function StripePaymentClient({
         },
       }}
     >
-      <PaymentForm clientSecret={clientSecret} />
+      <PaymentForm />
     </Elements>
   );
 }
 
-function PaymentForm({ clientSecret }: { clientSecret: string }) {
+function PaymentForm() {
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);

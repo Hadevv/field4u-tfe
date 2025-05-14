@@ -9,19 +9,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDistance, format } from "date-fns";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  FileText,
-  MapPin,
-  Calendar,
-  Ruler,
-  Clock,
-  Eye,
-  Pencil,
-} from "lucide-react";
+import { FileText, MapPin, Ruler, Clock } from "lucide-react";
 
 type FieldsListProps = {
   userId: string;
