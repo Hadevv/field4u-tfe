@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { LocationService } from "@/lib/geo/location-utils";
 
 type LocationDetectorProps = {
   onLocationDetected: (cityName: string) => void;
@@ -11,97 +12,6 @@ type LocationDetectorProps = {
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
   disabled?: boolean;
-};
-
-// service de géo
-const LocationService = {
-  getCurrentPosition: (
-    highAccuracy = false,
-  ): Promise<{
-    latitude: number;
-    longitude: number;
-  } | null> => {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        () => {
-          resolve(null);
-        },
-        {
-          enableHighAccuracy: highAccuracy,
-          timeout: 10000,
-          maximumAge: 0,
-        },
-      );
-    });
-  },
-
-  // localisation à partir des coordonnées
-  getLocationInfo: async (
-    latitude: number,
-    longitude: number,
-  ): Promise<{
-    success: boolean;
-    city: string | null;
-    fallbackCity: string | null;
-  }> => {
-    try {
-      // utiliser l'API Nominatim
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de la requête de géocodage inverse");
-      }
-
-      const data = await response.json();
-
-      let city = null;
-      let fallbackCity = null;
-
-      if (data.address) {
-        city =
-          data.address.city ||
-          data.address.town ||
-          data.address.village ||
-          data.address.municipality ||
-          data.address.suburb;
-
-        fallbackCity =
-          data.address.county ||
-          data.address.state_district ||
-          data.address.state;
-
-        if (!city && fallbackCity) {
-          city = fallbackCity;
-        }
-
-        if (!city && data.name) {
-          city = data.name;
-        }
-      }
-
-      return {
-        success: !!city,
-        city,
-        fallbackCity,
-      };
-    } catch (error) {
-      console.error("Erreur de géocodage inverse:", error);
-      return { success: false, city: null, fallbackCity: null };
-    }
-  },
 };
 
 export function LocationDetector({
@@ -118,15 +28,14 @@ export function LocationDetector({
 
     try {
       // utiliser la geo du navigateur
-      const position = await LocationService.getCurrentPosition(true);
+      const position = await LocationService.getCurrentPosition();
 
       if (!position) {
-        toast.error("impossible de déterminer votre position actuelle");
         setIsLoading(false);
         return;
       }
 
-      // localisation a partir des coos
+      // localisation a partir des coordonnées
       const locationResult = await LocationService.getLocationInfo(
         position.latitude,
         position.longitude,

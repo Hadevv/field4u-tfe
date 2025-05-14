@@ -20,41 +20,22 @@ import {
 import { useBelgianPostalData } from "../../hooks/useBelgianPostal";
 import { useDebounce } from "@/hooks/useDebounce";
 
-/**
- * item représentant un code postal et sa localité
- */
 export type BelgianPostalItem = {
   code_postal: string;
   localite: string;
 };
 
-/**
- * propriétés du composant de recherche de codes postaux belges
- */
 export type BelgianPostalSearchProps = {
-  /** type de recherche: "city" (ville) ou "postal" (code postal) */
   searchType: "city" | "postal";
-  /** valeur sélectionnée */
   value?: string;
-  /** texte d'instruction dans le champ vide */
   placeholder?: string;
-  /** callback appelé quand une valeur est sélectionnée */
   onValueChange?: (value: string) => void;
-  /** callback appelé quand une ville est sélectionnée */
   onCityChange?: (city: string) => void;
-  /** callback appelé quand un code postal est sélectionné */
   onPostalCodeChange?: (postalCode: string) => void;
-  /** classes CSS à appliquer au composant */
   className?: string;
-  /** désactiver le composant */
   disabled?: boolean;
 };
 
-/**
- * composant de recherche de codes postaux belges avec synchronisation bidirectionnelle
- * ce composant permet de rechercher soit par ville, soit par code postal
- * et synchronise automatiquement l'autre champ si possible
- */
 export function BelgianPostalSearch({
   searchType = "city",
   value = "",
@@ -65,7 +46,6 @@ export function BelgianPostalSearch({
   className,
   disabled = false,
 }: BelgianPostalSearchProps) {
-  // état local pour le composant
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
@@ -74,7 +54,6 @@ export function BelgianPostalSearch({
   const [searchResults, setSearchResults] = useState<BelgianPostalItem[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // hook personnalisé pour les données postales belges
   const {
     data,
     isLoading,
@@ -85,14 +64,12 @@ export function BelgianPostalSearch({
     getPostalCodesForCity,
   } = useBelgianPostalData();
 
-  // mise à jour lorsque la valeur change via les props
   useEffect(() => {
     if (value !== selectedValue) {
       setSelectedValue(value);
     }
   }, [value, selectedValue]);
 
-  // effet pour rechercher lorsque la recherche change
   useEffect(() => {
     async function searchPostalData() {
       if (!debouncedSearch || debouncedSearch.length < 2) {
@@ -125,7 +102,7 @@ export function BelgianPostalSearch({
       }
     }
 
-    // ne déclencher la recherche que si la saisie a une longueur suffisante
+    // ne declanche que si 2 caracteres sont saisis
     if (debouncedSearch.length >= 2) {
       searchPostalData();
     } else {
@@ -134,24 +111,17 @@ export function BelgianPostalSearch({
     }
   }, [debouncedSearch, searchType]);
 
-  // formattage du placeholder
+  // placeholder
   const defaultPlaceholder =
     searchType === "city"
       ? "sélectionner une ville..."
       : "sélectionner un code postal...";
   const displayPlaceholder = placeholder || defaultPlaceholder;
 
-  // gérer la sélection d'un item
   const handleSelect = (selected: string, item?: BelgianPostalItem) => {
     setSelectedValue(selected);
-
-    // fermer le popover
     setOpen(false);
-
-    // réinitialiser la recherche
     setSearch("");
-
-    // si on a sélectionné un item complet (avec code postal et ville)
     if (item) {
       if (searchType === "city") {
         onValueChange?.(item.localite);
@@ -164,24 +134,21 @@ export function BelgianPostalSearch({
       }
       return;
     }
-
-    // comportement standard (sélection simple - rétrocompatibilité)
     if (searchType === "city") {
-      // sélection d'une ville
       onValueChange?.(selected);
       onCityChange?.(selected);
 
-      // si la ville n'a qu'un seul code postal, le sélectionner automatiquement
+      // auto-selection du code postal si une seule ville
       const postalCodes = getPostalCodesForCity(selected);
       if (postalCodes.length === 1) {
         onPostalCodeChange?.(postalCodes[0]);
       }
     } else {
-      // sélection d'un code postal
+      // auto-selection de la ville si un seul code postal
       onValueChange?.(selected);
       onPostalCodeChange?.(selected);
 
-      // si le code postal n'a qu'une seule ville, la sélectionner automatiquement
+      // auto-selection de la ville si un seul code postal
       const cities = getCitiesForPostalCode(selected);
       if (cities.length === 1) {
         onCityChange?.(cities[0]);
@@ -189,11 +156,9 @@ export function BelgianPostalSearch({
     }
   };
 
-  // gérer une retentative en cas d'erreur
   const handleRetry = async () => {
     try {
       await refetch();
-      // réinitialiser la recherche après la retentative
       setSearch("");
       setSearchError(null);
     } catch (err) {
@@ -201,7 +166,6 @@ export function BelgianPostalSearch({
     }
   };
 
-  // gestion de l'état du composant
   const isInitialLoading = isLoading && !searchError;
   const hasError = isError || !!searchError;
   const errorMessage =
@@ -271,9 +235,7 @@ export function BelgianPostalSearch({
                     searchType === "city" ? item.localite : item.code_postal;
                   const secondaryValue =
                     searchType === "city" ? item.code_postal : item.localite;
-                  // utiliser index pour garantir l'unicité des clés
                   const itemKey = `${item.code_postal}-${item.localite}-${index}`;
-                  const compositeKey = `${item.code_postal} (${item.localite})`;
 
                   return (
                     <CommandItem

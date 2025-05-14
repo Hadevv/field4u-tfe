@@ -78,7 +78,7 @@ export function LocationField({
             className="pr-8"
             aria-label="entrer une localisation"
           />
-          {inputRef.current?.value && (
+          {value && (
             <button
               type="button"
               onClick={clearLocation}
