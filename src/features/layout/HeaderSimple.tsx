@@ -17,6 +17,8 @@ export function HeaderSimple() {
                 alt="app logo"
                 width={100}
                 height={100}
+                style={{ height: "auto" }}
+                priority
               />
             </Link>
           </div>

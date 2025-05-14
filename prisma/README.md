@@ -37,6 +37,7 @@ Un compte administrateur est créé automatiquement :
 
 - Email : admin@field4u.be
 - Mot de passe : password123
+- Rôle : ADMIN
 
 Tous les comptes générés utilisent le même mot de passe : password123
 

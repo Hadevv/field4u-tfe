@@ -37,6 +37,8 @@ export function HeaderBase({
                 alt="app logo"
                 width={100}
                 height={100}
+                style={{ height: "auto" }}
+                priority
               />
             </Link>
             {!isVerifyRequest && (
