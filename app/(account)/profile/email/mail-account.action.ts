@@ -1,30 +1,26 @@
 "use server";
 
-import { ActionError, authAction } from "@/lib/backend/safe-actions";
-import { env } from "@/lib/env";
-import { resend } from "@/lib/mail/resend";
+import { authAction } from "@/lib/backend/safe-actions";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
 
-const ToggleSubscribedActionSchema = z.object({
-  unsubscribed: z.boolean(),
+const ToggleNotificationsSchema = z.object({
+  notificationsEnabled: z.boolean(),
 });
 
-export const toggleSubscribedAction = authAction
-  .schema(ToggleSubscribedActionSchema)
+export const toggleNotificationsAction = authAction
+  .schema(ToggleNotificationsSchema)
   .action(async ({ parsedInput: input, ctx }) => {
-    if (!ctx.user.resendContactId) {
-      throw new ActionError("L'utilisateur n'a pas de contact Resend");
-    }
-
-    if (!env.RESEND_AUDIENCE_ID) {
-      throw new ActionError("RESEND_AUDIENCE_ID is not set");
-    }
-
-    const updateContact = await resend.contacts.update({
-      audienceId: env.RESEND_AUDIENCE_ID,
-      id: ctx.user.resendContactId,
-      unsubscribed: input.unsubscribed,
+    await prisma.user.update({
+      where: {
+        id: ctx.user.id,
+      },
+      data: {
+        notificationsEnabled: input.notificationsEnabled,
+      },
     });
 
-    return updateContact;
+    return {
+      success: true,
+    };
   });

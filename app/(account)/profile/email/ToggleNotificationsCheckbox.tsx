@@ -6,28 +6,28 @@ import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { toggleSubscribedAction } from "./mail-account.action";
+import { toggleNotificationsAction } from "./mail-account.action";
 
-type ToggleEmailCheckboxProps = {
-  unsubscribed: boolean;
+type ToggleNotificationsCheckboxProps = {
+  notificationsEnabled: boolean;
 };
 
-export const ToggleEmailCheckbox = ({
-  unsubscribed,
-}: ToggleEmailCheckboxProps) => {
+export const ToggleNotificationsCheckbox = ({
+  notificationsEnabled,
+}: ToggleNotificationsCheckboxProps) => {
   const mutation = useMutation({
-    mutationFn: async (unsubscribed: boolean) => {
-      const result = await toggleSubscribedAction({
-        unsubscribed,
+    mutationFn: async (enabled: boolean) => {
+      const result = await toggleNotificationsAction({
+        notificationsEnabled: enabled,
       });
 
       if (!result?.data) {
-        toast.error(result?.serverError ?? "Une erreur est survenue");
+        toast.error(result?.serverError ?? "une erreur est survenue");
         return;
       }
 
       toast.success(
-        "Vous avez mis à jour vos paramètres de notifications par email.",
+        "vous avez mis à jour vos paramètres de notifications dans l'application",
       );
     },
   });
@@ -42,8 +42,8 @@ export const ToggleEmailCheckbox = ({
       )}
     >
       <Checkbox
-        id="unsubscribed-checkbox"
-        defaultChecked={unsubscribed}
+        id="notifications-checkbox"
+        defaultChecked={notificationsEnabled}
         disabled={mutation.isPending}
         onCheckedChange={(checked) => {
           const newChecked = Boolean(checked);
@@ -52,10 +52,12 @@ export const ToggleEmailCheckbox = ({
         }}
       />
       <div className="space-y-1 leading-none">
-        <Label htmlFor="unsubscribed-checkbox">Désabonné</Label>
+        <Label htmlFor="notifications-checkbox">
+          Notifications dans l'application
+        </Label>
         <Typography variant="muted">
-          Si activé, vous ne recevrez aucun email marketing ou promotionnel de
-          nous.
+          Activez cette option pour recevoir des notifications dans
+          l'application concernant vos champs et récoltes
         </Typography>
       </div>
     </div>

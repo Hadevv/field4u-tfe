@@ -21,7 +21,8 @@ import { createVerifyEmailAction } from "../verify-email/verify-email.action";
 import { updateProfileAction } from "./edit-profile.action";
 import type { ProfileFormType } from "./edit-profile.schema";
 import { ProfileFormSchema } from "./edit-profile.schema";
-import { Switch } from "@/components/ui/switch";
+import { BelgianPostalSearch } from "@/features/form/BelgianPostalSearch";
+import { Textarea } from "@/components/ui/textarea";
 
 type EditProfileFormProps = {
   defaultValues: User;
@@ -33,7 +34,9 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
     defaultValues: {
       email: defaultValues.email,
       name: defaultValues.name,
-      notificationsEnabled: defaultValues.notificationsEnabled,
+      city: defaultValues.city || "",
+      postalCode: defaultValues.postalCode || "",
+      bio: defaultValues.bio || "",
     },
   });
   const router = useRouter();
@@ -73,7 +76,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>nom</FormLabel>
+            <FormLabel>Nom</FormLabel>
             <FormControl>
               <Input placeholder="" {...field} value={field.value ?? ""} />
             </FormControl>
@@ -88,9 +91,9 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel className="flex items-center gap-1">
-              <span>email</span>
+              <span>Email</span>
               {defaultValues.emailVerified ? (
-                <InlineTooltip title="email vérifié. si vous changez votre email, vous devrez le vérifier à nouveau.">
+                <InlineTooltip title="Email vérifié. Si vous changez votre email, vous devrez le vérifier à nouveau.">
                   <BadgeCheck size={16} />
                 </InlineTooltip>
               ) : null}
@@ -102,26 +105,80 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
           </FormItem>
         )}
       />
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <FormField
+          control={form.control}
+          name="city"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ville</FormLabel>
+              <FormControl>
+                <BelgianPostalSearch
+                  searchType="city"
+                  value={field.value || ""}
+                  onCityChange={(city) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  onPostalCodeChange={(postalCode) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="postalCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Code postal</FormLabel>
+              <FormControl>
+                <BelgianPostalSearch
+                  searchType="postal"
+                  value={field.value || ""}
+                  onCityChange={(city) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  onPostalCodeChange={(postalCode) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
       <FormField
         control={form.control}
-        name="notificationsEnabled"
+        name="bio"
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center gap-2 py-2">
+          <FormItem>
+            <FormLabel>Présentation (optionnel)</FormLabel>
             <FormControl>
-              <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
-                id="notificationsEnabled"
+              <Textarea
+                placeholder="Décrivez votre profil, vos intérêts..."
+                {...field}
+                className="min-h-[100px]"
+                value={field.value || ""}
               />
             </FormControl>
-            <FormLabel htmlFor="notificationsEnabled" className="text-sm">
-              activer les notifications
-            </FormLabel>
+            <FormMessage />
           </FormItem>
         )}
       />
+
       <SubmitButton className="w-fit self-end" size="sm">
-        enregistrer
+        Enregistrer
       </SubmitButton>
     </Form>
   );
