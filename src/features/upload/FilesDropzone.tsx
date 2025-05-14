@@ -6,6 +6,7 @@ import { FileImage, X, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export type FileWithPreview = {
   file: File;
@@ -149,7 +150,7 @@ export function FilesDropzone({
               key={`uploaded-${index}`}
               className="relative aspect-square rounded-lg overflow-hidden border border-border group"
             >
-              <img
+              <Image
                 src={url}
                 alt={`Image ${index + 1}`}
                 className="h-full w-full object-cover"
@@ -174,7 +175,7 @@ export function FilesDropzone({
               key={`preview-${index}`}
               className="relative aspect-square rounded-lg overflow-hidden border border-border group"
             >
-              <img
+              <Image
                 src={file.preview}
                 alt={file.file.name}
                 className="h-full w-full object-cover"

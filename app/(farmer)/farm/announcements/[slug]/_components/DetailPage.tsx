@@ -35,7 +35,7 @@ import { DeleteAnnouncementButton } from "../../DeleteAnnouncementButton";
 import { CancelGleaningButton } from "./CancelGleaningButton";
 import Link from "next/link";
 import { ToggleAnnouncementStatus } from "../../ToggleAnnouncementStatus";
-
+import Image from "next/image";
 export default async function AnnouncementDetailPage({
   params,
 }: PageParams<{ slug: string }>) {
@@ -323,7 +323,7 @@ export default async function AnnouncementDetailPage({
                         {review.images.length > 0 && (
                           <div className="mt-4 flex gap-2 overflow-x-auto py-2">
                             {review.images.map((image, index) => (
-                              <img
+                              <Image
                                 key={index}
                                 src={image}
                                 alt={`Photo ${index + 1}`}

@@ -1,7 +1,7 @@
 "use client";
 
 import { dialogManager } from "@/features/dialog-manager/dialog-manager-store";
-
+import Image from "next/image";
 export function getGoogleCalendarUrl({
   title,
   description,
@@ -89,7 +89,7 @@ export function showAddToCalendarDialog({
             }
             type="button"
           >
-            <img
+            <Image
               src="/images/google-calendar.png"
               alt="google calendar"
               className="w-5 h-5"
@@ -112,7 +112,7 @@ export function showAddToCalendarDialog({
             }
             type="button"
           >
-            <img
+            <Image
               src="/images/ms-outlook-svgrepo-com.svg"
               alt="outlook"
               className="w-5 h-5"

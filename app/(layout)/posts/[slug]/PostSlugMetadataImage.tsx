@@ -1,7 +1,7 @@
 import type { Post } from "@/features/posts/post-manager";
 import { SiteConfig } from "@/site-config";
 import { alt } from "./opengraph-image";
-
+import Image from "next/image";
 export type MetadataImageProps = {
   post: Post;
 };
@@ -22,7 +22,7 @@ export const PostSlugMetadataImage = ({ post }: MetadataImageProps) => {
         backgroundColor: "#090910",
       }}
     >
-      <img
+      <Image
         src={post.attributes.coverUrl}
         alt={alt}
         style={{

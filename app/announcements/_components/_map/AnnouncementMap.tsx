@@ -167,7 +167,6 @@ export function AnnouncementMap({
 
   // créer le marqueur utilisateur
   const createUserMarkerElement = () => {
-    // conteneur principal
     const element = document.createElement("div");
     element.className = "user-location-marker";
     Object.assign(element.style, {
@@ -214,12 +213,10 @@ export function AnnouncementMap({
     return element;
   };
 
-  // mettre à jour la visibilité des zones de sécurité en fonction du zoom
   const updateSecurityZonesVisibility = () => {
     if (!map.current || !mapLoaded) return;
 
     try {
-      // vérifier si le calque existe avant de modifier sa visibilité
       if (map.current.getLayer("security-zones-circles")) {
         if (currentZoom >= CONFIG.securityZone.minZoom) {
           map.current.setLayoutProperty(
@@ -252,7 +249,7 @@ export function AnnouncementMap({
       style: "mapbox://styles/mapbox/streets-v12",
       center: CONFIG.initialView.center,
       zoom: CONFIG.initialView.zoom,
-      maxZoom: CONFIG.maxZoom, // empêche de zoomer trop près
+      maxZoom: CONFIG.maxZoom,
     });
 
     map.current.on("zoom", () => {
@@ -263,13 +260,11 @@ export function AnnouncementMap({
     map.current.on("load", () => {
       setMapLoaded(true);
 
-      // ajouter la source pour les zones de sécurité
       map.current?.addSource("security-zones", {
         type: "geojson",
         data: createSecurityZonesGeoJson(),
       });
 
-      // ajouter le calque pour les zones de sécurité - caché par défaut si zoom insuffisant
       map.current?.addLayer({
         id: "security-zones-circles",
         type: "circle",
@@ -283,9 +278,9 @@ export function AnnouncementMap({
         paint: {
           "circle-radius": {
             stops: [
-              [10, 20], // à zoom 10, rayon de 20px
-              [15, 100], // à zoom 15, rayon de 100px
-              [20, 200], // à zoom 20, rayon de 200px
+              [10, 20],
+              [15, 100],
+              [20, 200],
             ],
             base: 2,
           },
@@ -301,7 +296,6 @@ export function AnnouncementMap({
         "security-zones",
       ) as mapboxgl.GeoJSONSource;
 
-      // appeler updateSecurityZonesVisibility maintenant que les calques sont prêts
       updateSecurityZonesVisibility();
 
       if ("geolocation" in navigator) {
@@ -309,7 +303,6 @@ export function AnnouncementMap({
       }
     });
 
-    // nettoyer à la fermeture
     return () => {
       if (userMarker.current) userMarker.current.remove();
       if (popup) popup.remove();
@@ -317,28 +310,23 @@ export function AnnouncementMap({
     };
   }, []);
 
-  // mettre à jour la visibilité des zones de sécurité quand le zoom change
   useEffect(() => {
     if (mapLoaded) {
       updateSecurityZonesVisibility();
     }
   }, [currentZoom, mapLoaded]);
 
-  // créer et ajouter l'iclne de pomme
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
     loadAppleIcon();
   }, [mapLoaded]);
 
-  // mise à jour des points et des zones de sécurité quand les annonces changent
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
-    // préparer les données geojson
     const geojson = createGeoJson();
     const securityZonesGeoJson = createSecurityZonesGeoJson();
 
-    // mettre à jour les zones de sécurité
     if (securityCircles.current) {
       securityCircles.current.setData(securityZonesGeoJson);
     }
@@ -353,25 +341,20 @@ export function AnnouncementMap({
     addMapLayers(geojson);
   }, [mapLoaded, announcements, highlightedAnnouncementId]);
 
-  // charger l'icone de pomme sur la carte
   const loadAppleIcon = () => {
     if (!map.current) return;
 
-    // créer le svg de la pomme
     const appleSvg = createAppleSvg();
     const appleIcon = svgToDataUrl(appleSvg);
 
-    // créer le svg de la pomme en surbrillance
     const highlightedAppleSvg = createAppleSvg(true);
     const highlightedAppleIcon = svgToDataUrl(highlightedAppleSvg);
 
-    // supprimer l'icone existante si présente
     if (map.current.hasImage("apple-icon"))
       map.current.removeImage("apple-icon");
     if (map.current.hasImage("apple-icon-highlighted"))
       map.current.removeImage("apple-icon-highlighted");
 
-    // charger les nouvelles icônes
     const img = new Image();
     img.onload = () => {
       if (!map.current) return;
@@ -387,7 +370,6 @@ export function AnnouncementMap({
     imgHighlighted.src = highlightedAppleIcon;
   };
 
-  // créer le svg de la pomme
   const createAppleSvg = (highlighted = false) => {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("width", "24");
@@ -423,7 +405,6 @@ export function AnnouncementMap({
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
   };
 
-  // créer un popup
   const createPopupHtml = (title: string, slug: string, cropType?: string) => {
     const popupId = `popup-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     return `
@@ -524,7 +505,6 @@ export function AnnouncementMap({
       },
     });
 
-    // ajouter un calque pour les points mis en évidence
     map.current.addLayer({
       id: "highlighted-point-icon",
       type: "symbol",
@@ -551,15 +531,12 @@ export function AnnouncementMap({
   const setupMapInteractions = () => {
     if (!map.current) return;
 
-    // interaction avec les clusters
     map.current.on("click", "clusters", handleClusterClick);
 
-    // interaction avec les point
     map.current.on("click", "unclustered-point", handlePointClick);
     map.current.on("click", "unclustered-point-icon", handlePointClick);
     map.current.on("click", "highlighted-point-icon", handlePointClick);
 
-    // effets de survol
     setupHoverEffects();
   };
 
@@ -653,19 +630,15 @@ export function AnnouncementMap({
       if (map.current) map.current.getCanvas().style.cursor = "";
     };
 
-    // curseur sur les clusters
     map.current.on("mouseenter", "clusters", setCursorPointer);
     map.current.on("mouseleave", "clusters", resetCursor);
 
-    // curseur sur les points
     map.current.on("mouseenter", "unclustered-point", setCursorPointer);
     map.current.on("mouseleave", "unclustered-point", resetCursor);
 
-    // curseur sur les icones
     map.current.on("mouseenter", "unclustered-point-icon", setCursorPointer);
     map.current.on("mouseleave", "unclustered-point-icon", resetCursor);
 
-    // curseur sur les icones en surbrillance
     map.current.on("mouseenter", "highlighted-point-icon", setCursorPointer);
     map.current.on("mouseleave", "highlighted-point-icon", resetCursor);
   };

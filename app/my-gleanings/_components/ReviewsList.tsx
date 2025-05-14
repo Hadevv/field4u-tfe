@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { GleaningCard } from "./GleaningCard";
 import { EmptyState } from "./EmptyState";
-
+import Image from "next/image";
 async function getReviews(userId: string) {
   const reviews = await prisma.review.findMany({
     where: {
@@ -92,7 +92,7 @@ export async function ReviewsList({ userId }: { userId: string }) {
               {review.images && review.images.length > 0 && (
                 <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
                   {review.images.map((image, index) => (
-                    <img
+                    <Image
                       key={index}
                       src={image}
                       alt={`Photo de glanage ${index + 1}`}
