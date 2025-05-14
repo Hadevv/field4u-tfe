@@ -25,16 +25,24 @@ export const useDialogManager = create<DialogManagerStore>((set, get) => ({
     const newDialog: DialogManagerType = isStandardDialog(dialog)
       ? {
           ...dialog,
-          cancel: {
-            label: dialog.cancel?.label ?? "Cancel",
-            onClick: () => {
-              if (dialog.cancel && "onClick" in dialog.cancel) {
-                void dialog.cancel.onClick();
-                return;
+          cancel: dialog.cancel
+            ? {
+                ...dialog.cancel,
+                label: dialog.cancel.label ?? "Cancel",
+                onClick: () => {
+                  if (dialog.cancel && "onClick" in dialog.cancel) {
+                    void dialog.cancel.onClick();
+                    return;
+                  }
+                  removeDialog(id);
+                },
               }
-              removeDialog(id);
-            },
-          },
+            : {
+                label: "Cancel",
+                onClick: () => {
+                  removeDialog(id);
+                },
+              },
           action:
             dialog.action && "onClick" in dialog.action
               ? {
@@ -46,7 +54,6 @@ export const useDialogManager = create<DialogManagerStore>((set, get) => ({
                       return;
                     }
 
-                    // check if it's a promise
                     const onClickReturn = dialog.action?.onClick(value);
 
                     if (onClickReturn instanceof Promise) {
