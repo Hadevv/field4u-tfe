@@ -1,8 +1,8 @@
 export const SiteConfig = {
   title: "field4u",
   description: "Un champs pour tout le monde",
-  prodUrl: "https://field4u.app",
-  domain: "field4u.app",
+  prodUrl: "https://field4u.vercel.app",
+  domain: "field4u.vercel.app",
   appIcon: "/images/header-icon.svg",
   company: {
     name: "Field4u",
@@ -20,6 +20,6 @@ export const SiteConfig = {
   },
   maker: {
     name: "Field4u Team",
-    website: "https://field4u.app",
+    website: "https://field4u.vercel.app",
   },
 };
