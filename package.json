@@ -92,6 +92,7 @@
     "nodemailer": "^6.10.1",
     "nprogress": "^0.2.0",
     "nuqs": "^2.3.0",
+    "posthog-js": "^1.242.1",
     "pusher": "^5.2.0",
     "pusher-js": "^8.4.0",
     "react": "19.0.0",

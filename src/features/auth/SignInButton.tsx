@@ -15,18 +15,18 @@ const useHref = () => {
     return "";
   }
 
-  const href = window.location.href;
+  const pathname = window.location.pathname;
 
-  return `${href}`;
+  return pathname;
 };
 
 export const SignInButton = (props: VariantProps<typeof buttonVariants>) => {
-  const href = useHref();
+  const pathname = useHref();
 
   return (
     <Link
       className={buttonVariants({ size: "sm", variant: "outline", ...props })}
-      href={`/auth/signin?callbackUrl=${href}`}
+      href={`/auth/signin?callbackUrl=${pathname}`}
     >
       Sign in
     </Link>

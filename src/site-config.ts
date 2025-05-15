@@ -12,7 +12,7 @@ export const SiteConfig = {
     primary: "F5F3EE",
   },
   email: {
-    from: "Field4u <noreply@field4u.app>",
+    from: "Field4u <onboarding@resend.dev>",
     contact: "contact@field4u.app",
   },
   auth: {

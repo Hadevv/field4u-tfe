@@ -12,7 +12,8 @@ function shouldSkipRoute(pathname: string): boolean {
     pathname === "/auth/signup" ||
     pathname === "/auth/signout" ||
     pathname === "/auth/error" ||
-    pathname === "/auth/onboarding"
+    pathname === "/auth/onboarding" ||
+    pathname.startsWith("/@modal/auth")
   );
 }
 
