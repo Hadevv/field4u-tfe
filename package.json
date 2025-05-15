@@ -17,6 +17,7 @@
     "dev:mail": "pnpm run mailhog && next dev --turbopack",
     "stripe-webhooks": "stripe listen --forward-to localhost:3000/api/webhooks/stripe",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-db": "prisma generate && next build",
     "postinstall": "prisma generate",
     "clean": "next lint --fix && tsc --noEmit && prettier --write .",
     "seed": "tsx prisma/seed/seed.ts",
