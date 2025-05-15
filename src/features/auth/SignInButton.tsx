@@ -2,31 +2,20 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { useIsClient } from "@/hooks/useIsClient";
+import { usePathname } from "next/navigation";
 import type { VariantProps } from "class-variance-authority";
 import Link from "next/link";
 import { UserDropdown } from "./UserDropdown";
 import { displayName } from "@/lib/format/displayName";
 
-const useHref = () => {
-  const isClient = useIsClient();
-
-  if (!isClient) {
-    return "";
-  }
-
-  const pathname = window.location.pathname;
-
-  return pathname;
-};
-
 export const SignInButton = (props: VariantProps<typeof buttonVariants>) => {
-  const pathname = useHref();
+  const pathname = usePathname();
+  const callbackUrl = pathname ?? "/";
 
   return (
     <Link
+      href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
       className={buttonVariants({ size: "sm", variant: "outline", ...props })}
-      href={`/auth/signin?callbackUrl=${pathname}`}
     >
       Sign in
     </Link>
