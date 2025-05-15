@@ -50,9 +50,6 @@ export function BelgianPostalSearch({
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const [selectedValue, setSelectedValue] = useState(value);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<BelgianPostalItem[]>([]);
-  const [searchError, setSearchError] = useState<string | null>(null);
 
   const {
     data,
@@ -62,6 +59,7 @@ export function BelgianPostalSearch({
     refetch,
     getCitiesForPostalCode,
     getPostalCodesForCity,
+    searchPostalData,
   } = useBelgianPostalData();
 
   useEffect(() => {
@@ -69,47 +67,6 @@ export function BelgianPostalSearch({
       setSelectedValue(value);
     }
   }, [value, selectedValue]);
-
-  useEffect(() => {
-    async function searchPostalData() {
-      if (!debouncedSearch || debouncedSearch.length < 2) {
-        setSearchResults([]);
-        return;
-      }
-
-      setIsSearching(true);
-      setSearchError(null);
-
-      try {
-        const response = await fetch(
-          `/api/belgian-postal/search?query=${encodeURIComponent(debouncedSearch)}&type=${searchType}`,
-        );
-
-        if (!response.ok) {
-          throw new Error(`erreur de recherche: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setSearchResults(data.results || []);
-      } catch (err) {
-        console.error("erreur recherche codes postaux:", err);
-        setSearchError(
-          err instanceof Error ? err.message : "erreur de recherche",
-        );
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    }
-
-    // ne declanche que si 2 caracteres sont saisis
-    if (debouncedSearch.length >= 2) {
-      searchPostalData();
-    } else {
-      setSearchResults([]);
-      setIsSearching(false);
-    }
-  }, [debouncedSearch, searchType]);
 
   // placeholder
   const defaultPlaceholder =
@@ -160,23 +117,21 @@ export function BelgianPostalSearch({
     try {
       await refetch();
       setSearch("");
-      setSearchError(null);
     } catch (err) {
       console.error("erreur lors de la retentative:", err);
     }
   };
 
-  const isInitialLoading = isLoading && !searchError;
-  const hasError = isError || !!searchError;
-  const errorMessage =
-    searchError ||
-    error?.message ||
-    "erreur de chargement des données postales";
+  // utiliser searchPostalData au lieu de faire un appel api
+  const searchResults =
+    debouncedSearch.length >= 2
+      ? searchPostalData(debouncedSearch, searchType)
+      : [];
+
   const isNoResults =
-    !isSearching &&
-    debouncedSearch.length >= 2 &&
-    searchResults.length === 0 &&
-    !hasError;
+    debouncedSearch.length >= 2 && searchResults.length === 0 && !isError;
+  const errorMessage =
+    error?.message || "erreur de chargement des données postales";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -201,12 +156,12 @@ export function BelgianPostalSearch({
           />
           <CommandList>
             <CommandEmpty>
-              {isInitialLoading || isSearching ? (
+              {isLoading ? (
                 <div className="flex items-center justify-center py-2">
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   chargement...
                 </div>
-              ) : hasError ? (
+              ) : isError ? (
                 <div className="flex flex-col items-center justify-center py-3 space-y-2">
                   <div className="text-destructive text-sm text-center">
                     {errorMessage}

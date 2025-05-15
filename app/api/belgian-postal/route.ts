@@ -50,7 +50,7 @@ async function fetchAllPostalData(): Promise<BelgianPostalItem[]> {
     do {
       const url = `${API_URL}?limit=${PAGE_SIZE}&start=${start}`;
       const res = await fetch(url, {
-        next: { revalidate: 86400 },
+        next: { revalidate: 86400 }, // revalider toutes les 24h
         headers: {
           "User-Agent": "Field4u-Gleaning-App",
         },
@@ -90,12 +90,6 @@ async function fetchAllPostalData(): Promise<BelgianPostalItem[]> {
   }
 }
 
-// stockage en mémoire
-let postalCache: {
-  data: BelgianPostalItem[] | null;
-  timestamp: number;
-} = { data: null, timestamp: 0 };
-
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -123,30 +117,12 @@ export async function GET(request: Request) {
 }
 
 async function handleMainRequest() {
-  const now = Date.now();
-  const cacheAge = now - postalCache.timestamp;
-  const ONE_HOUR = 60 * 60 * 1000;
-
-  // utiliser le cache si disponible et récent (moins d'une heure)
-  if (postalCache.data && postalCache.data.length > 0 && cacheAge < ONE_HOUR) {
-    console.log(`utilisation du cache (${postalCache.data.length} éléments)`);
-    return NextResponse.json(postalCache.data);
-  }
-
-  console.log("récupération des données fraîches");
   const data = await fetchAllPostalData();
 
   if (!data || data.length === 0) {
     throw new Error("aucune donnée récupérée");
   }
 
-  // mettre à jour le cache
-  postalCache = {
-    data,
-    timestamp: now,
-  };
-
-  console.log(`${data.length} codes postaux récupérés et mis en cache`);
   return NextResponse.json(data);
 }
 
@@ -159,27 +135,7 @@ async function handleSearchRequest(searchParams: URLSearchParams) {
     return NextResponse.json({ results: [] });
   }
 
-  let postalData: BelgianPostalItem[];
-
-  const now = Date.now();
-  const cacheAge = now - postalCache.timestamp;
-  const ONE_HOUR = 60 * 60 * 1000;
-
-  if (postalCache.data && postalCache.data.length > 0 && cacheAge < ONE_HOUR) {
-    console.log(
-      `utilisation du cache pour recherche (${postalCache.data.length} éléments)`,
-    );
-    postalData = postalCache.data;
-  } else {
-    console.log("récupération des données fraîches pour recherche");
-    postalData = await fetchAllPostalData();
-
-    postalCache = {
-      data: postalData,
-      timestamp: now,
-    };
-  }
-
+  const postalData = await fetchAllPostalData();
   const searchLower = query.toLowerCase().trim();
 
   let results: BelgianPostalItem[] = [];
