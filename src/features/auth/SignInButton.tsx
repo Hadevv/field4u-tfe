@@ -2,23 +2,29 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { VariantProps } from "class-variance-authority";
-import Link from "next/link";
 import { UserDropdown } from "./UserDropdown";
 import { displayName } from "@/lib/format/displayName";
 
 export const SignInButton = (props: VariantProps<typeof buttonVariants>) => {
-  const pathname = usePathname();
-  const callbackUrl = pathname ?? "/";
+  const pathname = usePathname() || "/";
+  const router = useRouter();
+  const callbackUrl = encodeURIComponent(pathname);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
+  };
 
   return (
-    <Link
-      href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+    <a
+      href={`/auth/signin?callbackUrl=${callbackUrl}`}
+      onClick={handleClick}
       className={buttonVariants({ size: "sm", variant: "outline", ...props })}
     >
       Sign in
-    </Link>
+    </a>
   );
 };
 
