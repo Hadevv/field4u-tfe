@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { VariantProps } from "class-variance-authority";
 import { UserDropdown } from "./UserDropdown";
 import { displayName } from "@/lib/format/displayName";
@@ -14,13 +14,16 @@ export const SignInButton = (props: VariantProps<typeof buttonVariants>) => {
   const signInUrl = `/auth/signin?callbackUrl=${callbackUrl}`;
 
   return (
-    <Link
-      href={signInUrl}
-      prefetch={false}
+    <Button
+      variant="outline"
+      size="sm"
       className={buttonVariants({ size: "sm", variant: "outline", ...props })}
+      asChild
     >
-      Sign in
-    </Link>
+      <Link href={signInUrl} replace={false} prefetch={false}>
+        Sign in
+      </Link>
+    </Button>
   );
 };
 

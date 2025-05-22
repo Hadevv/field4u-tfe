@@ -7,34 +7,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SignInProviders } from "../../../auth/signin/SignInProviders";
 import { SiteConfig } from "@/site-config";
-import { useEffect, useState, useCallback, useTransition } from "react";
+import { useCallback } from "react";
 
 export function SignInDialog() {
   const router = useRouter();
   const path = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    // vérifier si on est sur la page de connexion
-    const isSignInPath = path.startsWith("/auth/signin");
-    setIsOpen(isSignInPath);
-  }, [path]);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const isOpen = path.startsWith("/auth/signin");
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      setIsOpen(open);
       if (!open) {
-        // utiliser startTransition pour naviguer en arrière de manière fluide
-        startTransition(() => {
+        // rediriger vers la page de callback si elle existe, sinon revenir en arrière
+        if (callbackUrl && callbackUrl !== "/") {
+          router.push(decodeURIComponent(callbackUrl));
+        } else {
           router.back();
-        });
+        }
       }
     },
-    [router],
+    [router, callbackUrl],
   );
 
   return (

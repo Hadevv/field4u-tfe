@@ -2,13 +2,14 @@
 
 import { joinGleaningAction } from "../_actions/gleaning.action";
 import { resolveActionResult } from "@/lib/backend/actions-utils";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { usePathname, useRouter } from "next/navigation";
 import { Check, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showAddToCalendarDialog } from "@/features/calendar/AddToCalendarButton";
-import { useCallback, useTransition } from "react";
+import Link from "next/link";
+import { useRef } from "react";
 
 export type JoinGleaningButtonProps = {
   announcementId: string;
@@ -35,23 +36,13 @@ export function JoinGleaningButton({
 }: JoinGleaningButtonProps) {
   const router = useRouter();
   const pathname = usePathname() || "/";
-  const [isPending, startTransition] = useTransition();
+  const callbackUrl = encodeURIComponent(pathname);
+  const signInUrl = `/auth/signin?callbackUrl=${callbackUrl}`;
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const gleaningLinkRef = useRef<HTMLAnchorElement>(null);
+  const queryClient = useQueryClient();
 
-  const navigateToSignIn = useCallback(() => {
-    const callbackUrl = encodeURIComponent(pathname);
-    startTransition(() => {
-      router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
-    });
-  }, [pathname, router]);
-
-  const navigateToGleaning = useCallback(() => {
-    startTransition(() => {
-      router.push(`/announcements/${slug}/gleaning`);
-      router.refresh();
-    });
-  }, [router, slug]);
-
-  const { mutate: joinMutation, isPending: isMutationPending } = useMutation({
+  const { mutate: joinMutation, isPending } = useMutation({
     mutationFn: () =>
       resolveActionResult(joinGleaningAction({ announcementId })),
     onSuccess: (data) => {
@@ -82,7 +73,16 @@ export function JoinGleaningButton({
           });
         }
 
-        navigateToGleaning();
+        // Invalidate queries to refresh data without full page reload
+        queryClient.invalidateQueries({ queryKey: ["announcements"] });
+        queryClient.invalidateQueries({ queryKey: ["gleaning"] });
+
+        // Navigate to gleaning page
+        setTimeout(() => {
+          if (gleaningLinkRef.current) {
+            gleaningLinkRef.current.click();
+          }
+        }, 500);
       }
     },
     onError: (error) => {
@@ -92,7 +92,13 @@ export function JoinGleaningButton({
         error.message?.toLowerCase().includes("auth")
       ) {
         toast.error("veuillez vous connecter pour rejoindre le glanage");
-        navigateToSignIn();
+
+        // Redirection vers la page de connexion avec le callback correct
+        setTimeout(() => {
+          if (linkRef.current) {
+            linkRef.current.click();
+          }
+        }, 1000);
       } else {
         toast.error("erreur", {
           description: error.message,
@@ -103,35 +109,47 @@ export function JoinGleaningButton({
 
   if (userIsParticipant) {
     return (
-      <Button
-        variant="secondary"
-        size="sm"
-        className={className}
-        onClick={navigateToGleaning}
-        disabled={isPending}
-      >
-        <Check className="size-5" />
-        voir le glanage
+      <Button variant="secondary" size="sm" className={className} asChild>
+        <Link href={`/announcements/${slug}/gleaning`} prefetch={false}>
+          <Check className="size-5" />
+          voir le glanage
+        </Link>
       </Button>
     );
   }
 
   return (
-    <Button
-      variant="secondary"
-      size="sm"
-      className={className}
-      disabled={isMutationPending || isPending}
-      onClick={() => joinMutation()}
-    >
-      {isMutationPending ? (
-        "en cours..."
-      ) : (
-        <>
-          <Users className="size-4 mr-2" />
-          rejoindre le glanage
-        </>
-      )}
-    </Button>
+    <>
+      <Button
+        variant="secondary"
+        size="sm"
+        className={className}
+        disabled={isPending}
+        onClick={() => joinMutation()}
+      >
+        {isPending ? (
+          "en cours..."
+        ) : (
+          <>
+            <Users className="size-4 mr-2" />
+            rejoindre le glanage
+          </>
+        )}
+      </Button>
+      {/* Liens de navigation cachés */}
+      <Link
+        ref={gleaningLinkRef}
+        href={`/announcements/${slug}/gleaning`}
+        className="hidden"
+        prefetch={false}
+      />
+      <Link
+        ref={linkRef}
+        href={signInUrl}
+        className="hidden"
+        replace={false}
+        prefetch={false}
+      />
+    </>
   );
 }
