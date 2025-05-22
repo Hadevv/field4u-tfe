@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
+import { useOpenSignInModal } from "@/lib/auth/open-signin-modal";
 
 type FavoriteButtonProps = {
   announcementId: string;
@@ -24,6 +25,7 @@ export function FavoriteButton({
   const [isFavorited, setIsFavorited] = useState(Boolean(initialFavorited));
   const pathname = usePathname() || "/";
   const queryClient = useQueryClient();
+  const openSignInModal = useOpenSignInModal();
 
   useEffect(() => {
     setIsFavorited(Boolean(initialFavorited));
@@ -54,15 +56,13 @@ export function FavoriteButton({
       queryClient.invalidateQueries({ queryKey: ["user-favorites"] });
     },
     onError: (error) => {
-      // vérifier si l'erreur est liée à l'authentification
       if (
         error.message?.includes("Session not found") ||
         error.message?.includes("Session is not valid") ||
         error.message?.toLowerCase().includes("auth")
       ) {
         toast.error("veuillez vous connecter pour ajouter aux favoris");
-
-        setTimeout(navigateToSignIn, 1000);
+        setTimeout(() => openSignInModal(), 1000);
       } else {
         toast.error("une erreur est survenue");
       }

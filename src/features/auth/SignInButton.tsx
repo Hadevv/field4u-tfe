@@ -8,32 +8,19 @@ import type { VariantProps } from "class-variance-authority";
 import { UserDropdown } from "./UserDropdown";
 import { displayName } from "@/lib/format/displayName";
 import { useCallback } from "react";
+import { useOpenSignInModal } from "@/lib/auth/open-signin-modal";
 
 export const SignInButton = (props: VariantProps<typeof buttonVariants>) => {
+  const openSignInModal = useOpenSignInModal();
   const pathname = usePathname() || "/";
-  const router = useRouter();
-
   const signInUrl = `/auth/signin?callbackUrl=${pathname}`;
 
   const handleSignIn = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      try {
-        router.push(signInUrl);
-
-        setTimeout(() => {
-          try {
-            window.history.pushState(null, "", signInUrl);
-            router.refresh();
-          } catch {
-            window.location.href = signInUrl;
-          }
-        }, 100);
-      } catch (error) {
-        window.location.href = signInUrl;
-      }
+      openSignInModal();
     },
-    [pathname, router, signInUrl],
+    [openSignInModal],
   );
 
   return (

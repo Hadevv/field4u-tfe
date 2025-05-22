@@ -1,7 +1,7 @@
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
-});
-module.exports = withBundleAnalyzer({
+module.exports = {
+  experimental: {
+    turbo: {},
+  },
   images: {
     remotePatterns: [
       {
@@ -10,10 +10,4 @@ module.exports = withBundleAnalyzer({
       },
     ],
   },
-  eslint: {
-    ignoreDuringBuilds: process.env.SKIP_LINT === "true",
-  },
-  typescript: {
-    ignoreBuildErrors: process.env.SKIP_LINT === "true",
-  },
-});
+};

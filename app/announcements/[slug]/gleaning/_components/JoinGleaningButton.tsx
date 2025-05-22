@@ -9,6 +9,7 @@ import { Check, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showAddToCalendarDialog } from "@/features/calendar/AddToCalendarButton";
 import Link from "next/link";
+import { useOpenSignInModal } from "@/lib/auth/open-signin-modal";
 
 export type JoinGleaningButtonProps = {
   announcementId: string;
@@ -36,6 +37,7 @@ export function JoinGleaningButton({
   const pathname = usePathname() || "/";
   const router = useRouter();
   const queryClient = useQueryClient();
+  const openSignInModal = useOpenSignInModal();
 
   const navigateToSignIn = () => {
     window.location.href = `/auth/signin?callbackUrl=${pathname}`;
@@ -96,9 +98,7 @@ export function JoinGleaningButton({
         error.message?.toLowerCase().includes("auth")
       ) {
         toast.error("veuillez vous connecter pour rejoindre le glanage");
-
-        // Utiliser un court délai pour permettre au toast de s'afficher
-        setTimeout(navigateToSignIn, 1000);
+        setTimeout(() => openSignInModal(), 1000);
       } else {
         toast.error("erreur", {
           description: error.message,

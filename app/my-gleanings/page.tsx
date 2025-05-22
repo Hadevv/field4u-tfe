@@ -6,6 +6,7 @@ import { ParticipationsList } from "./_components/ParticipationsList";
 import { FavoritesList } from "./_components/FavoritesList";
 import { LikesList } from "./_components/LikesList";
 import { ReviewsList } from "./_components/ReviewsList";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "mes glanages | field4u",
@@ -13,7 +14,12 @@ export const metadata: Metadata = {
 };
 
 export default async function MyGleaningsPage() {
-  const user = await requiredAuth();
+  let user = null;
+  try {
+    user = await requiredAuth();
+  } catch {
+    redirect("/auth/signin?callbackUrl=/my-gleanings");
+  }
 
   return (
     <div className="container mx-auto py-8 max-w-6xl">

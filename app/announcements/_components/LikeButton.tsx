@@ -10,6 +10,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useOpenSignInModal } from "@/lib/auth/open-signin-modal";
 
 type LikeButtonProps = {
   announcementId: string;
@@ -28,6 +29,7 @@ export function LikeButton({
   const [count, setCount] = useState(likeCount || 0);
   const pathname = usePathname() || "/";
   const queryClient = useQueryClient();
+  const openSignInModal = useOpenSignInModal();
 
   useEffect(() => {
     setIsLiked(Boolean(initialLiked));
@@ -75,9 +77,7 @@ export function LikeButton({
         error.message?.toLowerCase().includes("auth")
       ) {
         toast.error("veuillez vous connecter pour liker cette annonce");
-
-        // Utiliser un court délai pour permettre au toast de s'afficher
-        setTimeout(navigateToSignIn, 1000);
+        setTimeout(() => openSignInModal(), 1000);
       } else {
         toast.error("une erreur est survenue");
       }
