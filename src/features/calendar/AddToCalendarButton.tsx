@@ -93,6 +93,8 @@ export function showAddToCalendarDialog({
               src="/images/google-calendar.png"
               alt="google calendar"
               className="w-5 h-5"
+              width={20}
+              height={20}
             />
             google calendar
           </button>
@@ -116,6 +118,8 @@ export function showAddToCalendarDialog({
               src="/images/ms-outlook-svgrepo-com.svg"
               alt="outlook"
               className="w-5 h-5"
+              width={20}
+              height={20}
             />
             outlook
           </button>

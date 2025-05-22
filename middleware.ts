@@ -1,27 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { AUTH_COOKIE_NAME } from "@/lib/auth/auth.const";
 
-// Routes techniques
-const IGNORE_PATTERNS = [
-  ".",
-  "/_next",
-  "/api",
-  "/static",
-  "/favicon.ico",
-  "/images",
-  "@modal",
-  "(.)",
-];
-
 // Routes protégées
-const PROTECTED_ROUTES = [
-  "/admin",
-  "/announcements/create",
-  "/(account)",
-  "/(farmer)",
-];
+const PROTECTED_ROUTES = ["/admin", "/(account)", "/(farmer)", "/my-gleanings"];
 
-// Routes pour l'onboarding verif
 const ONBOARDING_EXEMPTIONS = [
   "/auth/onboarding",
   "/auth/signin",
@@ -33,15 +15,15 @@ const ONBOARDING_EXEMPTIONS = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  for (const pattern of IGNORE_PATTERNS) {
-    if (pathname.includes(pattern)) {
-      return NextResponse.next();
-    }
+  // ignorer les chemins API
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
   }
 
   // Récupérer le token de session
   const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
+  // vérifier les routes protégées
   for (const route of PROTECTED_ROUTES) {
     if (pathname.startsWith(route)) {
       if (!sessionToken) {
@@ -52,11 +34,21 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // vérifier l'onboarding
   if (sessionToken) {
+    // ignorer les exemptions d'onboarding
     for (const exemption of ONBOARDING_EXEMPTIONS) {
       if (pathname.startsWith(exemption)) {
         return NextResponse.next();
       }
+    }
+
+    // vérifier si onboarding déjà validé via cookie
+    const onboardingCompleted = request.cookies.get(
+      "onboardingCompleted",
+    )?.value;
+    if (onboardingCompleted === "true") {
+      return NextResponse.next();
     }
 
     try {
@@ -68,12 +60,18 @@ export async function middleware(request: NextRequest) {
       if (response.ok) {
         const userData = await response.json();
 
+        // Si l'onboarding est terminé, sauvegarder en cookie
+        if (userData?.user?.onboardingCompleted === true) {
+          const res = NextResponse.next();
+          res.cookies.set("onboardingCompleted", "true", {
+            maxAge: 60 * 60 * 24 * 7, // 7 jours
+            path: "/",
+          });
+          return res;
+        }
+
         // Si l'onboarding n'est pas terminé, rediriger
-        if (
-          userData &&
-          userData.user &&
-          userData.user.onboardingCompleted === false
-        ) {
+        if (userData?.user?.onboardingCompleted === false) {
           return NextResponse.redirect(
             new URL("/auth/onboarding", request.url),
           );
@@ -87,6 +85,10 @@ export async function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
+
+// exclure les assets, API et autres ressources statiques
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|images/|@modal/).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|images/|fonts/|.*\\.(?:jpg|jpeg|gif|png|svg|ico|css|js)$).*)",
+  ],
 };

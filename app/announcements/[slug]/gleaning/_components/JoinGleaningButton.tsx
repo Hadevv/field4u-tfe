@@ -4,12 +4,12 @@ import { joinGleaningAction } from "../_actions/gleaning.action";
 import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { usePathname, useRouter } from "next/navigation";
 import { Check, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showAddToCalendarDialog } from "@/features/calendar/AddToCalendarButton";
 import Link from "next/link";
 import { useOpenSignInModal } from "@/lib/auth/open-signin-modal";
+import { useEffect, useState } from "react";
 
 export type JoinGleaningButtonProps = {
   announcementId: string;
@@ -34,22 +34,13 @@ export function JoinGleaningButton({
   endDate,
   location,
 }: JoinGleaningButtonProps) {
-  const pathname = usePathname() || "/";
-  const router = useRouter();
   const queryClient = useQueryClient();
   const openSignInModal = useOpenSignInModal();
+  const [isClient, setIsClient] = useState(false);
 
-  const navigateToSignIn = () => {
-    window.location.href = `/auth/signin?callbackUrl=${pathname}`;
-  };
-
-  const navigateToGleaning = () => {
-    try {
-      router.push(`/announcements/${slug}/gleaning`);
-    } catch {
-      window.location.href = `/announcements/${slug}/gleaning`;
-    }
-  };
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const { mutate: joinMutation, isPending } = useMutation({
     mutationFn: () =>
@@ -67,28 +58,31 @@ export function JoinGleaningButton({
 
       if (data.success) {
         const calendarKey = `calendar-modal-shown-${announcementId}`;
-        if (
-          typeof window !== "undefined" &&
-          !localStorage.getItem(calendarKey)
-        ) {
-          localStorage.setItem(calendarKey, "1");
-          showAddToCalendarDialog({
-            announcementId,
-            title,
-            description,
-            startDate,
-            endDate,
-            location,
-          });
+
+        const hasShownCalendar =
+          isClient &&
+          window.localStorage &&
+          window.localStorage.getItem(calendarKey);
+
+        if (!hasShownCalendar && isClient && window.localStorage) {
+          try {
+            window.localStorage.setItem(calendarKey, "1");
+            showAddToCalendarDialog({
+              announcementId,
+              title,
+              description,
+              startDate,
+              endDate,
+              location,
+            });
+          } catch (e) {
+            console.warn("impossible de stocker la préférence calendrier:", e);
+          }
         }
 
-        // Invalider les requêtes pour forcer un rafraîchissement des données
         queryClient.invalidateQueries({ queryKey: ["announcements"] });
         queryClient.invalidateQueries({ queryKey: ["gleaning"] });
         queryClient.invalidateQueries({ queryKey: ["participation"] });
-
-        // Attendre légèrement que les toasts soient affichés avant de naviguer
-        setTimeout(navigateToGleaning, 300);
       }
     },
     onError: (error) => {

@@ -37,7 +37,6 @@ const EMPTY_LOCATION: GeolocationResult = {
 
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24h en ms
 
-// fonctions compatibles avec l'ancien code
 export async function getGeolocation(): Promise<{ lat: number; lng: number }> {
   const position = await LocationService.getCurrentPosition();
   if (!position) {

@@ -1,26 +1,18 @@
 import { Metadata } from "next";
-import { requiredAuth } from "@/lib/auth/helper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Suspense } from "react";
 import { ParticipationsList } from "./_components/ParticipationsList";
 import { FavoritesList } from "./_components/FavoritesList";
 import { LikesList } from "./_components/LikesList";
 import { ReviewsList } from "./_components/ReviewsList";
-import { redirect } from "next/navigation";
-
+import { requiredAuth } from "@/lib/auth/helper";
 export const metadata: Metadata = {
   title: "mes glanages | field4u",
   description: "gérer vos participations, favoris et évaluations",
 };
 
 export default async function MyGleaningsPage() {
-  let user = null;
-  try {
-    user = await requiredAuth();
-  } catch {
-    redirect("/auth/signin?callbackUrl=/my-gleanings");
-  }
-
+  const user = await requiredAuth();
   return (
     <div className="container mx-auto py-8 max-w-6xl">
       <div className="mb-8">
