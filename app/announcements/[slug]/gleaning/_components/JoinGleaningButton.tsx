@@ -4,10 +4,11 @@ import { joinGleaningAction } from "../_actions/gleaning.action";
 import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Check, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showAddToCalendarDialog } from "@/features/calendar/AddToCalendarButton";
+import { useCallback, useTransition } from "react";
 
 export type JoinGleaningButtonProps = {
   announcementId: string;
@@ -33,8 +34,24 @@ export function JoinGleaningButton({
   location,
 }: JoinGleaningButtonProps) {
   const router = useRouter();
+  const pathname = usePathname() || "/";
+  const [isPending, startTransition] = useTransition();
 
-  const { mutate: joinMutation, isPending } = useMutation({
+  const navigateToSignIn = useCallback(() => {
+    const callbackUrl = encodeURIComponent(pathname);
+    startTransition(() => {
+      router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
+    });
+  }, [pathname, router]);
+
+  const navigateToGleaning = useCallback(() => {
+    startTransition(() => {
+      router.push(`/announcements/${slug}/gleaning`);
+      router.refresh();
+    });
+  }, [router, slug]);
+
+  const { mutate: joinMutation, isPending: isMutationPending } = useMutation({
     mutationFn: () =>
       resolveActionResult(joinGleaningAction({ announcementId })),
     onSuccess: (data) => {
@@ -64,8 +81,8 @@ export function JoinGleaningButton({
             location,
           });
         }
-        router.push(`/announcements/${slug}/gleaning`);
-        router.refresh();
+
+        navigateToGleaning();
       }
     },
     onError: (error) => {
@@ -75,7 +92,7 @@ export function JoinGleaningButton({
         error.message?.toLowerCase().includes("auth")
       ) {
         toast.error("veuillez vous connecter pour rejoindre le glanage");
-        router.push(`/auth/signin?callbackUrl=/announcements/${slug}`);
+        navigateToSignIn();
       } else {
         toast.error("erreur", {
           description: error.message,
@@ -90,7 +107,8 @@ export function JoinGleaningButton({
         variant="secondary"
         size="sm"
         className={className}
-        onClick={() => router.push(`/announcements/${slug}/gleaning`)}
+        onClick={navigateToGleaning}
+        disabled={isPending}
       >
         <Check className="size-5" />
         voir le glanage
@@ -103,10 +121,10 @@ export function JoinGleaningButton({
       variant="secondary"
       size="sm"
       className={className}
-      disabled={isPending}
+      disabled={isMutationPending || isPending}
       onClick={() => joinMutation()}
     >
-      {isPending ? (
+      {isMutationPending ? (
         "en cours..."
       ) : (
         <>

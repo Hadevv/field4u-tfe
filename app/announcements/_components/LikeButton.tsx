@@ -6,9 +6,9 @@ import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { toggleLikeAction } from "../_actions/like.action";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type LikeButtonProps = {
   announcementId: string;
@@ -26,6 +26,8 @@ export function LikeButton({
   const [isLiked, setIsLiked] = useState(Boolean(initialLiked));
   const [count, setCount] = useState(likeCount || 0);
   const router = useRouter();
+  const pathname = usePathname() || "/";
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setIsLiked(Boolean(initialLiked));
@@ -36,6 +38,19 @@ export function LikeButton({
       setCount(likeCount);
     }
   }, [likeCount]);
+
+  const navigateToSignIn = useCallback(() => {
+    const callbackUrl = encodeURIComponent(pathname);
+    startTransition(() => {
+      router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
+    });
+  }, [pathname, router]);
+
+  const refreshPage = useCallback(() => {
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [router]);
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -56,6 +71,8 @@ export function LikeButton({
       } else {
         toast.success("like retiré");
       }
+
+      refreshPage();
     },
     onError: (error) => {
       if (
@@ -64,7 +81,7 @@ export function LikeButton({
         error.message?.toLowerCase().includes("auth")
       ) {
         toast.error("veuillez vous connecter pour liker cette annonce");
-        router.push(`/auth/signin?callbackUrl=/announcements`);
+        navigateToSignIn();
       } else {
         toast.error("une erreur est survenue");
       }
@@ -92,7 +109,7 @@ export function LikeButton({
         className,
       )}
       onClick={handleLike}
-      disabled={likeMutation.isPending}
+      disabled={likeMutation.isPending || isPending}
     >
       <div className="flex items-center gap-1.5">
         <Heart className={cn("w-4 h-4", isLiked && "fill-current")} />

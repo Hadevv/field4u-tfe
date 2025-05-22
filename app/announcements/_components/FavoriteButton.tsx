@@ -6,9 +6,9 @@ import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { toggleFavoriteAction } from "../_actions/favorite.action";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type FavoriteButtonProps = {
   announcementId: string;
@@ -23,10 +23,25 @@ export function FavoriteButton({
 }: FavoriteButtonProps) {
   const [isFavorited, setIsFavorited] = useState(Boolean(initialFavorited));
   const router = useRouter();
+  const pathname = usePathname() || "/";
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setIsFavorited(Boolean(initialFavorited));
   }, [initialFavorited]);
+
+  const navigateToSignIn = useCallback(() => {
+    const callbackUrl = encodeURIComponent(pathname);
+    startTransition(() => {
+      router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
+    });
+  }, [pathname, router]);
+
+  const refreshPage = useCallback(() => {
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [router]);
 
   const favoriteMutation = useMutation({
     mutationFn: async () => {
@@ -43,6 +58,8 @@ export function FavoriteButton({
       } else {
         toast.success("retiré des favoris");
       }
+
+      refreshPage();
     },
     onError: (error) => {
       // vérifier si l'erreur est liée à l'authentification
@@ -52,7 +69,7 @@ export function FavoriteButton({
         error.message?.toLowerCase().includes("auth")
       ) {
         toast.error("veuillez vous connecter pour ajouter aux favoris");
-        router.push(`/auth/signin?callbackUrl=/announcements`);
+        navigateToSignIn();
       } else {
         toast.error("une erreur est survenue");
       }
@@ -77,7 +94,7 @@ export function FavoriteButton({
         className,
       )}
       onClick={handleFavorite}
-      disabled={favoriteMutation.isPending}
+      disabled={favoriteMutation.isPending || isPending}
     >
       <Star className={cn("w-4 h-4", isFavorited && "fill-current")} />
       <span className="sr-only">
