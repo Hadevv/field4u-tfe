@@ -10,27 +10,43 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SignInProviders } from "../../../auth/signin/SignInProviders";
 import { SiteConfig } from "@/site-config";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function SignInDialog() {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
-  const isOpen = path.startsWith("/auth/signin");
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    setIsOpen(path.startsWith("/auth/signin"));
+  }, [path]);
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
+      setIsOpen(open);
+
       if (!open) {
-        // rediriger vers la page de callback si elle existe, sinon revenir en arrière
-        if (callbackUrl && callbackUrl !== "/") {
-          router.push(decodeURIComponent(callbackUrl));
-        } else {
-          router.back();
+        const redirectUrl =
+          callbackUrl && callbackUrl !== "/" ? callbackUrl : "/";
+        try {
+          router.replace(redirectUrl);
+          setTimeout(() => {
+            try {
+              window.history.replaceState(null, "", redirectUrl);
+              router.refresh();
+            } catch (e) {
+              window.location.href = redirectUrl;
+            }
+          }, 100);
+        } catch (error) {
+          console.error("Erreur lors de la redirection:", error);
+          window.location.href = redirectUrl;
         }
       }
     },
-    [router, callbackUrl],
+    [callbackUrl, router],
   );
 
   return (

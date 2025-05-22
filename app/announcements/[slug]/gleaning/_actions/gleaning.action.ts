@@ -12,6 +12,7 @@ import { GleaningStatus } from "@prisma/client";
 import { inngest } from "@/lib/inngest/client";
 import { sendNotificationToUser } from "@/lib/notifications/sendNotification";
 import { NotificationType } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export const joinGleaningAction = authAction
   .schema(JoinGleaningSchema)
@@ -23,6 +24,7 @@ export const joinGleaningAction = authAction
           startDate: true,
           endDate: true,
           title: true,
+          slug: true,
         },
       });
 
@@ -68,6 +70,12 @@ export const joinGleaningAction = authAction
       });
 
       if (existingParticipation) {
+        // Rafraîchir les pages concernées
+        revalidatePath(`/announcements`);
+        revalidatePath(`/announcements/${announcement.slug}`);
+        revalidatePath(`/announcements/${announcement.slug}/gleaning`);
+        revalidatePath(`/my-gleanings`);
+
         return {
           success: true,
           gleaningId: gleaning.id,
@@ -107,6 +115,12 @@ export const joinGleaningAction = authAction
         });
       }
 
+      // Rafraîchir les pages concernées
+      revalidatePath(`/announcements`);
+      revalidatePath(`/announcements/${announcement.slug}`);
+      revalidatePath(`/announcements/${announcement.slug}/gleaning`);
+      revalidatePath(`/my-gleanings`);
+
       return {
         success: true,
         gleaningId: gleaning.id,
@@ -131,6 +145,17 @@ export const leaveGleaningAction = authAction
               gleaningId: input.gleaningId,
             },
           },
+          include: {
+            gleaning: {
+              include: {
+                announcement: {
+                  select: {
+                    slug: true,
+                  },
+                },
+              },
+            },
+          },
         });
 
         if (!participation) {
@@ -145,6 +170,17 @@ export const leaveGleaningAction = authAction
             id: participation.id,
           },
         });
+
+        // Récupérer le slug pour la revalidation
+        const slug = participation.gleaning?.announcement?.slug;
+
+        // Rafraîchir les pages concernées
+        revalidatePath(`/announcements`);
+        if (slug) {
+          revalidatePath(`/announcements/${slug}`);
+          revalidatePath(`/announcements/${slug}/gleaning`);
+        }
+        revalidatePath(`/my-gleanings`);
 
         return {
           success: true,

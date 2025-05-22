@@ -3,15 +3,38 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { VariantProps } from "class-variance-authority";
 import { UserDropdown } from "./UserDropdown";
 import { displayName } from "@/lib/format/displayName";
+import { useCallback } from "react";
 
 export const SignInButton = (props: VariantProps<typeof buttonVariants>) => {
   const pathname = usePathname() || "/";
-  const callbackUrl = encodeURIComponent(pathname);
-  const signInUrl = `/auth/signin?callbackUrl=${callbackUrl}`;
+  const router = useRouter();
+
+  const signInUrl = `/auth/signin?callbackUrl=${pathname}`;
+
+  const handleSignIn = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      try {
+        router.push(signInUrl);
+
+        setTimeout(() => {
+          try {
+            window.history.pushState(null, "", signInUrl);
+            router.refresh();
+          } catch {
+            window.location.href = signInUrl;
+          }
+        }, 100);
+      } catch (error) {
+        window.location.href = signInUrl;
+      }
+    },
+    [pathname, router, signInUrl],
+  );
 
   return (
     <Button
@@ -20,7 +43,7 @@ export const SignInButton = (props: VariantProps<typeof buttonVariants>) => {
       className={buttonVariants({ size: "sm", variant: "outline", ...props })}
       asChild
     >
-      <Link href={signInUrl} replace={false} prefetch={false}>
+      <Link href={signInUrl} onClick={handleSignIn}>
         Sign in
       </Link>
     </Button>

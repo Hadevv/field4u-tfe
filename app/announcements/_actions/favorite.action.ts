@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { authAction } from "@/lib/backend/safe-actions";
 import { FavoriteAnnouncementSchema } from "./favorite.schema";
+import { revalidatePath } from "next/cache";
 
 export const toggleFavoriteAction = authAction
   .schema(FavoriteAnnouncementSchema)
@@ -25,6 +26,12 @@ export const toggleFavoriteAction = authAction
           id: existingFavorite.id,
         },
       });
+
+      // rafraîchir les pages concernées
+      revalidatePath(`/announcements`);
+      revalidatePath(`/announcements/[slug]`, "page");
+      revalidatePath(`/my-gleanings`);
+
       return { favorited: false };
     }
 
@@ -35,6 +42,11 @@ export const toggleFavoriteAction = authAction
         announcementId,
       },
     });
+
+    // rafraîchir les pages concernées
+    revalidatePath(`/announcements`);
+    revalidatePath(`/announcements/[slug]`, "page");
+    revalidatePath(`/my-gleanings`);
 
     return { favorited: true };
   });

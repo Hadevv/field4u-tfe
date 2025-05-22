@@ -9,7 +9,6 @@ import { Check, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showAddToCalendarDialog } from "@/features/calendar/AddToCalendarButton";
 import Link from "next/link";
-import { useRef } from "react";
 
 export type JoinGleaningButtonProps = {
   announcementId: string;
@@ -34,13 +33,21 @@ export function JoinGleaningButton({
   endDate,
   location,
 }: JoinGleaningButtonProps) {
-  const router = useRouter();
   const pathname = usePathname() || "/";
-  const callbackUrl = encodeURIComponent(pathname);
-  const signInUrl = `/auth/signin?callbackUrl=${callbackUrl}`;
-  const linkRef = useRef<HTMLAnchorElement>(null);
-  const gleaningLinkRef = useRef<HTMLAnchorElement>(null);
+  const router = useRouter();
   const queryClient = useQueryClient();
+
+  const navigateToSignIn = () => {
+    window.location.href = `/auth/signin?callbackUrl=${pathname}`;
+  };
+
+  const navigateToGleaning = () => {
+    try {
+      router.push(`/announcements/${slug}/gleaning`);
+    } catch {
+      window.location.href = `/announcements/${slug}/gleaning`;
+    }
+  };
 
   const { mutate: joinMutation, isPending } = useMutation({
     mutationFn: () =>
@@ -73,16 +80,13 @@ export function JoinGleaningButton({
           });
         }
 
-        // Invalidate queries to refresh data without full page reload
+        // Invalider les requêtes pour forcer un rafraîchissement des données
         queryClient.invalidateQueries({ queryKey: ["announcements"] });
         queryClient.invalidateQueries({ queryKey: ["gleaning"] });
+        queryClient.invalidateQueries({ queryKey: ["participation"] });
 
-        // Navigate to gleaning page
-        setTimeout(() => {
-          if (gleaningLinkRef.current) {
-            gleaningLinkRef.current.click();
-          }
-        }, 500);
+        // Attendre légèrement que les toasts soient affichés avant de naviguer
+        setTimeout(navigateToGleaning, 300);
       }
     },
     onError: (error) => {
@@ -93,12 +97,8 @@ export function JoinGleaningButton({
       ) {
         toast.error("veuillez vous connecter pour rejoindre le glanage");
 
-        // Redirection vers la page de connexion avec le callback correct
-        setTimeout(() => {
-          if (linkRef.current) {
-            linkRef.current.click();
-          }
-        }, 1000);
+        // Utiliser un court délai pour permettre au toast de s'afficher
+        setTimeout(navigateToSignIn, 1000);
       } else {
         toast.error("erreur", {
           description: error.message,
@@ -110,7 +110,7 @@ export function JoinGleaningButton({
   if (userIsParticipant) {
     return (
       <Button variant="secondary" size="sm" className={className} asChild>
-        <Link href={`/announcements/${slug}/gleaning`} prefetch={false}>
+        <Link href={`/announcements/${slug}/gleaning`} prefetch>
           <Check className="size-5" />
           voir le glanage
         </Link>
@@ -119,37 +119,21 @@ export function JoinGleaningButton({
   }
 
   return (
-    <>
-      <Button
-        variant="secondary"
-        size="sm"
-        className={className}
-        disabled={isPending}
-        onClick={() => joinMutation()}
-      >
-        {isPending ? (
-          "en cours..."
-        ) : (
-          <>
-            <Users className="size-4 mr-2" />
-            rejoindre le glanage
-          </>
-        )}
-      </Button>
-      {/* Liens de navigation cachés */}
-      <Link
-        ref={gleaningLinkRef}
-        href={`/announcements/${slug}/gleaning`}
-        className="hidden"
-        prefetch={false}
-      />
-      <Link
-        ref={linkRef}
-        href={signInUrl}
-        className="hidden"
-        replace={false}
-        prefetch={false}
-      />
-    </>
+    <Button
+      variant="secondary"
+      size="sm"
+      className={className}
+      disabled={isPending}
+      onClick={() => joinMutation()}
+    >
+      {isPending ? (
+        "en cours..."
+      ) : (
+        <>
+          <Users className="size-4 mr-2" />
+          rejoindre le glanage
+        </>
+      )}
+    </Button>
   );
 }

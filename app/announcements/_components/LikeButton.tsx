@@ -27,9 +27,6 @@ export function LikeButton({
   const [isLiked, setIsLiked] = useState(Boolean(initialLiked));
   const [count, setCount] = useState(likeCount || 0);
   const pathname = usePathname() || "/";
-  const callbackUrl = encodeURIComponent(pathname);
-  const signInUrl = `/auth/signin?callbackUrl=${callbackUrl}`;
-  const linkRef = useRef<HTMLAnchorElement>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -41,6 +38,10 @@ export function LikeButton({
       setCount(likeCount);
     }
   }, [likeCount]);
+
+  const navigateToSignIn = () => {
+    window.location.href = `/auth/signin?callbackUrl=${pathname}`;
+  };
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -62,8 +63,10 @@ export function LikeButton({
         toast.success("like retiré");
       }
 
-      // Invalidate queries to refresh data without full page reload
+      // Rafraîchir les données sans recharger la page en invalidant toutes les requêtes reliées
       queryClient.invalidateQueries({ queryKey: ["announcements"] });
+      queryClient.invalidateQueries({ queryKey: ["likes"] });
+      queryClient.invalidateQueries({ queryKey: ["user-likes"] });
     },
     onError: (error) => {
       if (
@@ -73,12 +76,8 @@ export function LikeButton({
       ) {
         toast.error("veuillez vous connecter pour liker cette annonce");
 
-        // Redirection vers la page de connexion avec le callback correct
-        setTimeout(() => {
-          if (linkRef.current) {
-            linkRef.current.click();
-          }
-        }, 1000);
+        // Utiliser un court délai pour permettre au toast de s'afficher
+        setTimeout(navigateToSignIn, 1000);
       } else {
         toast.error("une erreur est survenue");
       }
@@ -94,46 +93,36 @@ export function LikeButton({
   const showCount = typeof count === "number" && count > 0;
 
   return (
-    <>
-      <Button
-        variant="outline"
-        size={showCount ? "sm" : "icon"}
-        className={cn(
-          "bg-background border shadow-sm hover:bg-background/80 transition-all",
-          isLiked
-            ? "text-destructive hover:text-destructive/80 border-destructive/20"
-            : "text-muted-foreground hover:text-foreground",
-          showCount ? "pl-2.5 pr-3 h-10" : "w-10 h-10",
-          className,
+    <Button
+      variant="outline"
+      size={showCount ? "sm" : "icon"}
+      className={cn(
+        "bg-background border shadow-sm hover:bg-background/80 transition-all",
+        isLiked
+          ? "text-destructive hover:text-destructive/80 border-destructive/20"
+          : "text-muted-foreground hover:text-foreground",
+        showCount ? "pl-2.5 pr-3 h-10" : "w-10 h-10",
+        className,
+      )}
+      onClick={handleLike}
+      disabled={likeMutation.isPending}
+    >
+      <div className="flex items-center gap-1.5">
+        <Heart className={cn("w-4 h-4", isLiked && "fill-current")} />
+        {showCount && (
+          <span
+            className={cn(
+              "text-xs font-medium",
+              isLiked ? "text-destructive" : "text-muted-foreground",
+            )}
+          >
+            {count}
+          </span>
         )}
-        onClick={handleLike}
-        disabled={likeMutation.isPending}
-      >
-        <div className="flex items-center gap-1.5">
-          <Heart className={cn("w-4 h-4", isLiked && "fill-current")} />
-          {showCount && (
-            <span
-              className={cn(
-                "text-xs font-medium",
-                isLiked ? "text-destructive" : "text-muted-foreground",
-              )}
-            >
-              {count}
-            </span>
-          )}
-        </div>
-        <span className="sr-only">
-          {isLiked ? "retirer le like" : "liker l'annonce"}
-        </span>
-      </Button>
-      {/* Lien de navigation caché pour redirection en cas d'erreur d'authentification */}
-      <Link
-        ref={linkRef}
-        href={signInUrl}
-        className="hidden"
-        replace={false}
-        prefetch={false}
-      />
-    </>
+      </div>
+      <span className="sr-only">
+        {isLiked ? "retirer le like" : "liker l'annonce"}
+      </span>
+    </Button>
   );
 }

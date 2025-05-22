@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { authAction } from "@/lib/backend/safe-actions";
 import { LikeAnnouncementSchema } from "./like.schema";
+import { revalidatePath } from "next/cache";
 
 export const toggleLikeAction = authAction
   .schema(LikeAnnouncementSchema)
@@ -26,6 +27,12 @@ export const toggleLikeAction = authAction
           id: existingLike.id,
         },
       });
+
+      // rafraîchir les pages concernées
+      revalidatePath(`/announcements`);
+      revalidatePath(`/announcements/[slug]`, "page");
+      revalidatePath(`/my-gleanings`);
+
       return { liked: false };
     }
 
@@ -36,6 +43,11 @@ export const toggleLikeAction = authAction
         announcementId,
       },
     });
+
+    // rafraîchir les pages concernées
+    revalidatePath(`/announcements`);
+    revalidatePath(`/announcements/[slug]`, "page");
+    revalidatePath(`/my-gleanings`);
 
     return { liked: true };
   });
