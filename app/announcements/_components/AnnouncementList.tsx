@@ -6,12 +6,10 @@ import { Announcement } from "@/types/announcement";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 type AnnouncementListProps = {
   announcements: Announcement[];
-  onHighlightAnnouncement?: (id: string | null) => void;
-  highlightedAnnouncementId?: string | null;
+  onAnnouncementZoom?: (announcementId: string) => void;
 };
 
 function EmptyState() {
@@ -44,35 +42,11 @@ function EmptyState() {
 
 export function AnnouncementList({
   announcements,
-  onHighlightAnnouncement,
-  highlightedAnnouncementId,
+  onAnnouncementZoom,
 }: AnnouncementListProps) {
-  const [hoveredAnnouncementId, setHoveredAnnouncementId] = useState<
-    string | null
-  >(null);
-
-  // si une annonce est survolée, on informe le parent
-  const handleHighlightAnnouncement = (id: string) => {
-    setHoveredAnnouncementId(id);
-    if (onHighlightAnnouncement) {
-      onHighlightAnnouncement(id);
-    }
-  };
-
-  const handleUnhighlightAnnouncement = () => {
-    setHoveredAnnouncementId(null);
-    if (onHighlightAnnouncement) {
-      onHighlightAnnouncement(null);
-    }
-  };
-
   if (announcements.length === 0) {
     return <EmptyState />;
   }
-
-  // utiliser l'id survolé en priorité, sinon celui du parent
-  const effectiveHighlightedId =
-    hoveredAnnouncementId || highlightedAnnouncementId;
 
   return (
     <ScrollArea className="h-[calc(100vh-12rem)]">
@@ -82,9 +56,7 @@ export function AnnouncementList({
             key={announcement.id}
             announcement={announcement}
             isLiked={announcement.isLiked}
-            onHighlight={handleHighlightAnnouncement}
-            onUnhighlight={handleUnhighlightAnnouncement}
-            isHighlighted={effectiveHighlightedId === announcement.id}
+            onZoomToLocation={onAnnouncementZoom}
           />
         ))}
       </div>

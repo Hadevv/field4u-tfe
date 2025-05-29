@@ -23,7 +23,7 @@ export default async function EditAnnouncementPage({
     notFound();
   }
 
-  const slug = await params.slug;
+  const { slug } = await params;
 
   // récupérer l'annonce à partir du slug
   const announcement = await prisma.announcement.findUnique({
@@ -33,6 +33,7 @@ export default async function EditAnnouncementPage({
     },
   });
 
+  // si l'annonce n'existe pas, retourner not found
   if (!announcement) {
     notFound();
   }

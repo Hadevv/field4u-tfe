@@ -132,7 +132,6 @@ export function ReviewForm({ gleaningId }: ReviewFormProps) {
               onSelectFiles={handleFileObjects}
               value={images}
               maxFiles={5}
-              className="h-32"
             />
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { AnnouncementList } from "./AnnouncementList";
 import { AnnouncementMap } from "./_map/AnnouncementMap";
 import { AnnouncementTabs } from "./AnnouncementTabs";
@@ -106,12 +106,8 @@ export function DynamicAnnouncementResults() {
     mapAnnouncements: MapAnnouncement[];
   } | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  // état pour suivre l'ID de l'annonce survolée - déplacé ici pour respecter les règles des hooks
-  const [highlightedAnnouncementId, setHighlightedAnnouncementId] = useState<
-    string | null
-  >(null);
+  const mapRef = useRef<any>(null);
 
-  // convertir les chaines de date en objets date
   const convertAnnouncementDates = (
     apiData: ApiResponse,
   ): {
@@ -131,12 +127,14 @@ export function DynamicAnnouncementResults() {
     };
   };
 
-  // fonction pour gérer la mise en évidence des annonces
-  const handleHighlightAnnouncement = (id: string | null) => {
-    setHighlightedAnnouncementId(id);
+  const handleAnnouncementZoom = (announcementId: string) => {
+    // déclencher l'événement de zoom sur la carte
+    const event = new CustomEvent("zoomToAnnouncement", {
+      detail: { announcementId },
+    });
+    window.dispatchEvent(event);
   };
 
-  // chargement initial
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -148,15 +146,14 @@ export function DynamicAnnouncementResults() {
         if (!response.ok) {
           const errorData = await response
             .json()
-            .catch(() => ({ error: "erreur inconnue" }));
+            .catch(() => ({ error: "Erreur inconnue" }));
           const errorMessage =
-            errorData.message || `erreur: ${response.status}`;
+            errorData.message || `Erreur: ${response.status}`;
           throw new Error(errorMessage);
         }
 
         const result = (await response.json()) as ApiResponse;
 
-        // convertir les dates
         const processedData = convertAnnouncementDates(result);
         setData(processedData);
         setHasSearched(true);
@@ -166,18 +163,16 @@ export function DynamicAnnouncementResults() {
           setHasSearched(true);
         };
       } catch (err) {
-        console.error("erreur de chargement:", err);
-        setError(err instanceof Error ? err : new Error("erreur inconnue"));
+        console.error("Erreur de chargement:", err);
+        setError(err instanceof Error ? err : new Error("Erreur inconnue"));
         setHasSearched(true);
 
-        // en cas d'erreur afficher des résultats vides
         setData({ announcements: [], mapAnnouncements: [] });
       } finally {
         setIsLoading(false);
       }
     };
 
-    // ajouter un délai
     let retryCount = 0;
     const maxRetries = 3;
 
@@ -197,13 +192,11 @@ export function DynamicAnnouncementResults() {
 
     attemptFetch();
 
-    // nettoyage
     return () => {
       window.updateAnnouncementResults = undefined;
     };
   }, []);
 
-  // afficher le squelette pendant le chargement initial
   if (isLoading && !hasSearched) {
     return (
       <>
@@ -228,30 +221,24 @@ export function DynamicAnnouncementResults() {
         <div className="md:hidden mt-2">
           <AnnouncementList
             announcements={[]}
-            onHighlightAnnouncement={handleHighlightAnnouncement}
-            highlightedAnnouncementId={highlightedAnnouncementId}
+            onAnnouncementZoom={handleAnnouncementZoom}
           />
         </div>
         <div className="hidden md:grid md:grid-cols-12 gap-4 mt-2">
           <div className="md:col-span-6 lg:col-span-5">
             <AnnouncementList
               announcements={[]}
-              onHighlightAnnouncement={handleHighlightAnnouncement}
-              highlightedAnnouncementId={highlightedAnnouncementId}
+              onAnnouncementZoom={handleAnnouncementZoom}
             />
           </div>
           <div className="md:col-span-6 lg:col-span-7">
-            <AnnouncementMap
-              announcements={[]}
-              highlightedAnnouncementId={highlightedAnnouncementId}
-            />
+            <AnnouncementMap announcements={[]} />
           </div>
         </div>
       </>
     );
   }
 
-  // donnes disponibles
   const { announcements, mapAnnouncements } = data || {
     announcements: [],
     mapAnnouncements: [],
@@ -264,16 +251,10 @@ export function DynamicAnnouncementResults() {
           listContent={
             <AnnouncementList
               announcements={announcements}
-              onHighlightAnnouncement={handleHighlightAnnouncement}
-              highlightedAnnouncementId={highlightedAnnouncementId}
+              onAnnouncementZoom={handleAnnouncementZoom}
             />
           }
-          mapContent={
-            <AnnouncementMap
-              announcements={mapAnnouncements}
-              highlightedAnnouncementId={highlightedAnnouncementId}
-            />
-          }
+          mapContent={<AnnouncementMap announcements={mapAnnouncements} />}
         />
       </div>
 
@@ -281,15 +262,11 @@ export function DynamicAnnouncementResults() {
         <div className="md:col-span-6 lg:col-span-5">
           <AnnouncementList
             announcements={announcements}
-            onHighlightAnnouncement={handleHighlightAnnouncement}
-            highlightedAnnouncementId={highlightedAnnouncementId}
+            onAnnouncementZoom={handleAnnouncementZoom}
           />
         </div>
         <div className="md:col-span-6 lg:col-span-7">
-          <AnnouncementMap
-            announcements={mapAnnouncements}
-            highlightedAnnouncementId={highlightedAnnouncementId}
-          />
+          <AnnouncementMap announcements={mapAnnouncements} />
         </div>
       </div>
     </>

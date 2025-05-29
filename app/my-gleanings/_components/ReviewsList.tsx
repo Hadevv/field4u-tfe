@@ -96,6 +96,8 @@ export async function ReviewsList({ userId }: { userId: string }) {
                       key={index}
                       src={image}
                       alt={`Photo de glanage ${index + 1}`}
+                      width={64}
+                      height={64}
                       className="h-16 w-16 object-cover rounded-md"
                     />
                   ))}

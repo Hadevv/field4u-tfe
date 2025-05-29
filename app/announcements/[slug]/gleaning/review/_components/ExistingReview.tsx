@@ -61,6 +61,7 @@ export function ExistingReview({ review }: ExistingReviewProps) {
                     src={image}
                     alt={`review image ${index + 1}`}
                     fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                     className="object-cover"
                   />
                 </div>

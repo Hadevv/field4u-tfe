@@ -2,8 +2,9 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Navigation } from "lucide-react";
 import { getGleaningStatusInfo } from "@/lib/format/gleaningStatus";
 import { Announcement } from "@/types/announcement";
 import { LikeButton } from "./LikeButton";
@@ -13,17 +14,13 @@ import { useRouter } from "next/navigation";
 type AnnouncementCardProps = {
   announcement: Announcement;
   isLiked?: boolean;
-  onHighlight?: (id: string) => void;
-  onUnhighlight?: () => void;
-  isHighlighted?: boolean;
+  onZoomToLocation?: (announcementId: string) => void;
 };
 
 export function AnnouncementCard({
   announcement,
   isLiked = false,
-  onHighlight,
-  onUnhighlight,
-  isHighlighted = false,
+  onZoomToLocation,
 }: AnnouncementCardProps) {
   const router = useRouter();
 
@@ -68,25 +65,18 @@ export function AnnouncementCard({
     router.push(`/announcements/${slug}`);
   };
 
-  const handleMouseEnter = () => {
-    if (onHighlight) {
-      onHighlight(id);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (onUnhighlight) {
-      onUnhighlight();
+  const handleZoomClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onZoomToLocation) {
+      onZoomToLocation(id);
     }
   };
 
   const quantityText = getQuantityAndType();
   return (
     <Card
-      className={`overflow-hidden rounded-lg mb-4 cursor-pointer transition-all hover:shadow-md ${isHighlighted ? "ring-2 ring-amber-500 shadow-md" : ""}`}
+      className="overflow-hidden rounded-lg mb-4 cursor-pointer transition-all hover:shadow-md"
       onClick={handleCardClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       <div className="flex">
         {/* image à gauche */}
@@ -119,9 +109,20 @@ export function AnnouncementCard({
         <div className="flex-1 p-4 relative">
           {/* bouton like et compteur */}
           <div
-            className="absolute top-3 right-3 flex items-center"
+            className="absolute top-3 right-3 flex items-center gap-2"
             onClick={(e) => e.stopPropagation()}
           >
+            {onZoomToLocation && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleZoomClick}
+                className="h-8 w-8 p-0"
+                title="Localiser sur la carte"
+              >
+                <Navigation className="h-4 w-4" />
+              </Button>
+            )}
             <LikeButton
               announcementId={id}
               initialLiked={isLiked}
@@ -129,7 +130,7 @@ export function AnnouncementCard({
             />
           </div>
           {/* titre et organisme */}
-          <div className="mb-3 pr-10">
+          <div className="mb-3 pr-20">
             {owner && owner.name && (
               <div className="text-muted-foreground text-sm mb-1">
                 {owner.name}

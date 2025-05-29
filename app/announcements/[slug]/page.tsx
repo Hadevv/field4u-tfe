@@ -229,6 +229,7 @@ async function AnnouncementContent({
                         src={image}
                         alt={`${announcement.title} - image ${index + 1}`}
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover"
                       />
                     </div>
@@ -245,6 +246,7 @@ async function AnnouncementContent({
                   src={announcement.images[0]}
                   alt={announcement.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                 />
               ) : (

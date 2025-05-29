@@ -1,7 +1,5 @@
 "use client";
 
-import { SiteConfig } from "@/site-config";
-import Image from "next/image";
 import Link from "next/link";
 import type { PropsWithChildren } from "react";
 import { ThemeToggle } from "../theme/ThemeToggle";
@@ -11,6 +9,7 @@ import { NotificationsMenu } from "../notifications/NotificationsMenu";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/svg/Logo";
 
 type HeaderBaseProps = {
   isAuthenticated: boolean;
@@ -32,14 +31,7 @@ export function HeaderBase({
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <Image
-                src={SiteConfig.appIcon}
-                alt="app logo"
-                width={100}
-                height={100}
-                style={{ height: "auto" }}
-                priority
-              />
+              <Logo/>
             </Link>
             {!isVerifyRequest && (
               <nav className="hidden items-center space-x-2 md:flex">

@@ -12,7 +12,7 @@ import { Bell, Copy, Lock, MapPin } from "lucide-react";
 import { useReverseGeocode } from "@/hooks/useReverseGeocode";
 import { useFormatGps } from "@/hooks/useFormatGps";
 import { toast } from "sonner";
-
+import Link from "next/link";
 type LocationSectionProps = {
   fieldName: string | null;
   city: string | null;
@@ -103,7 +103,7 @@ export function LocationSection({
               </p>
               <Button variant="outline" size="sm">
                 <Bell className="size-4" />
-                être notifié 24h avant
+                <Link href={`/profile/email`}>être notifié 24h avant</Link>
               </Button>
             </div>
           </div>

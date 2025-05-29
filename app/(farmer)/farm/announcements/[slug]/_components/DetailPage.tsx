@@ -327,6 +327,8 @@ export default async function AnnouncementDetailPage({
                                 key={index}
                                 src={image}
                                 alt={`Photo ${index + 1}`}
+                                width={96}
+                                height={96}
                                 className="h-24 w-24 rounded-md object-cover"
                               />
                             ))}

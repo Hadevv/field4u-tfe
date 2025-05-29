@@ -92,6 +92,8 @@ export function showAddToCalendarDialog({
             <Image
               src="/images/google-calendar.png"
               alt="google calendar"
+              width={20}
+              height={20}
               className="w-5 h-5"
             />
             google calendar
@@ -115,6 +117,8 @@ export function showAddToCalendarDialog({
             <Image
               src="/images/ms-outlook-svgrepo-com.svg"
               alt="outlook"
+              width={20}
+              height={20}
               className="w-5 h-5"
             />
             outlook

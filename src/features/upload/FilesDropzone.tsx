@@ -143,56 +143,62 @@ export function FilesDropzone({
     <div className={cn("space-y-4", className)}>
       {/* zone de prévisualisation des images */}
       {(value.length > 0 || files.length > 0) && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {/* images déjà téléchargées */}
-          {value.map((url, index) => (
-            <div
-              key={`uploaded-${index}`}
-              className="relative aspect-square rounded-lg overflow-hidden border border-border group"
-            >
-              <Image
-                src={url}
-                alt={`Image ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="rounded-full"
-                  onClick={() => removeUploadedFile(index)}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Supprimer
-                </Button>
+        <div className="max-h-64 overflow-y-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* images déjà téléchargées */}
+            {value.map((url, index) => (
+              <div
+                key={`uploaded-${index}`}
+                className="relative aspect-square rounded-lg overflow-hidden border border-border group"
+              >
+                <Image
+                  src={url}
+                  alt={`Image ${index + 1}`}
+                  width={200}
+                  height={200}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => removeUploadedFile(index)}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Supprimer
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {/* prévi des fichiers en attente d'upload */}
-          {files.map((file, index) => (
-            <div
-              key={`preview-${index}`}
-              className="relative aspect-square rounded-lg overflow-hidden border border-border group"
-            >
-              <Image
-                src={file.preview}
-                alt={file.file.name}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="rounded-full"
-                  onClick={() => removeFile(index)}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Supprimer
-                </Button>
+            {/* prévi des fichiers en attente d'upload */}
+            {files.map((file, index) => (
+              <div
+                key={`preview-${index}`}
+                className="relative aspect-square rounded-lg overflow-hidden border border-border group"
+              >
+                <Image
+                  src={file.preview}
+                  alt={file.file.name}
+                  width={200}
+                  height={200}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => removeFile(index)}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Supprimer
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
@@ -202,11 +208,12 @@ export function FilesDropzone({
           {/* zone de drop */}
           <div
             className={cn(
-              "border-2 border-dashed rounded-lg p-8 text-center transition-all",
+              "border-2 border-dashed rounded-lg text-center transition-all",
+              // Si on a déjà des images, une zone plus compacte
+              value.length > 0 || files.length > 0 ? "p-4" : "p-8",
               isDragging
                 ? "border-primary bg-primary/5"
                 : "border-muted-foreground/20 hover:border-primary hover:bg-muted/10 cursor-pointer",
-              className,
             )}
             onDragOver={(e) => {
               e.preventDefault();
@@ -227,16 +234,28 @@ export function FilesDropzone({
               multiple={remainingSlots > 1}
             />
 
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="p-4 rounded-full bg-muted">
+            <div
+              className={cn(
+                "flex flex-col items-center justify-center",
+                value.length > 0 || files.length > 0 ? "gap-2" : "gap-4",
+              )}
+            >
+              <div
+                className={cn(
+                  "rounded-full bg-muted flex items-center justify-center",
+                  value.length > 0 || files.length > 0 ? "p-2" : "p-4",
+                )}
+              >
                 <UploadCloud
                   className={cn(
-                    "h-8 w-8",
+                    value.length > 0 || files.length > 0
+                      ? "h-5 w-5"
+                      : "h-8 w-8",
                     isDragging ? "text-primary" : "text-muted-foreground",
                   )}
                 />
               </div>
-              <div className="space-y-2 text-center">
+              <div className="space-y-1 text-center">
                 <p
                   className={cn(
                     "text-sm font-medium",
@@ -245,11 +264,15 @@ export function FilesDropzone({
                 >
                   {isDragging
                     ? "Déposez vos fichiers ici"
-                    : "Glissez-déposez vos fichiers ici"}
+                    : value.length > 0 || files.length > 0
+                      ? "Ajouter d'autres images"
+                      : "Glissez-déposez vos fichiers ici"}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  ou <span className="underline">parcourez</span> vos fichiers
-                </p>
+                {!(value.length > 0 || files.length > 0) && (
+                  <p className="text-xs text-muted-foreground">
+                    ou <span className="underline">parcourez</span> vos fichiers
+                  </p>
+                )}
               </div>
             </div>
           </div>

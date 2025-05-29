@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions", "prismaSchemaFolder"]
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
@@ -93,7 +93,7 @@ model Like {
   createdAt      DateTime     @default(now()) @map("created_at")
   userId         String       @map("user_id") @db.Char(21)
   announcement   Announcement @relation(fields: [announcementId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("likes")
 }
@@ -104,7 +104,7 @@ model Favorite {
   createdAt      DateTime     @default(now()) @map("created_at")
   userId         String       @map("user_id") @db.Char(21)
   announcement   Announcement @relation(fields: [announcementId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("favorites")
 }
@@ -174,7 +174,7 @@ model Statistic {
   totalFoodSaved     Float    @default(0) @map("total_food_saved")
   userId             String   @map("user_id") @db.Char(21)
   totalGleanings     Int      @default(0) @map("total_gleanings")
-  user               User     @relation(fields: [userId], references: [id])
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("statistics")
 }
@@ -218,7 +218,6 @@ model Gleaning {
   participations Participation[]
   messages       Message[]
   reviews        Review[]
-
 
   @@map("gleanings")
 }

@@ -211,6 +211,7 @@ export function GleaningDetailsContent({ gleaning }: GleaningDetailsProps) {
                         src={image}
                         alt={`Image ${index + 1} de l'annonce`}
                         fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         className="object-cover"
                       />
                     </div>
@@ -390,6 +391,7 @@ export function GleaningDetailsContent({ gleaning }: GleaningDetailsProps) {
                                   src={image}
                                   alt={`Image ${index + 1} de l'avis`}
                                   fill
+                                  sizes="33vw"
                                   className="object-cover"
                                 />
                               </div>

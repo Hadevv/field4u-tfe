@@ -5,7 +5,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Card } from "@/components/ui/card";
 import { MapAnnouncement } from "@/types/announcement";
-import { Loader2, LocateIcon } from "lucide-react";
+import { Loader2, LocateIcon, Navigation, HandHelping } from "lucide-react";
 import { dialogManager } from "@/features/dialog-manager/dialog-manager-store";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +15,6 @@ type MapProperties = {
   title: string;
   slug: string;
   cropType: string;
-  highlighted: string;
 };
 type FeatureCollection<T> = {
   type: "FeatureCollection";
@@ -39,7 +38,7 @@ const CONFIG = {
     clusterStep: 3,
   },
   iconSize: {
-    apple: 0.7,
+    harvest: 0.7,
     user: 18,
   },
   animation: {
@@ -49,33 +48,39 @@ const CONFIG = {
     },
   },
   securityZone: {
-    radius: 200, // rayon en mètres pour masquer la position exacte
+    radius: 200,
     color: "rgba(9, 78, 58, 0.15)",
     borderColor: "rgba(9, 78, 58, 0.3)",
     borderWidth: 1,
-    minZoom: 9, // niveau de zoom minimum pour afficher les zones de sécurité
+    minZoom: 9,
   },
-  maxZoom: 14, // niveau de zoom maximum pour éviter de voir trop précisément
+  maxZoom: 14,
 };
-//TODO: utiliser les couleurs du thème global ex - bg-primary
+
 const COLORS = {
-  PRIMARY: "#094e3a",
+  PRIMARY: "hsl(76, 72%, 43%)",
   SECONDARY: "#34d399",
   TEXT: "#000000",
   STROKE: "#ffffff",
   CURRENT_LOCATION: "#f43f5e",
   POPUP_BG: "#ffffff",
-  HIGHLIGHT: "#f59e0b", // couleur pour les points mis en évidence
+  MARKER_BG: "hsl(76, 72%, 43%)",
+  ICON_COLOR: "#ffffff",
+};
+
+const STORAGE_KEYS = {
+  GEOLOCATION_ASKED: "field4u_geolocation_asked",
+  GEOLOCATION_ALLOWED: "field4u_geolocation_allowed",
 };
 
 type MapProps = {
   announcements: MapAnnouncement[];
-  highlightedAnnouncementId?: string | null;
+  onAnnouncementClick?: (announcementId: string) => void;
 };
 
 export function AnnouncementMap({
   announcements,
-  highlightedAnnouncementId = null,
+  onAnnouncementClick,
 }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -94,7 +99,6 @@ export function AnnouncementMap({
         title: a.title,
         slug: a.slug,
         cropType: a.cropType || "",
-        highlighted: highlightedAnnouncementId === a.id ? "true" : "false",
       },
       geometry: {
         type: "Point",
@@ -103,7 +107,6 @@ export function AnnouncementMap({
     })),
   });
 
-  // créer des zones de sécurité autour des points
   const createSecurityZonesGeoJson = (): GeoJSON.FeatureCollection => ({
     type: "FeatureCollection",
     features: announcements.map((a) => ({
@@ -113,7 +116,6 @@ export function AnnouncementMap({
         title: a.title,
         slug: a.slug,
         cropType: a.cropType || "",
-        highlighted: highlightedAnnouncementId === a.id ? "true" : "false",
       },
       geometry: {
         type: "Point",
@@ -122,27 +124,76 @@ export function AnnouncementMap({
     })),
   });
 
+  const checkGeolocationPermission = () => {
+    const hasAsked = localStorage.getItem(STORAGE_KEYS.GEOLOCATION_ASKED);
+    const isAllowed = localStorage.getItem(STORAGE_KEYS.GEOLOCATION_ALLOWED);
+
+    console.log("Vérification permissions:", { hasAsked, isAllowed });
+
+    return {
+      hasAsked: hasAsked === "true",
+      isAllowed: isAllowed === "true",
+    };
+  };
+
   const askForGeolocation = () => {
+    console.log("askForGeolocation appelée");
+    const { hasAsked, isAllowed } = checkGeolocationPermission();
+
+    if (hasAsked && isAllowed) {
+      // Si déjà autorisé, récupérer directement la position
+      console.log("Permission déjà accordée, récupération de la position");
+      getCurrentLocation();
+      return;
+    }
+
+    // Si pas encore demandé OU si refusé précédemment, afficher le dialog
+    console.log("Affichage du dialog de permission");
     const dialogId = dialogManager.add({
-      title: "autoriser la géolocalisation",
+      title: "Autoriser la géolocalisation",
       description:
-        "voulez-vous activer la géolocalisation pour voir les annonces près de vous?",
+        "Voulez-vous activer la géolocalisation pour voir les annonces près de vous ?",
       cancel: {
-        label: "annuler",
-        onClick: () => dialogManager.remove(dialogId),
+        label: "Annuler",
+        onClick: () => {
+          console.log("Permission géolocalisation refusée");
+          localStorage.setItem(STORAGE_KEYS.GEOLOCATION_ASKED, "true");
+          localStorage.setItem(STORAGE_KEYS.GEOLOCATION_ALLOWED, "false");
+          dialogManager.remove(dialogId);
+        },
       },
       action: {
-        label: "accepter",
+        label: "Accepter",
         onClick: async () => {
-          navigator.geolocation.getCurrentPosition(
-            (position) => handleGeolocationSuccess(position),
-            (error) => console.error("erreur de géolocalisation:", error),
-          );
+          console.log("Permission géolocalisation acceptée");
+          localStorage.setItem(STORAGE_KEYS.GEOLOCATION_ASKED, "true");
+          localStorage.setItem(STORAGE_KEYS.GEOLOCATION_ALLOWED, "true");
+          getCurrentLocation();
           dialogManager.remove(dialogId);
         },
       },
       style: "centered",
     });
+  };
+
+  const getCurrentLocation = () => {
+    console.log("getCurrentLocation appelée");
+    if (!navigator.geolocation) {
+      console.error("Géolocalisation non disponible");
+      return;
+    }
+
+    console.log("Demande de position en cours...");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log("Position obtenue:", position);
+        handleGeolocationSuccess(position);
+      },
+      (error) => {
+        console.error("Erreur de géolocalisation:", error);
+        localStorage.setItem(STORAGE_KEYS.GEOLOCATION_ALLOWED, "false");
+      },
+    );
   };
 
   const handleGeolocationSuccess = (position: GeolocationPosition) => {
@@ -152,12 +203,10 @@ export function AnnouncementMap({
 
     if (userMarker.current) userMarker.current.remove();
 
-    // créer le nouveau marqueur
     userMarker.current = new mapboxgl.Marker(createUserMarkerElement())
       .setLngLat([longitude, latitude])
       .addTo(map.current);
 
-    // zoomer sur la position mais respecter le zoom max
     map.current.flyTo({
       center: [longitude, latitude],
       zoom: Math.min(12, CONFIG.maxZoom),
@@ -165,7 +214,6 @@ export function AnnouncementMap({
     });
   };
 
-  // créer le marqueur utilisateur
   const createUserMarkerElement = () => {
     const element = document.createElement("div");
     element.className = "user-location-marker";
@@ -234,10 +282,23 @@ export function AnnouncementMap({
       }
     } catch (error) {
       console.error(
-        "erreur lors de la mise à jour de la visibilité des zones de sécurité:",
+        "Erreur lors de la mise à jour de la visibilité des zones de sécurité:",
         error,
       );
     }
+  };
+
+  const zoomToAnnouncement = (announcementId: string) => {
+    if (!map.current) return;
+
+    const announcement = announcements.find((a) => a.id === announcementId);
+    if (!announcement) return;
+
+    map.current.flyTo({
+      center: [announcement.longitude, announcement.latitude],
+      zoom: Math.min(12, CONFIG.maxZoom),
+      duration: CONFIG.animation.zoom.duration,
+    });
   };
 
   useEffect(() => {
@@ -318,7 +379,7 @@ export function AnnouncementMap({
 
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-    loadAppleIcon();
+    loadHarvestIcon();
   }, [mapLoaded]);
 
   useEffect(() => {
@@ -339,63 +400,87 @@ export function AnnouncementMap({
     }
 
     addMapLayers(geojson);
-  }, [mapLoaded, announcements, highlightedAnnouncementId]);
+  }, [mapLoaded, announcements]);
 
-  const loadAppleIcon = () => {
+  // écouteur pour le zoom depuis les cartes
+  useEffect(() => {
+    const handleZoomEvent = (event: CustomEvent) => {
+      const { announcementId } = event.detail;
+      zoomToAnnouncement(announcementId);
+    };
+
+    window.addEventListener(
+      "zoomToAnnouncement",
+      handleZoomEvent as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "zoomToAnnouncement",
+        handleZoomEvent as EventListener,
+      );
+    };
+  }, [announcements]);
+
+  const loadHarvestIcon = () => {
     if (!map.current) return;
 
-    const appleSvg = createAppleSvg();
-    const appleIcon = svgToDataUrl(appleSvg);
+    const harvestSvg = createHarvestSvg();
+    const harvestIcon = svgToDataUrl(harvestSvg);
 
-    const highlightedAppleSvg = createAppleSvg(true);
-    const highlightedAppleIcon = svgToDataUrl(highlightedAppleSvg);
-
-    if (map.current.hasImage("apple-icon"))
-      map.current.removeImage("apple-icon");
-    if (map.current.hasImage("apple-icon-highlighted"))
-      map.current.removeImage("apple-icon-highlighted");
+    if (map.current.hasImage("harvest-icon"))
+      map.current.removeImage("harvest-icon");
 
     const img = new Image();
     img.onload = () => {
       if (!map.current) return;
-      map.current.addImage("apple-icon", img);
+      map.current.addImage("harvest-icon", img);
     };
-    img.src = appleIcon;
-
-    const imgHighlighted = new Image();
-    imgHighlighted.onload = () => {
-      if (!map.current) return;
-      map.current.addImage("apple-icon-highlighted", imgHighlighted);
-    };
-    imgHighlighted.src = highlightedAppleIcon;
+    img.src = harvestIcon;
   };
 
-  const createAppleSvg = (highlighted = false) => {
+  const createHarvestSvg = () => {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("width", "24");
     svg.setAttribute("height", "24");
     svg.setAttribute("viewBox", "0 0 24 24");
     svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", highlighted ? COLORS.HIGHLIGHT : COLORS.PRIMARY);
-    svg.setAttribute("stroke-width", highlighted ? "3" : "2");
+    svg.setAttribute("stroke", COLORS.ICON_COLOR);
+    svg.setAttribute("stroke-width", "2");
     svg.setAttribute("stroke-linecap", "round");
     svg.setAttribute("stroke-linejoin", "round");
 
-    // chemins pour l'icone de pomme
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute(
-      "d",
-      "M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z",
+    // Créer un groupe avec la transformation pour que la main pointe vers le bas
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute("transform", "rotate(180 12 12)");
+
+    // Icône HandHelping de Lucide
+    const path1 = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path",
     );
+    path1.setAttribute("d", "M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14");
 
     const path2 = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "path",
     );
-    path2.setAttribute("d", "M10 2c1 .5 2 2 2 5");
+    path2.setAttribute(
+      "d",
+      "m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9",
+    );
 
-    svg.appendChild(path);
-    svg.appendChild(path2);
+    const path3 = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path",
+    );
+    path3.setAttribute("d", "m2 13 6 6");
+
+    group.appendChild(path1);
+    group.appendChild(path2);
+    group.appendChild(path3);
+
+    svg.appendChild(group);
 
     return svg;
   };
@@ -416,12 +501,12 @@ export function AnnouncementMap({
           </svg>
         </button>
         <div style="font-weight:600;font-size:15px;margin-bottom:10px;color:${COLORS.TEXT};padding-right:15px;">${title}</div>
-        ${cropType ? `<div style="font-size:13px;margin-bottom:10px;color:${COLORS.PRIMARY};padding-right:15px;">culture: ${cropType}</div>` : ""}
+        ${cropType ? `<div style="font-size:13px;margin-bottom:10px;color:${COLORS.PRIMARY};padding-right:15px;">Culture : ${cropType}</div>` : ""}
         <a href="/announcements/${slug}" 
            style="display:inline-block;padding:8px 12px;background:${COLORS.PRIMARY};
                   color:#fff;border-radius:6px;text-decoration:none;font-size:14px;
                   font-weight:500;transition:all 0.2s ease">
-           voir l'annonce
+           Voir l'annonce
         </a>
       </div>
     `;
@@ -482,7 +567,7 @@ export function AnnouncementMap({
       source: "announcements",
       filter: ["!", ["has", "point_count"]],
       paint: {
-        "circle-color": "#ffffff",
+        "circle-color": COLORS.MARKER_BG,
         "circle-radius": CONFIG.markerSize.point,
         "circle-stroke-width": 0,
       },
@@ -492,36 +577,12 @@ export function AnnouncementMap({
       id: "unclustered-point-icon",
       type: "symbol",
       source: "announcements",
-      filter: [
-        "all",
-        ["!", ["has", "point_count"]],
-        ["==", ["get", "highlighted"], "false"],
-      ],
+      filter: ["!", ["has", "point_count"]],
       layout: {
-        "icon-image": "apple-icon",
-        "icon-size": CONFIG.iconSize.apple,
+        "icon-image": "harvest-icon",
+        "icon-size": CONFIG.iconSize.harvest,
         "icon-offset": [0, 0],
         "icon-allow-overlap": true,
-      },
-    });
-
-    map.current.addLayer({
-      id: "highlighted-point-icon",
-      type: "symbol",
-      source: "announcements",
-      filter: [
-        "all",
-        ["!", ["has", "point_count"]],
-        ["==", ["get", "highlighted"], "true"],
-      ],
-      layout: {
-        "icon-image": "apple-icon-highlighted",
-        "icon-size": CONFIG.iconSize.apple * 1.2,
-        "icon-offset": [0, 0],
-        "icon-allow-overlap": true,
-      },
-      paint: {
-        "icon-opacity": 1,
       },
     });
 
@@ -532,10 +593,8 @@ export function AnnouncementMap({
     if (!map.current) return;
 
     map.current.on("click", "clusters", handleClusterClick);
-
     map.current.on("click", "unclustered-point", handlePointClick);
     map.current.on("click", "unclustered-point-icon", handlePointClick);
-    map.current.on("click", "highlighted-point-icon", handlePointClick);
 
     setupHoverEffects();
   };
@@ -552,7 +611,6 @@ export function AnnouncementMap({
     ).getClusterExpansionZoom(clusterId, (err, zoom) => {
       if (err || zoom === undefined || zoom === null) return;
 
-      // limiter le zoom pour ne pas aller trop près
       const safeZoom = Math.min(zoom, CONFIG.maxZoom);
       const coordinates = (features[0].geometry as Point).coordinates;
 
@@ -571,10 +629,11 @@ export function AnnouncementMap({
     if (popup) popup.remove();
 
     const feature = e.features[0];
-    const { title, slug, cropType } = feature.properties as {
+    const { title, slug, cropType, id } = feature.properties as {
       title: string;
       slug: string;
       cropType?: string;
+      id: string;
     };
     const coordinates = (feature.geometry as Point).coordinates as [
       number,
@@ -611,7 +670,10 @@ export function AnnouncementMap({
 
     setPopup(newPopup);
 
-    // limiter le zoom lors du clic
+    if (onAnnouncementClick) {
+      onAnnouncementClick(id);
+    }
+
     map.current.flyTo({
       center: coordinates,
       zoom: Math.min(12, CONFIG.maxZoom),
@@ -632,15 +694,10 @@ export function AnnouncementMap({
 
     map.current.on("mouseenter", "clusters", setCursorPointer);
     map.current.on("mouseleave", "clusters", resetCursor);
-
     map.current.on("mouseenter", "unclustered-point", setCursorPointer);
     map.current.on("mouseleave", "unclustered-point", resetCursor);
-
     map.current.on("mouseenter", "unclustered-point-icon", setCursorPointer);
     map.current.on("mouseleave", "unclustered-point-icon", resetCursor);
-
-    map.current.on("mouseenter", "highlighted-point-icon", setCursorPointer);
-    map.current.on("mouseleave", "highlighted-point-icon", resetCursor);
   };
 
   return (
@@ -652,16 +709,30 @@ export function AnnouncementMap({
       )}
       <div ref={mapContainer} className="w-full h-full" />
 
-      {/* Bouton de géolocalisation */}
       {mapLoaded && (
-        <Button
-          size="sm"
-          onClick={askForGeolocation}
-          className="absolute bottom-4 right-4 z-10 bg-secondary hover:bg-secondary/80"
-          title="afficher ma position"
-        >
-          <LocateIcon className="h-5 w-5 text-muted-foreground" />
-        </Button>
+        <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+          <Button
+            size="sm"
+            onClick={() => {
+              console.log("Bouton géolocalisation cliqué");
+
+              // Vérifier si la géolocalisation est supportée
+              if (!navigator.geolocation) {
+                console.error(
+                  "Géolocalisation non supportée par ce navigateur",
+                );
+                return;
+              }
+
+              // Toujours passer par askForGeolocation qui gère tous les cas
+              askForGeolocation();
+            }}
+            className="bg-secondary hover:bg-secondary/80"
+            title="Afficher ma position"
+          >
+            <LocateIcon className="h-5 w-5 text-muted-foreground" />
+          </Button>
+        </div>
       )}
     </Card>
   );

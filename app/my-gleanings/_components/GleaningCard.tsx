@@ -55,6 +55,7 @@ export function GleaningCard({
               src={announcement.images[0]}
               alt={announcement.title}
               fill
+              sizes="192px"
               className="object-cover"
             />
           ) : (
