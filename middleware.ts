@@ -1,92 +1,89 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { AUTH_COOKIE_NAME } from "@/lib/auth/auth.const";
 
-/**
- * Routes à ignorer complètement par le middleware
- */
-function shouldSkipRoute(pathname: string): boolean {
-  return (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/static") ||
-    pathname.includes(".") ||
-    pathname === "/favicon.ico" ||
-    pathname === "/auth" ||
-    pathname === "/auth/verify-request" ||
-    pathname === "/auth/signin" ||
-    pathname === "/auth/signup" ||
-    pathname === "/auth/signout" ||
-    pathname === "/auth/error" ||
-    pathname === "/auth/onboarding"
-  );
-}
+// Routes qui nécessitent une authentification
+const PROTECTED_ROUTES = ["/admin", "/(account)", "/(farmer)", "/my-gleanings"];
+
+// Pages exemptées du contrôle d'onboarding
+const ONBOARDING_EXEMPTIONS = [
+  "/auth/onboarding",
+  "/auth/signin",
+  "/auth/signout",
+  "/auth",
+  "/api",
+];
 
 /**
- * Routes nécessitant une session authentifiée
- */
-function isProtectedRoute(pathname: string): boolean {
-  return (
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/my-gleanings") ||
-    pathname.startsWith("/announcements/create") ||
-    pathname.startsWith("/(account)") ||
-    pathname.startsWith("/(farmer)")
-  );
-}
-
-/**
- * Middleware principal
+ * Middleware qui gère l'authentification et l'onboarding
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Bypass pour les routes publiques
-  if (shouldSkipRoute(pathname)) {
+  // Ignorer les routes API
+  if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
-  try {
-    const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  // Récupérer le token de session
+  const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
-    // Redirection vers /auth/signin si non-auth pour route protégée
-    if (isProtectedRoute(pathname) && !sessionToken) {
-      const redirectUrl = new URL("/auth/signin", request.url);
-      redirectUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(redirectUrl);
+  // Vérifier les routes protégées
+  for (const route of PROTECTED_ROUTES) {
+    if (pathname.startsWith(route)) {
+      if (!sessionToken) {
+        const redirectUrl = new URL("/auth/signin", request.url);
+        redirectUrl.searchParams.set("callbackUrl", pathname);
+        return NextResponse.redirect(redirectUrl);
+      }
+    }
+  }
+
+  // Contrôle de l'onboarding pour les utilisateurs connectés
+  if (sessionToken) {
+    // Vérifier les exemptions
+    for (const exemption of ONBOARDING_EXEMPTIONS) {
+      if (pathname.startsWith(exemption)) {
+        return NextResponse.next();
+      }
     }
 
-    // Si déjà connecté et va sur /auth, rediriger vers home
-    if (sessionToken && pathname === "/auth") {
-      return NextResponse.redirect(new URL("/", request.url));
+    // Vérifier le cache d'onboarding
+    const onboardingCompleted = request.cookies.get(
+      "onboardingCompleted",
+    )?.value;
+
+    if (onboardingCompleted === "true") {
+      return NextResponse.next();
     }
 
-    // Redirection vers onboarding si pas encore complété
-    if (
-      sessionToken &&
-      !pathname.startsWith("/auth/") &&
-      !pathname.startsWith("/api/")
-    ) {
-      const sessionUrl = new URL("/api/v1/auth/session", request.url);
-      const response = await fetch(sessionUrl.toString(), {
-        headers: {
-          cookie: request.headers.get("cookie") || "",
-        },
-      });
+    // Vérifier le statut d'onboarding en base
+    try {
+      const response = await fetch(
+        new URL("/api/v1/auth/session", request.url).toString(),
+        { headers: { cookie: request.headers.get("cookie") || "" } },
+      );
 
       if (response.ok) {
         const userData = await response.json();
 
-        if (userData && userData.onboardingCompleted === false) {
-          const onboardingUrl = new URL("/auth/onboarding", request.url);
-          if (pathname !== "/") {
-            onboardingUrl.searchParams.set("callbackUrl", pathname);
-          }
-          return NextResponse.redirect(onboardingUrl);
+        if (userData?.onboardingCompleted === true) {
+          const res = NextResponse.next();
+          res.cookies.set("onboardingCompleted", "true", {
+            maxAge: 60 * 60 * 24 * 7, // 7 jours
+            path: "/",
+          });
+          return res;
+        }
+
+        if (userData?.onboardingCompleted === false) {
+          return NextResponse.redirect(
+            new URL("/auth/onboarding", request.url),
+          );
         }
       }
+    } catch (error) {
+      console.error("Middleware error:", error);
     }
-  } catch (error) {
-    console.error("Middleware error:", error);
   }
 
   return NextResponse.next();
@@ -94,9 +91,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Exclure les assets publics
-     */
-    "/((?!_next/static|_next/image|favicon.ico|images/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|images/|fonts/|.*\\.(?:jpg|jpeg|gif|png|svg|ico|css|js)$).*)",
   ],
 };
