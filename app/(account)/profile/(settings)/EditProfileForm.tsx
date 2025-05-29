@@ -21,6 +21,8 @@ import { createVerifyEmailAction } from "../verify-email/verify-email.action";
 import { updateProfileAction } from "./edit-profile.action";
 import type { ProfileFormType } from "./edit-profile.schema";
 import { ProfileFormSchema } from "./edit-profile.schema";
+import { BelgianPostalSearch } from "@/features/form/BelgianPostalSearch";
+import { Textarea } from "@/components/ui/textarea";
 
 type EditProfileFormProps = {
   defaultValues: User;
@@ -29,7 +31,13 @@ type EditProfileFormProps = {
 export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
   const form = useZodForm({
     schema: ProfileFormSchema,
-    defaultValues: defaultValues,
+    defaultValues: {
+      email: defaultValues.email,
+      name: defaultValues.name,
+      city: defaultValues.city || "",
+      postalCode: defaultValues.postalCode || "",
+      bio: defaultValues.bio || "",
+    },
   });
   const router = useRouter();
 
@@ -40,7 +48,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
       if (values.email !== defaultValues.email) {
         await createVerifyEmailAction("");
         toast.success(
-          "Vous avez mis à jour votre email. Nous vous avons envoyé un nouveau lien de vérification.",
+          "vous avez mis à jour votre email. nous vous avons envoyé un nouveau lien de vérification.",
         );
         router.push("/");
         return;
@@ -51,7 +59,7 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
         return;
       }
 
-      toast.success("Profil mis à jour");
+      toast.success("profil mis à jour");
       router.refresh();
     },
   });
@@ -97,6 +105,78 @@ export const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
           </FormItem>
         )}
       />
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <FormField
+          control={form.control}
+          name="city"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ville</FormLabel>
+              <FormControl>
+                <BelgianPostalSearch
+                  searchType="city"
+                  value={field.value || ""}
+                  onCityChange={(city) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  onPostalCodeChange={(postalCode) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="postalCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Code postal</FormLabel>
+              <FormControl>
+                <BelgianPostalSearch
+                  searchType="postal"
+                  value={field.value || ""}
+                  onCityChange={(city) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  onPostalCodeChange={(postalCode) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <FormField
+        control={form.control}
+        name="bio"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Présentation (optionnel)</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Décrivez votre profil, vos intérêts..."
+                {...field}
+                className="min-h-[100px]"
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <SubmitButton className="w-fit self-end" size="sm">
         Enregistrer
       </SubmitButton>

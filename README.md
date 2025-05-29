@@ -67,7 +67,8 @@ pnpm prisma db pull
 ### Utilisateurs par défaut
 
 - Admin: admin@field4u.be (password: password123)
-- Utilisateurs Farmer et Gleaner: disponibles dans Prisma Studio avec le même mot de passe (password123)
+- Farmer: farmer@field4u.be (password: password123)
+- Glaneur: gleaner@field4u.be (password: password123)
 
 ### Lancer le Projet
 

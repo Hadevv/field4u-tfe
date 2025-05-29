@@ -6,7 +6,7 @@ import { authAction } from "@/lib/backend/safe-actions";
 import { isFarmer } from "@/lib/auth/helper";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { FieldSchema } from "./field.schema";
+import { FieldSchema } from "./create-field.schema";
 
 export const createFieldAction = authAction
   .schema(FieldSchema)

@@ -27,6 +27,7 @@ export const createFarmAction = authAction
           city: input.city,
           postalCode: input.postalCode,
           termsAcceptedAt: input.termsAcceptedAt,
+          acceptGeolocation: input.acceptGeolocation,
           onboardingCompleted: true,
         },
       });

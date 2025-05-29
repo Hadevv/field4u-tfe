@@ -317,12 +317,13 @@ export function CreateEditFieldDialog({
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
               annuler
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button size="sm" type="submit" disabled={isPending}>
               {isEditing ? "mettre à jour" : "créer"}
             </Button>
           </div>

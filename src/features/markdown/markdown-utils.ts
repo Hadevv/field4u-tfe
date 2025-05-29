@@ -2,13 +2,13 @@ import fs from "fs";
 import path from "path";
 
 export const readMdxFile = (filePath: string): string => {
-  const absolutePath = path.join(process.cwd(), filePath);
+  const rootPath = path.join(process.cwd(), filePath);
 
-  if (!fs.existsSync(absolutePath)) {
-    throw new Error(`fichier non trouvé: ${filePath}`);
+  if (fs.existsSync(rootPath)) {
+    return fs.readFileSync(rootPath, "utf8");
   }
 
-  return fs.readFileSync(absolutePath, "utf8");
+  throw new Error(`Fichier non trouvé: ${filePath}`);
 };
 
 export const readContentFile = (fileName: string): string => {

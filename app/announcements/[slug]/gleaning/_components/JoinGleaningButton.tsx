@@ -1,19 +1,24 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { joinGleaningAction } from "../_actions/gleaning.action";
 import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Check, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { showAddToCalendarDialog } from "@/features/calendar/AddToCalendarButton";
 
 export type JoinGleaningButtonProps = {
   announcementId: string;
   slug: string;
   userIsParticipant?: boolean;
   className?: string;
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  location: string;
 };
 
 export function JoinGleaningButton({
@@ -21,6 +26,11 @@ export function JoinGleaningButton({
   slug,
   userIsParticipant = false,
   className,
+  title,
+  description,
+  startDate,
+  endDate,
+  location,
 }: JoinGleaningButtonProps) {
   const router = useRouter();
 
@@ -39,6 +49,21 @@ export function JoinGleaningButton({
       }
 
       if (data.success) {
+        const calendarKey = `calendar-modal-shown-${announcementId}`;
+        if (
+          typeof window !== "undefined" &&
+          !localStorage.getItem(calendarKey)
+        ) {
+          localStorage.setItem(calendarKey, "1");
+          showAddToCalendarDialog({
+            announcementId,
+            title,
+            description,
+            startDate,
+            endDate,
+            location,
+          });
+        }
         router.push(`/announcements/${slug}/gleaning`);
         router.refresh();
       }
@@ -63,10 +88,11 @@ export function JoinGleaningButton({
     return (
       <Button
         variant="secondary"
+        size="sm"
         className={className}
         onClick={() => router.push(`/announcements/${slug}/gleaning`)}
       >
-        <Check className="size-4 mr-2" />
+        <Check className="size-5" />
         voir le glanage
       </Button>
     );
@@ -75,6 +101,7 @@ export function JoinGleaningButton({
   return (
     <Button
       variant="secondary"
+      size="sm"
       className={className}
       disabled={isPending}
       onClick={() => joinMutation()}

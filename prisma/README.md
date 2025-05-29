@@ -31,16 +31,17 @@ Pour remplir la base de données avec des données de test :
 pnpm run seed
 ```
 
-## 👤 Comptes par défaut
+## Comptes par défaut
 
 Un compte administrateur est créé automatiquement :
 
 - Email : admin@field4u.be
 - Mot de passe : password123
+- Rôle : ADMIN
 
 Tous les comptes générés utilisent le même mot de passe : password123
 
-## 📊 Structure des données
+## Structure des données
 
 Le seeder génère :
 
@@ -54,6 +55,7 @@ Le seeder génère :
 - Des likes et favoris
 - Des notifications
 - Des statistiques
+- Des payements
 
 ## 🔍 Commandes Prisma utiles
 
@@ -75,7 +77,7 @@ pnpm prisma migrate reset
 pnpm prisma generate
 ```
 
-## 🏗️ Structure des tables principales
+## Structure des tables principales
 
 ### Users
 
@@ -106,12 +108,7 @@ pnpm prisma generate
 - Gestion des sessions de glanage
 - Statuts : PENDING, ACCEPTED, COMPLETED, CANCELLED
 
-### Participations
-
-- Liaison entre glaneurs et sessions
-- Statuts : PENDING, CONFIRMED, CANCELLED, ATTENDED, NO_SHOW
-
-## 🔒 Sécurité
+## Sécurité
 
 - Mots de passe hashés avec bcrypt
 - Validation des données avec Prisma

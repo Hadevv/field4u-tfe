@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requiredAuth } from "@/lib/auth/helper";
 import {
   Card,
   CardContent,
@@ -25,14 +26,12 @@ import { fr } from "date-fns/locale";
 import { DeleteAnnouncementButton } from "./DeleteAnnouncementButton";
 import { ToggleAnnouncementStatus } from "./ToggleAnnouncementStatus";
 
-type AnnouncementsListProps = {
-  userId: string;
-};
+export async function AnnouncementsList() {
+  const user = await requiredAuth();
 
-export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
   const announcements = await prisma.announcement.findMany({
     where: {
-      ownerId: userId,
+      ownerId: user.id,
     },
     include: {
       field: true,
@@ -55,16 +54,16 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
     return (
       <div className="rounded-lg border p-8 text-center">
         <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h2 className="mt-4 text-xl font-semibold">Aucune annonce créée</h2>
+        <h2 className="mt-4 text-xl font-semibold">aucune annonce créée</h2>
         <p className="mt-2 text-muted-foreground">
-          Créez votre première annonce de glanage pour permettre aux glaneurs de
-          venir récolter vos surplus.
+          créez votre première annonce de glanage pour permettre aux glaneurs de
+          venir récolter vos surplus
         </p>
         <div className="mt-6">
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/farm/announcements/new">
               <FileText className="mr-2 h-4 w-4" />
-              Créer une annonce
+              créer une annonce
             </Link>
           </Button>
         </div>
@@ -91,7 +90,7 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
                   <span className="line-clamp-1">{announcement.title}</span>
                   {!announcement.isPublished && (
                     <Badge variant="outline" className="ml-2 font-normal">
-                      Brouillon
+                      brouillon
                     </Badge>
                   )}
                 </CardTitle>
@@ -112,7 +111,7 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
                     ? format(announcement.startDate, "dd MMM yyyy", {
                         locale: fr,
                       })
-                    : "Pas de date définie"}
+                    : "pas de date définie"}
                 </span>
                 <span className="flex items-center">
                   <Users className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
@@ -143,17 +142,17 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
 
             <CardFooter className="flex justify-between border-t pt-4">
               <div className="flex gap-2">
-                <Button asChild variant="outline">
-                  <Link href={`/farm/announcements/${announcement.id}`}>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/farm/announcements/${announcement.slug}`}>
                     <Eye className="mr-2 h-3.5 w-3.5" />
-                    Voir
+                    voir
                   </Link>
                 </Button>
 
-                <Button asChild variant="outline">
-                  <Link href={`/farm/announcements/${announcement.id}/edit`}>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/farm/announcements/${announcement.slug}/edit`}>
                     <Pencil className="mr-2 h-3.5 w-3.5" />
-                    Modifier
+                    modifier
                   </Link>
                 </Button>
 
@@ -165,7 +164,7 @@ export async function AnnouncementsList({ userId }: AnnouncementsListProps) {
 
               <div className="flex items-center text-xs text-muted-foreground">
                 <Clock className="mr-1 h-3.5 w-3.5" />
-                Créée le{" "}
+                créée le{" "}
                 {format(announcement.createdAt, "dd MMM yyyy", { locale: fr })}
               </div>
             </CardFooter>

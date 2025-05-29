@@ -300,12 +300,13 @@ export function CreateEditUserDialog({
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
               annuler
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending} size="sm">
               {isEditing ? "mettre à jour" : "créer"}
             </Button>
           </div>

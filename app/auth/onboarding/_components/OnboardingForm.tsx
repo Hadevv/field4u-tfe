@@ -2,13 +2,12 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
-import Image from "next/image";
-import { SiteConfig } from "@/site-config";
 import { UserRole } from "@prisma/client";
 import { OnboardingRoleStep } from "./OnboardingRoleStep";
 import { OnboardingFarmerForm } from "./OnboardingFarmerForm";
 import { OnboardingGleanerForm } from "./OnboardingGleanerForm";
 import { OnboardingRulesStep } from "./OnboardingRulesStep";
+import { Logo } from "@/components/svg/Logo";
 
 export default function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -26,12 +25,7 @@ export default function OnboardingForm() {
   return (
     <div className="flex min-h-screen flex-col items-center p-4">
       <div className="mb-8 flex items-center gap-3">
-        <Image
-          src={SiteConfig.appIcon}
-          alt="app logo"
-          width={100}
-          height={100}
-        />
+        <Logo />
       </div>
 
       <Card className="w-full max-w-lg shadow-lg">

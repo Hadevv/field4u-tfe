@@ -10,6 +10,8 @@ import {
 } from "./gleaning.schema";
 import { GleaningStatus } from "@prisma/client";
 import { inngest } from "@/lib/inngest/client";
+import { sendNotificationToUser } from "@/lib/notifications/sendNotification";
+import { NotificationType } from "@prisma/client";
 
 export const joinGleaningAction = authAction
   .schema(JoinGleaningSchema)
@@ -79,6 +81,19 @@ export const joinGleaningAction = authAction
           gleaningId: gleaning.id,
         },
       });
+
+      // notification à l'agriculteur (owner de l'annonce)
+      const announcementOwner = await prisma.announcement.findUnique({
+        where: { id: input.announcementId },
+        select: { ownerId: true, title: true },
+      });
+      if (announcementOwner?.ownerId) {
+        await sendNotificationToUser(
+          announcementOwner.ownerId,
+          NotificationType.PARTICIPATION_JOINED,
+          `un glaneur a rejoint votre glanage sur "${announcementOwner.title ?? ""}"`,
+        );
+      }
 
       if (announcement.startDate) {
         await inngest.send({

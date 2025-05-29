@@ -15,7 +15,7 @@ export const ACCOUNT_LINKS: NavigationLinkGroups[] = [
     ],
   },
   {
-    title: "PARAMÈTRES DE NOTIFICATIONS PAR EMAIL",
-    links: [{ url: "/profile/email", title: "Paramètres", icon: <Mail /> }],
+    title: "PARAMÈTRES DE NOTIFICATIONS",
+    links: [{ url: "/profile/email", title: "Notifications", icon: <Mail /> }],
   },
 ];

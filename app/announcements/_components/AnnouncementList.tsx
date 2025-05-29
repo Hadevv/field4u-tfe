@@ -9,6 +9,7 @@ import Link from "next/link";
 
 type AnnouncementListProps = {
   announcements: Announcement[];
+  onAnnouncementZoom?: (announcementId: string) => void;
 };
 
 function EmptyState() {
@@ -23,7 +24,12 @@ function EmptyState() {
         d'ajuster vos filtres ou de réinitialiser votre recherche.
       </p>
       <div className="flex flex-wrap gap-3 justify-center">
-        <Button variant="outline" asChild className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          asChild
+          size="sm"
+          className="flex items-center gap-2"
+        >
           <Link href="/announcements">
             <RefreshCw className="h-4 w-4" />
             Réinitialiser les filtres
@@ -34,7 +40,10 @@ function EmptyState() {
   );
 }
 
-export function AnnouncementList({ announcements }: AnnouncementListProps) {
+export function AnnouncementList({
+  announcements,
+  onAnnouncementZoom,
+}: AnnouncementListProps) {
   if (announcements.length === 0) {
     return <EmptyState />;
   }
@@ -47,6 +56,7 @@ export function AnnouncementList({ announcements }: AnnouncementListProps) {
             key={announcement.id}
             announcement={announcement}
             isLiked={announcement.isLiked}
+            onZoomToLocation={onAnnouncementZoom}
           />
         ))}
       </div>

@@ -25,10 +25,10 @@ export default function Error({
         réessayer ultérieurement.
       </p>
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button onClick={reset} variant="outline">
+        <Button onClick={reset} variant="outline" size="sm">
           réessayer
         </Button>
-        <Button asChild>
+        <Button asChild size="sm">
           <Link href="/admin/dashboard">retour au dashboard</Link>
         </Button>
       </div>

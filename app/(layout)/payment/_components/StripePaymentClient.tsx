@@ -34,12 +34,12 @@ export function StripePaymentClient({
         },
       }}
     >
-      <PaymentForm clientSecret={clientSecret} />
+      <PaymentForm />
     </Elements>
   );
 }
 
-function PaymentForm({ clientSecret }: { clientSecret: string }) {
+function PaymentForm() {
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
@@ -78,6 +78,7 @@ function PaymentForm({ clientSecret }: { clientSecret: string }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <PaymentElement />
         <Button
+          size="sm"
           type="submit"
           className="w-full"
           disabled={isLoading || !stripe || !elements}

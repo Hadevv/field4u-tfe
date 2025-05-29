@@ -3,15 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { PageParams } from "@/types/next";
 import { Metadata } from "next";
-import Link from "next/link";
-import {
-  Calendar,
-  Leaf,
-  MapPin,
-  MessageSquare,
-  Package,
-  ShoppingBag,
-} from "lucide-react";
+import { Calendar, MapPin, Sprout, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth/helper";
 import { JoinGleaningButton } from "./gleaning/_components/JoinGleaningButton";
@@ -29,7 +21,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { AddToCalendarButton } from "@/features/calendar/AddToCalendarButton";
 
 const formatDate = (date: Date) => {
   if (!date) return "";
@@ -139,11 +130,9 @@ export default async function AnnouncementPage(
   const user = await auth();
 
   return (
-    <div className="container mx-auto pt-4 px-4 pb-16">
-      <div className="flex flex-col gap-6 shadow-sm border rounded-lg p-4 sm:p-6">
-        <div className="w-full">
-          <AnnouncementContent slug={params.slug} userId={user?.id} />
-        </div>
+    <div className="flex flex-col gap-6 shadow-sm rounded-lg p-4 sm:p-6">
+      <div className="w-full">
+        <AnnouncementContent slug={params.slug} userId={user?.id} />
       </div>
     </div>
   );
@@ -167,6 +156,13 @@ async function AnnouncementContent({
   const hasMultipleImages =
     announcement.images && announcement.images.length > 1;
 
+  const validStartDate =
+    announcement.startDate instanceof Date
+      ? announcement.startDate
+      : new Date();
+  const validEndDate =
+    announcement.endDate instanceof Date ? announcement.endDate : new Date();
+
   return (
     <div className="rounded-lg p-4 sm:p-6 shadow-sm">
       {/* statut de l'annonce */}
@@ -181,8 +177,8 @@ async function AnnouncementContent({
         </div>
 
         {announcement.startDate && announcement.endDate && (
-          <div className="text-xs text-muted-foreground flex flex-wrap items-center">
-            <Calendar className="h-3.5 w-3.5 mr-1" />
+          <div className="text-muted-foreground flex flex-wrap items-center text-sm">
+            <Calendar className="h-5 w-5 mr-1" />
             <span>
               {isFutureDate(announcement.startDate)
                 ? `début dans ${calculateTimeRemaining(announcement.startDate)}`
@@ -191,8 +187,7 @@ async function AnnouncementContent({
                   : "glanage terminé"}
             </span>
             {isFutureDate(announcement.endDate) && (
-              <div className="ml-0 sm:ml-4 flex items-center text-muted-foreground mt-1 sm:mt-0 w-full sm:w-auto">
-                <div className="w-3 h-3 bg-muted rounded-full mr-1"></div>
+              <div className="ml-0 sm:ml-4 flex items-center text-sm text-muted-foreground mt-1 sm:mt-0 w-full sm:w-auto">
                 {isFutureDate(announcement.endDate) &&
                   `fin dans ${calculateTimeRemaining(announcement.endDate)}`}
               </div>
@@ -234,6 +229,7 @@ async function AnnouncementContent({
                         src={image}
                         alt={`${announcement.title} - image ${index + 1}`}
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover"
                       />
                     </div>
@@ -250,11 +246,12 @@ async function AnnouncementContent({
                   src={announcement.images[0]}
                   alt={announcement.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-muted">
-                  <Leaf className="w-12 h-12 text-muted-foreground/40" />
+                  <Sprout className="w-12 h-12 text-muted-foreground/40" />
                 </div>
               )}
             </div>
@@ -275,13 +272,13 @@ async function AnnouncementContent({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-6">
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
-                  <Leaf className="w-4 h-4 text-muted-foreground" />
+                  <Sprout className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <span className="text-sm">{announcement.cropType.name}</span>
               </div>
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
-                  <ShoppingBag className="w-4 h-4 text-muted-foreground" />
+                  <ShoppingBag className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <span className="text-sm">
                   {announcement.quantityAvailable
@@ -291,7 +288,7 @@ async function AnnouncementContent({
               </div>
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <Calendar className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <span className="text-sm">
                   {announcement.startDate && formatDate(announcement.startDate)}
@@ -299,17 +296,11 @@ async function AnnouncementContent({
               </div>
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <MapPin className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <span className="text-sm">
                   {announcement.field.postalCode} - {announcement.field.city}
                 </span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
-                  <Package className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <span className="text-sm">bio pas de pesticide</span>
               </div>
             </div>
           </div>
@@ -321,7 +312,7 @@ async function AnnouncementContent({
         <div className="w-full sm:w-auto">
           <Suspense
             fallback={
-              <Button disabled className="w-full sm:w-auto">
+              <Button disabled className="w-full sm:w-auto" size="sm">
                 chargement...
               </Button>
             }
@@ -331,6 +322,11 @@ async function AnnouncementContent({
               slug={slug}
               userIsParticipant={announcement.userIsParticipant}
               className="w-full sm:w-auto"
+              title={announcement.title}
+              description={announcement.description}
+              startDate={validStartDate}
+              endDate={validEndDate}
+              location={`${announcement.field.postalCode} - ${announcement.field.city}`}
             />
           </Suspense>
         </div>
@@ -348,25 +344,6 @@ async function AnnouncementContent({
           />
 
           <ShareButton title={announcement.title} slug={slug} />
-
-          {announcement.startDate && announcement.endDate && (
-            <AddToCalendarButton
-              title={announcement.title}
-              description={announcement.description}
-              startDate={announcement.startDate}
-              endDate={announcement.endDate}
-              location={`${announcement.field.postalCode} - ${announcement.field.city}`}
-            />
-          )}
-        </div>
-
-        <div className="w-full sm:w-auto mt-2 sm:mt-0">
-          <Button asChild className="w-full sm:w-auto" variant="secondary">
-            <Link href={`/messages/user/${announcement.owner.id}`}>
-              <MessageSquare className="size-4 mr-2" />
-              contacter
-            </Link>
-          </Button>
         </div>
       </div>
     </div>

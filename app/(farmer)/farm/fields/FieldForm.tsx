@@ -24,8 +24,23 @@ import { resolveActionResult } from "@/lib/backend/actions-utils";
 import { createFieldAction } from "./new/create-field.action";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { FieldSchema, FieldSchemaType } from "./new/field.schema";
+import { FieldSchema, FieldSchemaType } from "./new/create-field.schema";
 import { MapPin } from "lucide-react";
+import { MapboxField } from "@/components/mapbox/MapboxField";
+import { BelgianPostalSearch } from "@/features/form/BelgianPostalSearch";
+
+type GeolocationResult = {
+  city: string;
+  latitude: number;
+  longitude: number;
+  postalCode?: string;
+  country?: string;
+  street?: string;
+  streetNumber?: string;
+  formattedAddress?: string;
+  source: "geolocation" | "user_prefs" | "none";
+  success: boolean;
+};
 
 type FieldFormProps = {
   field?: Field;
@@ -55,6 +70,22 @@ export function FieldForm({
       longitude: field?.longitude || 4.6667145,
     },
   });
+
+  const handleLocationChange = (
+    lat: number,
+    lng: number,
+    info?: GeolocationResult,
+  ) => {
+    form.setValue("latitude", lat);
+    form.setValue("longitude", lng);
+
+    if (info && info.success) {
+      form.setValue("city", info.city);
+      if (info.postalCode) {
+        form.setValue("postalCode", info.postalCode);
+      }
+    }
+  };
 
   const createFieldMutation = useMutation({
     mutationFn: async (values: FieldSchemaType) => {
@@ -132,7 +163,18 @@ export function FieldForm({
                   <FormItem>
                     <FormLabel>Ville</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Bruxelles" {...field} />
+                      <BelgianPostalSearch
+                        searchType="city"
+                        value={field.value ?? ""}
+                        onCityChange={(city) => {
+                          form.setValue("city", city, { shouldValidate: true });
+                        }}
+                        onPostalCodeChange={(postalCode) => {
+                          form.setValue("postalCode", postalCode, {
+                            shouldValidate: true,
+                          });
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -146,7 +188,18 @@ export function FieldForm({
                   <FormItem>
                     <FormLabel>Code postal</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: 1000" {...field} />
+                      <BelgianPostalSearch
+                        searchType="postal"
+                        value={field.value ?? ""}
+                        onCityChange={(city) => {
+                          form.setValue("city", city, { shouldValidate: true });
+                        }}
+                        onPostalCodeChange={(postalCode) => {
+                          form.setValue("postalCode", postalCode, {
+                            shouldValidate: true,
+                          });
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -193,7 +246,13 @@ export function FieldForm({
                   </p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <MapboxField
+                  initialLatitude={form.watch("latitude")}
+                  initialLongitude={form.watch("longitude")}
+                  onLocationChange={handleLocationChange}
+                />
+
+                <div className="grid gap-4 md:grid-cols-2 mt-4">
                   <FormField
                     control={form.control}
                     name="latitude"
@@ -236,13 +295,6 @@ export function FieldForm({
                     )}
                   />
                 </div>
-
-                <div className="mt-4 h-[300px] rounded-md border flex items-center justify-center">
-                  {/* Ici, vous pourriez intégrer une carte interactive (Mapbox, GoogleMaps, etc.) */}
-                  <p className="text-sm text-muted-foreground">
-                    Carte interactive (à implémenter)
-                  </p>
-                </div>
               </div>
             </div>
 
@@ -251,6 +303,7 @@ export function FieldForm({
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={() => router.push("/farm/fields")}
                   disabled={createFieldMutation.isPending}
                 >
@@ -261,6 +314,7 @@ export function FieldForm({
                 type="submit"
                 className="bg-primary"
                 disabled={createFieldMutation.isPending}
+                size="sm"
               >
                 {createFieldMutation.isPending
                   ? "Enregistrement..."

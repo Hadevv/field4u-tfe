@@ -1,5 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState, useCallback, useMemo } from "react";
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
 import { useZodForm } from "@/components/ui/form";
 import { GleanerFormSchema } from "../onboarding.schema";
 import { createGleanerAction } from "../onboarding.action";
@@ -21,14 +22,11 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useWatch } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
+import { getGeolocation, reverseGeocode } from "@/lib/geo/location-utils";
 
 export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [isGeolocating, setIsGeolocating] = useState(false);
-  const [geoData, setGeoData] = useState<{
-    city: string;
-    postalCode: string;
-  } | null>(null);
 
   const form = useZodForm({
     schema: GleanerFormSchema,
@@ -36,8 +34,10 @@ export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
       bio: "",
       city: "",
       postalCode: "",
-      termsAcceptedAt: null,
       acceptGeolocation: false,
+      latitude: null,
+      longitude: null,
+      termsAcceptedAt: null,
     },
   });
 
@@ -51,127 +51,65 @@ export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
     setGeoError(null);
 
     try {
-      const position = await new Promise<GeolocationPosition>(
-        (resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-          });
-        },
-      );
+      const position = await getGeolocation();
 
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${position.coords.latitude}&lon=${position.coords.longitude}&accept-language=fr`,
-      );
+      form.setValue("latitude", position.lat, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
 
-      if (!response.ok) throw new Error("Échec de la géolocalisation");
+      form.setValue("longitude", position.lng, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
 
-      const data = await response.json();
-      const city =
-        data.address.city || data.address.town || data.address.village;
-      const postalCode = data.address.postcode
-        ?.substring(0, 4)
-        .padStart(4, "0");
+      const geoResult = await reverseGeocode(position);
 
-      if (city && postalCode) {
-        const normalizedCity = city
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
-        setGeoData({
-          city: normalizedCity,
-          postalCode: postalCode,
+      if (geoResult.city && geoResult.postalCode) {
+        form.setValue("city", geoResult.city, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+
+        form.setValue("postalCode", geoResult.postalCode, {
+          shouldValidate: true,
+          shouldDirty: true,
         });
       }
     } catch (error) {
-      logger.error("Geolocation error", error);
-      setGeoError(error instanceof Error ? error.message : "Erreur inconnue");
+      logger.error("erreur géolocalisation", error);
+      setGeoError(
+        error instanceof Error ? error.message : "erreur géolocalisation",
+      );
     } finally {
       setIsGeolocating(false);
     }
-  }, []);
+  }, [form]);
 
+  // déclenche la géolocalisation quand l'utilisateur active la checkbox
   useEffect(() => {
-    if (acceptGeolocation && !geoData) {
+    if (acceptGeolocation && !form.getValues("latitude") && !isGeolocating) {
       handleGeolocation();
-    } else if (!acceptGeolocation) {
-      setGeoData(null);
-      form.resetField("city");
-      form.resetField("postalCode");
     }
-  }, [acceptGeolocation, geoData, handleGeolocation]);
-
-  useEffect(() => {
-    if (geoData) {
-      form.setValue("city", geoData.city, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-      form.setValue("postalCode", geoData.postalCode, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-      form.trigger(["city", "postalCode"]);
-    }
-  }, [geoData]);
-
-  const geoOptions = useMemo(() => {
-    return geoData
-      ? [
-          {
-            column_1: geoData.postalCode,
-            column_2: geoData.city,
-            recordid: `geo-${geoData.postalCode}`,
-          },
-        ]
-      : [];
-  }, [geoData]);
-
-  const handleCityChange = useCallback(
-    ({ city }: { city: string }) => {
-      form.setValue("city", city, { shouldValidate: true });
-      const selectedOption = geoOptions.find(
-        (option) => option.column_2 === city,
-      );
-      if (selectedOption) {
-        form.setValue("postalCode", selectedOption.column_1, {
-          shouldValidate: true,
-        });
-      }
-    },
-    [form, geoOptions],
-  );
-
-  const handlePostalCodeChange = useCallback(
-    ({ postalCode }: { postalCode: string }) => {
-      form.setValue("postalCode", postalCode, { shouldValidate: true });
-      const selectedOption = geoOptions.find(
-        (option) => option.column_1 === postalCode,
-      );
-      if (selectedOption) {
-        form.setValue("city", selectedOption.column_2, {
-          shouldValidate: true,
-        });
-      }
-    },
-    [form, geoOptions],
-  );
+  }, [acceptGeolocation, form, handleGeolocation, isGeolocating]);
 
   const createGleanerMutation = useMutation({
     mutationFn: async (values: typeof GleanerFormSchema._type) => {
       if (!values.termsAcceptedAt) {
         toast.error(
-          "Vous devez accepter les termes et conditions pour continuer.",
+          "vous devez accepter les termes et conditions pour continuer.",
         );
-        throw new Error("Terms not accepted");
+        throw new Error("terms not accepted");
       }
 
       const result = await createGleanerAction(values);
-      onSubmit();
 
       if (!result || result.serverError) {
-        toast.error("Failed to create gleaner");
-        throw new Error("Failed to create gleaner");
+        toast.error("échec de création du profil glaneur");
+        throw new Error("failed to create gleaner");
       }
+
+      onSubmit();
     },
   });
 
@@ -187,13 +125,19 @@ export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
           name="city"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Ville principale</FormLabel>
+              <FormLabel>ville principale</FormLabel>
               <FormControl>
                 <BelgianPostalSearch
                   searchType="city"
                   value={field.value || ""}
-                  onChange={handleCityChange}
-                  options={geoOptions}
+                  onCityChange={(city) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  onPostalCodeChange={(postalCode) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -206,13 +150,19 @@ export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
           name="postalCode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Code postal</FormLabel>
+              <FormLabel>code postal</FormLabel>
               <FormControl>
                 <BelgianPostalSearch
                   searchType="postal"
                   value={field.value || ""}
-                  onChange={handlePostalCodeChange}
-                  options={geoOptions}
+                  onCityChange={(city) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  onPostalCodeChange={(postalCode) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -226,10 +176,10 @@ export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
         name="bio"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Présentation (optionnel)</FormLabel>
+            <FormLabel>présentation (optionnel)</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Décrivez votre organisation, vos valeurs..."
+                placeholder="décrivez votre organisation, vos valeurs..."
                 {...field}
                 className="min-h-[100px]"
               />
@@ -259,17 +209,17 @@ export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
                 {isGeolocating ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="size-4 animate-spin" />
-                    Détection en cours...
+                    détection en cours...
                   </span>
                 ) : (
-                  "J'accepte la géolocalisation (optionnel)"
+                  "j'accepte la géolocalisation (optionnel)"
                 )}
               </FormLabel>
               {geoError && (
                 <p className="text-sm text-destructive">{geoError}</p>
               )}
               <p className="text-sm text-muted-foreground">
-                Votre position est utilisée uniquement pour afficher les champs
+                votre position est utilisée uniquement pour afficher les champs
                 à proximité
               </p>
             </div>
@@ -293,7 +243,7 @@ export function OnboardingGleanerForm({ onSubmit }: { onSubmit: () => void }) {
             </FormControl>
             <div className="space-y-1 leading-none">
               <FormLabel>
-                J'accepte les{" "}
+                j'accepte les{" "}
                 <Link
                   href="/terms"
                   className="text-primary underline"

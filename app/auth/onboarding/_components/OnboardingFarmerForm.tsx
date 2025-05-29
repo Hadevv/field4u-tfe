@@ -15,23 +15,22 @@ import { toast } from "sonner";
 import { FarmFormSchema, FarmFormType } from "../onboarding.schema";
 import { createFarmAction } from "../onboarding.action";
 import { BelgianPostalSearch } from "@/features/form/BelgianPostalSearch";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
-
-// type trouvé dans le composant BelgianPostalSearch
-type PostalData = {
-  column_1: string;
-  column_2: string;
-  recordid: string;
-};
+import { useWatch } from "react-hook-form";
+import { logger } from "@/lib/logger";
+import { getGeolocation, reverseGeocode } from "@/lib/geo/location-utils";
 
 export const OnboardingFarmerForm = ({
   onSubmit,
 }: {
   onSubmit: () => void;
 }) => {
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [isGeolocating, setIsGeolocating] = useState(false);
+
   const form = useZodForm({
     schema: FarmFormSchema,
     defaultValues: {
@@ -40,58 +39,79 @@ export const OnboardingFarmerForm = ({
       postalCode: "",
       description: "",
       contactInfo: "",
+      acceptGeolocation: false,
+      latitude: null,
+      longitude: null,
       termsAcceptedAt: null,
     },
   });
 
-  const [postalData, setPostalData] = useState<PostalData[]>([]);
+  const acceptGeolocation = useWatch({
+    control: form.control,
+    name: "acceptGeolocation",
+  });
 
-  const handleCityChange = useCallback(
-    ({ city }: { city: string }) => {
-      form.setValue("city", city, { shouldValidate: true });
-      const selectedOption = postalData.find(
-        (option) => option.column_2 === city,
-      );
-      if (selectedOption) {
-        form.setValue("postalCode", selectedOption.column_1, {
-          shouldValidate: true,
-        });
-      }
-    },
-    [form, postalData],
-  );
+  const onGeoDetect = useCallback(async () => {
+    try {
+      setIsGeolocating(true);
+      const position = await getGeolocation();
+      if (position) {
+        const { lat, lng } = position;
+        form.setValue("latitude", lat, { shouldValidate: true });
+        form.setValue("longitude", lng, { shouldValidate: true });
 
-  const handlePostalCodeChange = useCallback(
-    ({ postalCode }: { postalCode: string }) => {
-      form.setValue("postalCode", postalCode, { shouldValidate: true });
-      const selectedOption = postalData.find(
-        (option) => option.column_1 === postalCode,
-      );
-      if (selectedOption) {
-        form.setValue("city", selectedOption.column_2, {
-          shouldValidate: true,
-        });
+        // tente d'obtenir l'adresse via géocodage inversé
+        const reverseGeoResult = await reverseGeocode({ lat, lng });
+        if (reverseGeoResult) {
+          logger.debug("résultat du géocodage inversé", reverseGeoResult);
+
+          if (reverseGeoResult.postalCode) {
+            form.setValue("postalCode", reverseGeoResult.postalCode, {
+              shouldValidate: true,
+            });
+          }
+
+          if (reverseGeoResult.city) {
+            form.setValue("city", reverseGeoResult.city, {
+              shouldValidate: true,
+            });
+          }
+        }
       }
-    },
-    [form, postalData],
-  );
+    } catch (error) {
+      logger.error("erreur lors de la géolocalisation", error);
+      setGeoError(
+        "impossible d'obtenir votre position. vérifiez vos permissions de localisation.",
+      );
+    } finally {
+      setIsGeolocating(false);
+    }
+  }, [form]);
+
+  // surveiller les changements de géolocalisation
+  useEffect(() => {
+    if (acceptGeolocation && !form.getValues("latitude") && !isGeolocating) {
+      onGeoDetect();
+    }
+  }, [acceptGeolocation, form, isGeolocating, onGeoDetect]);
 
   const createFarmMutation = useMutation({
     mutationFn: async (values: FarmFormType) => {
       if (!values.termsAcceptedAt) {
         toast.error(
-          "Vous devez accepter les termes et conditions pour continuer.",
+          "vous devez accepter les termes et conditions pour continuer.",
         );
-        throw new Error("Terms not accepted");
+        throw new Error("terms not accepted");
       }
 
       const result = await createFarmAction(values);
-      onSubmit();
 
       if (!result || result.serverError) {
-        toast.error("Failed to create farm");
-        throw new Error("Failed to create farm");
+        toast.error("échec de création de l'exploitation");
+        throw new Error("failed to create farm");
       }
+
+      onSubmit();
     },
   });
 
@@ -107,10 +127,10 @@ export const OnboardingFarmerForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nom de l'exploitation</FormLabel>
+              <FormLabel>nom de l'exploitation</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Ma Ferme"
+                  placeholder="ma ferme"
                   {...field}
                   autoComplete="organization"
                 />
@@ -125,10 +145,10 @@ export const OnboardingFarmerForm = ({
           name="contactInfo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contact principal</FormLabel>
+              <FormLabel>contact principal</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Email ou téléphone"
+                  placeholder="email ou téléphone"
                   {...field}
                   autoComplete="tel email"
                 />
@@ -145,13 +165,19 @@ export const OnboardingFarmerForm = ({
           name="city"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Ville</FormLabel>
+              <FormLabel>ville</FormLabel>
               <FormControl>
                 <BelgianPostalSearch
                   searchType="city"
                   value={field.value ?? ""}
-                  onChange={handleCityChange}
-                  options={postalData}
+                  onCityChange={(city) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  onPostalCodeChange={(postalCode) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -164,13 +190,19 @@ export const OnboardingFarmerForm = ({
           name="postalCode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Code postal</FormLabel>
+              <FormLabel>code postal</FormLabel>
               <FormControl>
                 <BelgianPostalSearch
                   searchType="postal"
                   value={field.value ?? ""}
-                  onChange={handlePostalCodeChange}
-                  options={postalData}
+                  onCityChange={(city) => {
+                    form.setValue("city", city, { shouldValidate: true });
+                  }}
+                  onPostalCodeChange={(postalCode) => {
+                    form.setValue("postalCode", postalCode, {
+                      shouldValidate: true,
+                    });
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -184,15 +216,53 @@ export const OnboardingFarmerForm = ({
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description (optionnel)</FormLabel>
+            <FormLabel>description (optionnel)</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Décrivez votre exploitation en quelques mots..."
+                placeholder="décrivez votre exploitation en quelques mots..."
                 {...field}
                 className="min-h-[100px]"
               />
             </FormControl>
             <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="acceptGeolocation"
+        render={({ field }) => (
+          <FormItem className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
+            <FormControl>
+              <Checkbox
+                checked={!!field.value}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked);
+                  setGeoError(null);
+                }}
+                disabled={isGeolocating}
+              />
+            </FormControl>
+            <div className="space-y-1 leading-none">
+              <FormLabel>
+                {isGeolocating ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    détection en cours...
+                  </span>
+                ) : (
+                  "j'accepte la géolocalisation (optionnel)"
+                )}
+              </FormLabel>
+              {geoError && (
+                <p className="text-sm text-destructive">{geoError}</p>
+              )}
+              <p className="text-sm text-muted-foreground">
+                votre position est utilisée uniquement pour afficher les champs
+                à proximité
+              </p>
+            </div>
           </FormItem>
         )}
       />
@@ -213,7 +283,7 @@ export const OnboardingFarmerForm = ({
             </FormControl>
             <div className="space-y-1 leading-none">
               <FormLabel>
-                J'accepte les{" "}
+                j'accepte les{" "}
                 <Link
                   href="/terms"
                   className="text-primary underline"
@@ -240,7 +310,7 @@ export const OnboardingFarmerForm = ({
         {form.formState.isSubmitting ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (
-          "Enregistrer mon exploitation"
+          "enregistrer mon exploitation"
         )}
       </SubmitButton>
     </Form>

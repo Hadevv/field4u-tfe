@@ -38,14 +38,14 @@ export default async function FieldsPage() {
 
       <LayoutActions>
         {hasFarm ? (
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/farm/fields/new">
               <Plus className="mr-2 h-4 w-4" />
               Ajouter un champ
             </Link>
           </Button>
         ) : (
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" size="sm">
             <Link href="/farm/details">
               <Plus className="mr-2 h-4 w-4" />
               Créer d'abord une exploitation

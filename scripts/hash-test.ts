@@ -8,11 +8,11 @@ const saltRounds = 10;
 async function testHash() {
   // générer un hash
   const hash = await bcrypt.hash(password, saltRounds);
-  console.log("🔑 Hash généré:", hash);
+  console.log("Hash généré:", hash);
 
   // comparer avec le mot de passe original
   const match = await bcrypt.compare(password, hash);
-  console.log("✅ Le mot de passe est valide ?", match);
+  console.log("Le mot de passe est valide", match);
 }
 
 testHash();

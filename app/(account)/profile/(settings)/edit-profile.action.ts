@@ -26,6 +26,9 @@ export const updateProfileAction = authAction
         name: input.name,
         email: input.email,
         emailVerified: previousEmail === input.email ? undefined : null,
+        city: input.city,
+        postalCode: input.postalCode,
+        bio: input.bio,
       },
     });
 

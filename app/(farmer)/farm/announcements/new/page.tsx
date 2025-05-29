@@ -93,6 +93,7 @@ export default async function CreateAnnouncementPage({
             value: type.id,
           }))}
           farm={farm}
+          userId={user.id}
         />
       </LayoutContent>
     </Layout>

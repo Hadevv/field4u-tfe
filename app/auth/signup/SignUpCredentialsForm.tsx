@@ -113,7 +113,7 @@ export const SignUpCredentialsForm = () => {
         )}
       />
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full" size="sm">
         Submit
       </Button>
     </Form>

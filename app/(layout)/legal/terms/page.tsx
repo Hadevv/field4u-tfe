@@ -9,7 +9,7 @@ export default function page() {
   return (
     <div>
       <div className="flex w-full items-center justify-center bg-card p-8 lg:p-12">
-        <Typography variant="h1">conditions d'utilisation</Typography>
+        <Typography variant="h1">Conditions d'utilisation</Typography>
       </div>
       <Layout>
         <LayoutContent className="m-auto mb-8 p-8 lg:p-12">

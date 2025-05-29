@@ -33,16 +33,16 @@ export function RulesSection() {
 
               <div className="space-y-8">
                 <div className="flex gap-6">
-                  <Calendar className="mt-1 size-8 shrink-0 text-primary" />
+                  <Calendar className="mt-1 size-6 shrink-0 text-primary" />
                   <p className="text-muted-foreground">
                     Le glanage se déroule toujours après que la récolte soit
                     totalement achevée, en l&apos;absence de travail ou de
-                    machine agricole sur la parcelle, et avant le semis suivant
+                    machine agricole sur la parcelle, et avant le semis suivant si c'es le cas merci de le signalé.
                   </p>
                 </div>
 
                 <div className="flex gap-6">
-                  <Ban className="mt-1 size-8 shrink-0 text-primary" />
+                  <Ban className="mt-1 size-6 shrink-0 text-primary" />
                   <p className="text-muted-foreground">
                     Le glanage ne peut en aucun cas se faire sur des parcelles
                     clôturées
@@ -50,7 +50,7 @@ export function RulesSection() {
                 </div>
 
                 <div className="flex gap-6">
-                  <Hand className="mt-1 size-8 shrink-0 text-primary" />
+                  <Hand className="mt-1 size-6 shrink-0 text-primary" />
                   <p className="text-muted-foreground">
                     Le glanage ou la cueillette se font à la main (sans matériel
                     lourd)
@@ -58,7 +58,7 @@ export function RulesSection() {
                 </div>
 
                 <div className="flex gap-6">
-                  <Car className="mt-1 size-8 shrink-0 text-primary" />
+                  <Car className="mt-1 size-6 shrink-0 text-primary" />
                   <p className="text-muted-foreground">
                     Il est toujours demandé aux glaneurs ou cueilleurs de ne pas
                     garer leur véhicule sur le champ, de ne pas entraver la
@@ -68,7 +68,7 @@ export function RulesSection() {
                 </div>
 
                 <div className="flex gap-6">
-                  <ShoppingCart className="mt-1 size-8 shrink-0 text-primary" />
+                  <ShoppingCart className="mt-1 size-6 shrink-0 text-primary" />
                   <p className="text-muted-foreground">
                     Les quantités glanées doivent rester raisonnables et ne pas
                     dépasser l&apos;usage familial normal. En aucun cas, le
@@ -77,12 +77,9 @@ export function RulesSection() {
                 </div>
 
                 <div className="flex gap-6">
-                  <ThumbsUp className="mt-1 size-8 shrink-0 text-primary" />
+                  <ThumbsUp className="mt-1 size-6 shrink-0 text-primary" />
                   <p className="text-muted-foreground">
-                    L&apos;accord de l&apos;agriculteur n&apos;est pas
-                    légalement nécessaire mais il est toujours apprécié de lui
-                    en demander l&apos;autorisation lorsque cela est faisable,
-                    par courtoisie
+                    L&apos;agriculteur qui propose son champ est demandé d&apos;être présent un minimum pour accueillir les glaneurs, il vous est donc demandé de vous référer à lui en cas de question
                   </p>
                 </div>
               </div>
@@ -95,6 +92,7 @@ export function RulesSection() {
                   src="/images/hands-harvest-corn-in-autumn.jpg"
                   alt="Person harvesting potatoes"
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 512px"
                   className="relative rounded-2xl object-cover shadow-2xl"
                 />
               </div>

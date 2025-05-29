@@ -2,6 +2,7 @@ import { Footer } from "@/features/layout/Footer";
 import { Header } from "@/features/layout/Header";
 import { HeroSection } from "@/features/landing/HeroSection";
 import { InfoSection } from "@/features/landing/InfoSection";
+import { FarmerSection } from "@/features/landing/FarmerSection";
 import { RulesSection } from "@/features/landing/RulesSection";
 import { CommunitySection } from "@/features/landing/CommunitySection";
 
@@ -12,6 +13,7 @@ export default function HomePage() {
       <main className="flex-1">
         <HeroSection />
         <InfoSection />
+        <FarmerSection />
         <RulesSection />
         <CommunitySection />
       </main>

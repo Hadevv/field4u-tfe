@@ -5,7 +5,7 @@ import { format, differenceInHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { Announcement, Gleaning, User } from "@prisma/client";
+import { Announcement, Gleaning, Message, User } from "@prisma/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LocationSection } from "./_components/LocationSection";
 import { DonationSection } from "./_components/DonationSection";
@@ -199,6 +199,15 @@ async function GleaningContent({ slug }: { slug: string }) {
     participationId,
   } = await getGleaningData(slug);
 
+  // fetch messages group et owner
+  const messages = await prisma.message.findMany({
+    where: { gleaningId: gleaning.id },
+    orderBy: { createdAt: "asc" },
+    include: { sender: true },
+  });
+
+  const user = await auth();
+
   const formattedDate = announcement.startDate
     ? format(announcement.startDate, "EEEE d MMMM à HH:mm", { locale: fr })
     : "date non définie";
@@ -270,6 +279,18 @@ async function GleaningContent({ slug }: { slug: string }) {
             <ChatSection
               showChat={showRestrictedContent}
               participantsCount={participantsCount}
+              gleaningId={gleaning.id}
+              userId={user?.id ?? ""}
+              userName={user?.name ?? null}
+              messages={messages.map((m: Message & { sender: User }) => ({
+                id: m.id,
+                senderId: m.senderId,
+                senderName: m.sender?.name ?? null,
+                type: m.type,
+                content: m.content,
+                createdAt: m.createdAt.toISOString(),
+              }))}
+              gleaningStatus={gleaning.status}
             />
           </Suspense>
         </TabsContent>

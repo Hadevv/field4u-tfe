@@ -15,11 +15,11 @@ import {
 } from "@/features/page/layout";
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
 import { SiteConfig } from "@/site-config";
-import Image from "next/image";
 import Link from "next/link";
 import { DesktopVerticalMenu } from "../../src/features/navigation/DesktopVerticalMenu";
 import { MobileDropdownMenu } from "../../src/features/navigation/MobileDropdownMenu";
 import { DASHBOARD_LINKS } from "./dashboard-links";
+import { Logo } from "@/components/svg/Logo";
 
 type UserData = {
   id: string;
@@ -43,12 +43,7 @@ export function DashboardNavigation({
       <div className="flex size-full max-w-[240px] flex-col border-r border-border px-2 py-4 max-lg:hidden">
         <div className="flex items-center gap-2">
           <Link href="/" className="text-xl font-bold">
-            <Image
-              src={SiteConfig.appIcon}
-              alt="app logo"
-              width={100}
-              height={100}
-            />
+            <Logo />
           </Link>
         </div>
         <div className="h-10" />
@@ -74,12 +69,7 @@ export function DashboardNavigation({
         <header className="w-full border-b bg-background max-lg:sticky max-lg:top-0 max-lg:z-40">
           <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
             <div className="flex items-center gap-2 lg:hidden">
-              <Image
-                src={SiteConfig.appIcon}
-                alt="app logo"
-                width={100}
-                height={100}
-              />
+              <Logo />
               <Link href="/" className="text-lg font-bold ">
                 {SiteConfig.title}
               </Link>

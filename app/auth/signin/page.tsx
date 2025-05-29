@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { SiteConfig } from "@/site-config";
-import Image from "next/image";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HeaderBase } from "@/features/layout/HeaderBase";
@@ -10,6 +8,7 @@ import { AlertTriangle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getError } from "../error/auth-error-mapping";
 import { SignInProviders } from "./SignInProviders";
+import { Logo } from "@/components/svg/Logo";
 
 export default async function AuthSignInPage(props: PageParams<{}>) {
   const { errorMessage, error } = getError((await props.searchParams).error);
@@ -26,12 +25,7 @@ export default async function AuthSignInPage(props: PageParams<{}>) {
       <div className="flex flex-1 items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="flex flex-col items-center justify-center gap-2">
-            <Image
-              src={SiteConfig.appIcon}
-              alt="app logo"
-              width={100}
-              height={100}
-            />
+            <Logo />
             <CardTitle>Connectez-vous à votre compte</CardTitle>
           </CardHeader>
           <CardContent className="mt-8">

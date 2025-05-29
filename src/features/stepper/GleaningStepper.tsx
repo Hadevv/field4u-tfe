@@ -16,17 +16,17 @@ type GleaningStep = {
 const defaultSteps: GleaningStep[] = [
   {
     id: 1,
-    label: "annonce",
+    label: "Annonce",
     description: "détails du glanage",
   },
   {
     id: 2,
-    label: "glanage",
+    label: "Glanage",
     description: "joindre le glanage",
   },
   {
     id: 3,
-    label: "evaluation",
+    label: "Evaluation",
     description: "évaluation du glanage",
   },
 ];
@@ -48,7 +48,7 @@ export function GleaningStepper({
 }: GleaningStepperProps) {
   const pathname = usePathname();
 
-  // déterminer l'étape actuelle basée sur le chemin
+  // déterminer l'étape actuelle
   const getCurrentStep = () => {
     if (pathname.includes("/gleaning/review")) return 3;
     if (pathname.includes("/gleaning")) return 2;
@@ -57,16 +57,11 @@ export function GleaningStepper({
 
   const currentStep = getCurrentStep();
 
-  // vérifier si le glanage est terminé
-  const isCompleted = gleaningStatus === "COMPLETED";
-
-  // construire l'URL de base et les URLs des étapes
   const getBaseUrl = () => {
     const pathParts = pathname.split("/");
     // trouver l'index de "announcements" et ajouter 1 pour obtenir l'index du slug
     const slugIndex =
       pathParts.findIndex((part) => part === "announcements") + 1;
-    // extraire le slug de l'URL
     const slug = pathParts[slugIndex];
 
     if (!slug) return "/";
@@ -84,16 +79,15 @@ export function GleaningStepper({
   };
 
   const isStepAccessible = (stepId: number) => {
-    // si le glanage est terminé, toutes les étapes sont accessibles
-    if (isCompleted) return true;
-
     // l'étape 1 (annonce) est toujours accessible
     if (stepId === 1) return true;
 
     // l'étape 2 (glanage) est accessible uniquement si l'utilisateur est participant
     if (stepId === 2) return isParticipant;
 
-    // l'étape 3 (évaluation) n'est accessible que si le glanage est terminé
+    // l'étape 3 (évaluation) n'est accessible que si l'utilisateur est participant
+    if (stepId === 3) return isParticipant && gleaningStatus === "COMPLETED";
+
     return false;
   };
 
@@ -107,7 +101,7 @@ export function GleaningStepper({
   if (variant === "horizontal") {
     return (
       <div className={cn("w-full p-4", className)}>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center text-sm">
           {steps.map((stepItem, index) => (
             <React.Fragment key={stepItem.id}>
               <Step
@@ -163,7 +157,7 @@ export function GleaningStepper({
     <div className={cn("w-full", className)}>
       <h3 className="text-sm font-medium text-muted-foreground mb-6">étapes</h3>
 
-      <div className="flex flex-col items-start space-y-8 w-full">
+      <div className="flex flex-col items-start space-y-8 w-full text-sm">
         {steps.map((stepItem, index) => (
           <React.Fragment key={stepItem.id}>
             <Step
@@ -238,7 +232,7 @@ function Step({ step, state, url, showLabel = true }: StepProps) {
           <span className={cn("text-sm font-medium", styles.text)}>
             {step.label}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             {step.description}
           </span>
         </div>

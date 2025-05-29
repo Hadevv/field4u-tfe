@@ -3,51 +3,48 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function FieldsListSkeleton() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, index) => (
-        <Card key={index} className="flex flex-col">
+    <div className="space-y-6">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <Card key={index}>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-5 w-40" />
-              </div>
-              <Skeleton className="h-3 w-16" />
+              <CardTitle className="flex items-center gap-2">
+                <Skeleton className="h-5 w-48" />
+              </CardTitle>
             </div>
-            <CardDescription className="flex gap-2 mt-1.5">
-              <Skeleton className="h-3.5 w-24" />
-              <Skeleton className="h-3.5 w-16" />
-            </CardDescription>
+            <div className="flex flex-wrap gap-2 mt-1 text-sm text-muted-foreground">
+              <span className="flex items-center">
+                <Skeleton className="mr-1 h-3.5 w-3.5 rounded" />
+                <Skeleton className="h-3.5 w-24" />
+              </span>
+              <span className="flex items-center">
+                <Skeleton className="mr-1 h-3.5 w-3.5 rounded" />
+                <Skeleton className="h-3.5 w-32" />
+              </span>
+            </div>
           </CardHeader>
 
           <CardContent className="flex-grow pb-2">
-            <Skeleton className="mb-2 h-4 w-24" />
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-3.5 w-3.5 rounded-full" />
-                <Skeleton className="h-3.5 w-full" />
-              </div>
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-3.5 w-3.5 rounded-full" />
-                <Skeleton className="h-3.5 w-full" />
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-5 w-24 rounded-full" />
+              <Skeleton className="h-5 w-48 rounded-full" />
             </div>
           </CardContent>
 
-          <CardFooter className="flex justify-between border-t pt-4">
+          <CardFooter className="flex justify-between pt-4 border-t">
             <div className="flex gap-2">
-              <Skeleton className="h-9 w-24" />
-              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-20" />
             </div>
-            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-9 w-24" />
           </CardFooter>
         </Card>
       ))}

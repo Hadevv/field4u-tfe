@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import type { Post } from "./post-manager";
-
+import Image from "next/image";
 type PostCardProps = {
   post: Post;
 };
@@ -19,7 +19,7 @@ export const PostCard = (props: PostCardProps) => {
       <Card className="transition-all hover:shadow-xl">
         <CardHeader className="h-fit">
           <AspectRatio ratio={16 / 9} className="overflow-hidden rounded-md">
-            <img
+            <Image
               src={props.post.attributes.coverUrl}
               alt={props.post.attributes.title}
               className="size-full object-cover"

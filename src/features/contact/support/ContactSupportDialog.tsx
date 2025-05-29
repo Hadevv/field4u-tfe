@@ -53,7 +53,7 @@ export const ContactSupportDialog = (props: ContactSupportDialogProps) => {
       return;
     }
 
-    toast.success("Your message has been sent.");
+    toast.success("Votre message a été envoyé.");
     form.reset();
     setOpen(false);
   };
@@ -64,14 +64,16 @@ export const ContactSupportDialog = (props: ContactSupportDialogProps) => {
         {props.children ? (
           props.children
         ) : (
-          <Button variant="outline">Contact support</Button>
+          <Button size="sm" variant="outline">
+            Contact support
+          </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
           <DialogDescription>
-            Fill the form bellow or send an email to{" "}
+            Remplissez le formulaire ci-dessous ou envoyez un email à{" "}
             <Link
               className="text-primary"
               href={`mailto:${SiteConfig.email.contact}`}
@@ -106,7 +108,7 @@ export const ContactSupportDialog = (props: ContactSupportDialogProps) => {
             name="subject"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Subject</FormLabel>
+                <FormLabel>Sujet</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -127,9 +129,24 @@ export const ContactSupportDialog = (props: ContactSupportDialogProps) => {
               </FormItem>
             )}
           />
-          <Button type="submit">Send</Button>
+          <Button type="submit" size="sm">
+            Envoyer
+          </Button>
         </Form>
       </DialogContent>
     </Dialog>
+  );
+};
+
+export const ContactSupportLink = (props: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <ContactSupportDialog>
+      <span className={props.className}>
+        {props.children}
+      </span>
+    </ContactSupportDialog>
   );
 };

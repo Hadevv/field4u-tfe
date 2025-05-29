@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-// recuperer les notifs de l'utilisateur
 export const GET = authRoute
   .query(
     z.object({
@@ -53,7 +52,6 @@ export const GET = authRoute
     });
   });
 
-// marquer une notification comme lue
 export const PATCH = authRoute
   .body(
     z.object({

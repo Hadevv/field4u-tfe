@@ -3,11 +3,11 @@ import { Loader } from "@/components/ui/loader";
 import { Typography } from "@/components/ui/typography";
 import { auth } from "@/lib/auth/helper";
 import { SiteConfig } from "@/site-config";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SignUpCredentialsForm } from "./SignUpCredentialsForm";
+import { Logo } from "@/components/svg/Logo";
 
 export default async function AuthSignInPage() {
   const user = await auth();
@@ -25,12 +25,7 @@ export default async function AuthSignInPage() {
       <header className="sticky top-0 z-40 w-full border-b bg-background">
         <div className="container flex h-16 items-center gap-2">
           <Link href="/" className="text-xl font-bold">
-            <Image
-              src={SiteConfig.appIcon}
-              alt="app logo"
-              width={100}
-              height={100}
-            />
+            <Logo />
           </Link>
         </div>
       </header>

@@ -27,19 +27,30 @@ export function DeleteAnnouncementButton({
     onError: (error) => {
       toast.error(error.message);
     },
-    onSuccess: () => {
-      toast.success("Annonce supprimée avec succès");
+    onSuccess: (result) => {
+      if (result.cancelled) {
+        toast.success(
+          "le glanage a été annulé et les participants ont été notifiés",
+        );
+      } else if (result.deleted) {
+        toast.success("annonce supprimée avec succès");
+      } else {
+        toast.success("opération réussie");
+      }
+      
+      // Rediriger vers la liste des annonces après suppression
+      router.push("/farm/announcements");
       router.refresh();
     },
   });
 
   const handleDelete = () => {
     dialogManager.add({
-      title: "Supprimer l'annonce",
-      description: `Êtes-vous sûr de vouloir supprimer l'annonce "${announcementTitle}" ? Cette action est irréversible.`,
-      confirmText: "SUPPRIMER",
+      title: "supprimer l'annonce",
+      description: `êtes-vous sûr de vouloir supprimer l'annonce "${announcementTitle}" ? si des personnes participent déjà au glanage, il sera annulé au lieu d'être supprimé.`,
+      confirmText: "confirmer",
       action: {
-        label: "Supprimer",
+        label: "confirmer",
         onClick: () => {
           deleteAnnouncementMutation.mutate();
         },
@@ -56,7 +67,7 @@ export function DeleteAnnouncementButton({
       disabled={deleteAnnouncementMutation.isPending}
     >
       <Trash2 className="mr-2 h-3.5 w-3.5" />
-      Supprimer
+      supprimer
     </Button>
   );
 }

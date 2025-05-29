@@ -88,6 +88,7 @@ export function NameForm({
       />
       <Button
         type="submit"
+        size="sm"
         className="mt-4 w-full"
         disabled={mutation.isPending}
       >
