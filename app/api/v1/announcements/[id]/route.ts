@@ -6,37 +6,52 @@ import { z } from "zod";
 export const GET = route
   .params(
     z.object({
-      id: z.string(),
+      id: z.string().min(1).max(50),
     }),
   )
   .handler(async (req, { params }) => {
     const { id } = params;
 
     const announcement = await prisma.announcement.findUnique({
-      where: { id },
-      include: {
-        field: true,
-        cropType: true,
+      where: {
+        id,
+        isPublished: true,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        quantityAvailable: true,
+        startDate: true,
+        endDate: true,
+        suggestedPrice: true,
+        createdAt: true,
+        field: {
+          select: {
+            name: true,
+            city: true,
+            postalCode: true,
+            surface: true,
+          },
+        },
+        cropType: {
+          select: {
+            name: true,
+            category: true,
+            season: true,
+          },
+        },
         owner: {
           select: {
-            id: true,
             name: true,
-            image: true,
           },
         },
         gleaning: {
-          include: {
-            participations: {
+          select: {
+            status: true,
+            _count: {
               select: {
-                id: true,
-                userId: true,
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    image: true,
-                  },
-                },
+                participations: true,
               },
             },
           },
@@ -48,5 +63,10 @@ export const GET = route
       throw new RouteError("Annonce non trouvée", 404);
     }
 
-    return NextResponse.json(announcement);
+    const sanitizedAnnouncement = {
+      ...announcement,
+      id: announcement.id.slice(0, 8) + "...",
+    };
+
+    return NextResponse.json(sanitizedAnnouncement);
   });

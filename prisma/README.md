@@ -23,7 +23,7 @@ J'utilise Neon Serverless Postgres qui est 100% free [https://neon.tech/](https:
 pnpm prisma db push
 ```
 
-## 🌱 Seeding de la base de données
+## Seeding de la base de données
 
 Pour remplir la base de données avec des données de test :
 
@@ -36,10 +36,10 @@ pnpm run seed
 Un compte administrateur est créé automatiquement :
 
 - Email : admin@field4u.be
-- Mot de passe : password123
+- Mot de passe : Password123!
 - Rôle : ADMIN
 
-Tous les comptes générés utilisent le même mot de passe : password123
+Tous les comptes générés utilisent le même mot de passe : Password123!
 
 ## Structure des données
 
@@ -57,7 +57,7 @@ Le seeder génère :
 - Des statistiques
 - Des payements
 
-## 🔍 Commandes Prisma utiles
+## Commandes Prisma utiles
 
 1. Voir la base de données :
 

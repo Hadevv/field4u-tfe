@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+// recup les notifications de l'utilisateur, utilisé pour UserNotifications
 export const GET = authRoute
   .query(
     z.object({

@@ -65,7 +65,7 @@ export const editPasswordAction = authAction
 
     if (!validatePassword(input.newPassword)) {
       throw new ActionError(
-        "mot de passe invalide. doit contenir au moins 8 caractères, une lettre et un chiffre",
+        "mot de passe invalide. il doit contenir au moins 8 caractères, une lettre, un chiffre et un caractère spécial (@$!%*?&)",
       );
     }
 

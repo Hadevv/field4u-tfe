@@ -9,7 +9,8 @@ import { env } from "../env";
 import { prisma } from "../prisma";
 import { AUTH_COOKIE_NAME } from "./auth.const";
 
-const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+const PASSWORD_REGEX =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 export const validatePassword = (password: string) => {
   return PASSWORD_REGEX.test(password);

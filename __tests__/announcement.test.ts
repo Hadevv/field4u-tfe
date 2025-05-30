@@ -236,6 +236,7 @@ describe("annonces", () => {
       vi.mocked(deleteAnnouncementAction).mockResolvedValue({
         data: {
           success: true,
+          deleted: true,
         },
       });
 
@@ -251,6 +252,7 @@ describe("annonces", () => {
       expect(result).toEqual({
         data: {
           success: true,
+          deleted: true,
         },
       });
     });

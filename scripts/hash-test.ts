@@ -2,7 +2,7 @@
 
 import bcrypt from "bcrypt";
 
-const password = "password123";
+const password = "Password123!";
 const saltRounds = 10;
 
 async function testHash() {

@@ -1,6 +1,7 @@
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { stripe } from "@/lib/stripe";
+import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -14,6 +15,8 @@ import {
   notifyUserOfPremiumUpgrade,
   upgradeUserToPlan,
 } from "./premium.helper";
+import { sendNotificationToUser } from "@/lib/notifications/sendNotification";
+import { NotificationType } from "@prisma/client";
 
 /**
  * stripe webhooks
@@ -42,6 +45,12 @@ export const POST = async (req: NextRequest) => {
 
   try {
     switch (event.type) {
+      case "payment_intent.succeeded":
+        await handlePaymentIntentSucceeded(event.data.object);
+        break;
+      case "payment_intent.payment_failed":
+        await handlePaymentIntentFailed(event.data.object);
+        break;
       case "checkout.session.completed":
         await handleCheckoutSessionCompleted(event.data.object);
         break;
@@ -65,6 +74,87 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "erreur serveur" }, { status: 500 });
   }
 };
+
+// gestion des paiements de participation sécurisée
+async function handlePaymentIntentSucceeded(object: Stripe.PaymentIntent) {
+  const paymentIntentId = object.id;
+
+  logger.info(`paiement réussi via webhook`, { paymentIntentId });
+
+  const payment = await prisma.participationPayment.findFirst({
+    where: { paymentIntentId },
+    include: {
+      participation: {
+        select: {
+          userId: true,
+          gleaning: {
+            select: {
+              announcement: {
+                select: { title: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!payment) {
+    logger.error(`paiement introuvable via webhook`, { paymentIntentId });
+    return;
+  }
+
+  if (payment.status !== object.status) {
+    await prisma.participationPayment.update({
+      where: { id: payment.id },
+      data: { status: object.status },
+    });
+
+    logger.info(`statut mis à jour via webhook`, {
+      id: payment.id,
+      old_status: payment.status,
+      new_status: object.status,
+    });
+
+    if (payment.participation.userId) {
+      const announcementTitle =
+        payment.participation.gleaning?.announcement?.title || "glanage";
+      await sendNotificationToUser(
+        payment.participation.userId,
+        NotificationType.PAYMENT_RECEIVED,
+        `votre paiement pour "${announcementTitle}" a été reçu avec succès`,
+      );
+    }
+  }
+}
+
+async function handlePaymentIntentFailed(object: Stripe.PaymentIntent) {
+  const paymentIntentId = object.id;
+
+  logger.info(`paiement échoué via webhook`, { paymentIntentId });
+
+  const payment = await prisma.participationPayment.findFirst({
+    where: { paymentIntentId },
+  });
+
+  if (!payment) {
+    logger.error(`paiement introuvable via webhook`, { paymentIntentId });
+    return;
+  }
+
+  if (payment.status !== object.status) {
+    await prisma.participationPayment.update({
+      where: { id: payment.id },
+      data: { status: object.status },
+    });
+
+    logger.info(`statut d'échec mis à jour via webhook`, {
+      id: payment.id,
+      old_status: payment.status,
+      new_status: object.status,
+    });
+  }
+}
 
 // gestion des webhooks d'abonnement
 async function handleCheckoutSessionCompleted(object: Stripe.Checkout.Session) {

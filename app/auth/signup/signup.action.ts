@@ -17,7 +17,7 @@ export const signUpAction = action
   .action(async ({ parsedInput: { email, password, name } }) => {
     if (!validatePassword(password)) {
       throw new ActionError(
-        "mot de passe invalide. il doit contenir au moins 8 caractères, une lettre et un chiffre",
+        "mot de passe invalide. il doit contenir au moins 8 caractères, une lettre, un chiffre et un caractère spécial (@$!%*?&)",
       );
     }
 

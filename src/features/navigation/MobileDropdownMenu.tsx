@@ -54,8 +54,7 @@ export const MobileDropdownMenu = ({
                   href={link.url}
                   onClick={() => setOpen(false)}
                 >
-                  {cloneElement(link.icon, {
-                  })}
+                  {cloneElement(link.icon, {})}
                   <span>{link.title}</span>
                 </Typography>
               </DropdownMenuItem>

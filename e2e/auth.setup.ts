@@ -1,4 +1,5 @@
-import { test as setup, expect, Page } from "@playwright/test";
+import { test as setup, Page } from "@playwright/test";
+import { robustSignIn, waitForElementWithRetry } from "./test-helpers";
 
 // fichiers de stockage d'état pour chaque type d'utilisateur
 const GLEANER_AUTH_FILE = "playwright/.auth/user.json";
@@ -14,44 +15,28 @@ async function setupUserAuth(
   roleSpecificSelector: string,
   authFile: string,
 ) {
-  // connexion via la page de connexion
-  await page.goto("/auth/signin");
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "__e2e_test", { value: true });
+  });
 
-  // attendre que la page soit complètement chargée
-  await page.waitForLoadState("networkidle");
+  await robustSignIn(page, email, password);
 
-  // cliquer sur "utiliser un mot de passe" et remplir le formulaire
-  await page.getByRole("button", { name: /utiliser un mot de passe/i }).click();
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Mot de passe").fill(password);
-
-  // cliquer sur le bouton de connexion et attendre la redirection
-  await Promise.all([
-    page.waitForNavigation({ timeout: 30000 }),
-    page.getByRole("button", { name: /connexion avec mot de passe/i }).click(),
-  ]);
-
-  // attendre que la page d'accueil soit chargée après la connexion
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(2000); // attendre un peu plus pour s'assurer que l'authentification est complète
-
-  // vérifier qu'on est bien connecté en vérifiant un élément commun aux utilisateurs connectés
-  await expect(
-    page.getByRole("button", { name: new RegExp(email.split("@")[0], "i") }),
-  ).toBeVisible({ timeout: 15000 });
-
-  // aller à la page spécifique au rôle pour confirmer les droits
+  // Naviguer vers la page spécifique au rôle
   await page.goto(targetUrl);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await page.waitForTimeout(3000);
 
-  // vérifier la présence d'un élément spécifique au rôle
-  await expect(
-    page.getByRole("heading", { name: new RegExp(roleSpecificSelector, "i") }),
-  ).toBeVisible({ timeout: 15000 });
+  // Vérifier la présence d'un élément spécifique au rôle
+  const roleElement = page
+    .getByRole("heading", { name: new RegExp(roleSpecificSelector, "i") })
+    .first();
 
-  // sauvegarder l'état d'authentification une fois tout confirmé
+  await waitForElementWithRetry(page, roleElement, {
+    timeout: 25000,
+    retries: 2,
+  });
+
   await page.context().storageState({ path: authFile });
-  console.log(`Authentification réussie pour ${email} (${authFile})`);
 }
 
 // setup pour glaneur
@@ -59,7 +44,7 @@ setup("authentifier glaneur", async ({ page }) => {
   await setupUserAuth(
     page,
     "gleaner@field4u.be",
-    "password123",
+    "Password123!",
     "/my-gleanings",
     "mes glanages",
     GLEANER_AUTH_FILE,
@@ -71,9 +56,9 @@ setup("authentifier agriculteur", async ({ page }) => {
   await setupUserAuth(
     page,
     "farmer@field4u.be",
-    "password123",
-    "/farm",
-    "mon exploitation|ferme",
+    "Password123!",
+    "/farm/announcements",
+    "mes annonces",
     FARMER_AUTH_FILE,
   );
 });
@@ -83,9 +68,9 @@ setup("authentifier administrateur", async ({ page }) => {
   await setupUserAuth(
     page,
     "admin@field4u.be",
-    "password123",
+    "Password123!",
     "/admin/dashboard",
-    "dashboard",
+    "dashboard|administration",
     ADMIN_AUTH_FILE,
   );
 });

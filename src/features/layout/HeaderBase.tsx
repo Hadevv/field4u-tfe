@@ -31,7 +31,7 @@ export function HeaderBase({
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <Logo/>
+              <Logo />
             </Link>
             {!isVerifyRequest && (
               <nav className="hidden items-center space-x-2 md:flex">

@@ -110,6 +110,7 @@ export const { handlers, auth: baseAuth } = NextAuth((req) => ({
         data: {
           stripeCustomerId,
           resendContactId,
+          onboardingCompleted: false,
         },
       });
     },

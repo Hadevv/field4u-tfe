@@ -144,9 +144,7 @@ export const ContactSupportLink = (props: {
 }) => {
   return (
     <ContactSupportDialog>
-      <span className={props.className}>
-        {props.children}
-      </span>
+      <span className={props.className}>{props.children}</span>
     </ContactSupportDialog>
   );
 };

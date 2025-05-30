@@ -23,7 +23,7 @@ export function useNotifications(userId: string | undefined) {
     queryKey: ["notifications", userId],
     queryFn: async () => {
       if (!userId) return { data: [], meta: { unreadCount: 0 } };
-      const res = await fetch(`/api/v1/notifications?limit=20`);
+      const res = await fetch(`/api/notifications?limit=20`);
       return res.json();
     },
     enabled: !!userId,
@@ -71,7 +71,7 @@ export function useNotifications(userId: string | undefined) {
   // helpers
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      return fetch(`/api/v1/notifications`, {
+      return fetch(`/api/notifications`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, isRead: true }),
@@ -84,7 +84,7 @@ export function useNotifications(userId: string | undefined) {
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      return fetch(`/api/v1/notifications`, { method: "PUT" });
+      return fetch(`/api/notifications`, { method: "PUT" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications", userId] });

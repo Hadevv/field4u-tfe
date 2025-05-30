@@ -37,7 +37,7 @@ export function DeleteAnnouncementButton({
       } else {
         toast.success("opération réussie");
       }
-      
+
       // Rediriger vers la liste des annonces après suppression
       router.push("/farm/announcements");
       router.refresh();

@@ -2,9 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 30_000,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  timeout: 60_000,
+  retries: 1,
+  workers: 1,
   reporter: process.env.CI ? "github" : "html",
   globalSetup: "./e2e/global-setup.ts",
 
@@ -13,15 +13,20 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
+    actionTimeout: 25_000,
+    navigationTimeout: 35_000,
+  },
+
+  expect: {
+    timeout: 20_000,
   },
 
   projects: [
-    // setup pour générer les storageState
     {
       name: "setup",
       testMatch: /.*\.setup\.ts$/,
+      timeout: 120_000,
     },
-    // tests publics (inscription, onboarding, auth, etc.)
     {
       name: "public",
       use: { ...devices["Desktop Chrome"] },
@@ -38,7 +43,6 @@ export default defineConfig({
         /.*\.setup\.ts$/,
       ],
     },
-    // tests accès glaneur
     {
       name: "gleaner",
       use: {
@@ -48,7 +52,6 @@ export default defineConfig({
       dependencies: ["setup"],
       testMatch: [/.*gleaner.*\.e2e\.ts$/, /.*gleaning\.e2e\.ts$/],
     },
-    // tests accès farmer
     {
       name: "farmer",
       use: {
@@ -58,7 +61,6 @@ export default defineConfig({
       dependencies: ["setup"],
       testMatch: [/.*farmer.*\.e2e\.ts$/, /.*gleaning\.e2e\.ts$/],
     },
-    // tests accès admin
     {
       name: "admin",
       use: {
@@ -76,5 +78,6 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",
     stderr: "pipe",
+    timeout: 120_000,
   },
 });

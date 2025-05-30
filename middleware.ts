@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { AUTH_COOKIE_NAME } from "@/lib/auth/auth.const";
 
 // Routes qui nécessitent une authentification
 const PROTECTED_ROUTES = ["/admin", "/(account)", "/(farmer)", "/my-gleanings"];
@@ -14,6 +13,13 @@ const ONBOARDING_EXEMPTIONS = [
 ];
 
 /**
+ * Vérifie si une route nécessite une authentification
+ */
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+/**
  * Middleware qui gère l'authentification et l'onboarding
  */
 export async function middleware(request: NextRequest) {
@@ -24,65 +30,49 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Récupérer le token de session
-  const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  // Vérifier si la route nécessite une authentification
+  const requiresAuth = isProtectedRoute(pathname);
 
-  // Vérifier les routes protégées
-  for (const route of PROTECTED_ROUTES) {
-    if (pathname.startsWith(route)) {
-      if (!sessionToken) {
-        const redirectUrl = new URL("/auth/signin", request.url);
-        redirectUrl.searchParams.set("callbackUrl", pathname);
-        return NextResponse.redirect(redirectUrl);
+  try {
+    const response = await fetch(
+      new URL("/api/session", request.url).toString(),
+      { headers: { cookie: request.headers.get("cookie") || "" } },
+    );
+
+    if (response.ok) {
+      const userData = await response.json();
+
+      // Si la route nécessite une authentification et l'utilisateur n'est pas connecté
+      if (requiresAuth && !userData?.id) {
+        return NextResponse.redirect(new URL("/auth/signin", request.url));
       }
-    }
-  }
 
-  // Contrôle de l'onboarding pour les utilisateurs connectés
-  if (sessionToken) {
-    // Vérifier les exemptions
-    for (const exemption of ONBOARDING_EXEMPTIONS) {
-      if (pathname.startsWith(exemption)) {
-        return NextResponse.next();
-      }
-    }
+      // Si l'utilisateur est connecté, vérifier l'onboarding
+      if (userData?.id) {
+        // Vérifier les exemptions d'onboarding
+        const isExempted = ONBOARDING_EXEMPTIONS.some((exemption) =>
+          pathname.startsWith(exemption),
+        );
 
-    // Vérifier le cache d'onboarding
-    const onboardingCompleted = request.cookies.get(
-      "onboardingCompleted",
-    )?.value;
-
-    if (onboardingCompleted === "true") {
-      return NextResponse.next();
-    }
-
-    // Vérifier le statut d'onboarding en base
-    try {
-      const response = await fetch(
-        new URL("/api/v1/auth/session", request.url).toString(),
-        { headers: { cookie: request.headers.get("cookie") || "" } },
-      );
-
-      if (response.ok) {
-        const userData = await response.json();
-
-        if (userData?.onboardingCompleted === true) {
-          const res = NextResponse.next();
-          res.cookies.set("onboardingCompleted", "true", {
-            maxAge: 60 * 60 * 24 * 7, // 7 jours
-            path: "/",
-          });
-          return res;
-        }
-
-        if (userData?.onboardingCompleted === false) {
+        // Si l'utilisateur n'a pas terminé l'onboarding et n'est pas sur une page exemptée
+        if (!isExempted && userData?.onboardingCompleted === false) {
           return NextResponse.redirect(
             new URL("/auth/onboarding", request.url),
           );
         }
       }
-    } catch (error) {
-      console.error("Middleware error:", error);
+    } else {
+      // Si l'API session échoue et que la route nécessite une authentification
+      if (requiresAuth) {
+        return NextResponse.redirect(new URL("/auth/signin", request.url));
+      }
+    }
+  } catch (error) {
+    console.error("Middleware error:", error);
+
+    // En cas d'erreur, rediriger vers signin si la route est protégée
+    if (requiresAuth) {
+      return NextResponse.redirect(new URL("/auth/signin", request.url));
     }
   }
 

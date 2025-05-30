@@ -2,53 +2,81 @@ import { route } from "@/lib/safe-route";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { GleaningStatus } from "@prisma/client";
+import { GleaningStatus, type Prisma } from "@prisma/client";
 
 // recup les glanages disponibles avec filtres
 export const GET = route
   .query(
     z.object({
-      page: z.coerce.number().default(1),
-      limit: z.coerce.number().default(10),
+      page: z.coerce.number().min(1).max(100).default(1),
+      limit: z.coerce.number().min(1).max(50).default(10),
       status: z.nativeEnum(GleaningStatus).optional(),
+      city: z.string().max(100).optional(),
     }),
   )
   .handler(async (req, { query }) => {
-    const { page, limit, status } = query;
+    const { page, limit, status, city } = query;
     const skip = (page - 1) * limit;
 
-    const where = {
-      ...(status ? { status } : {}),
+    const whereConditions: Prisma.GleaningWhereInput = {
+      announcement: {
+        isPublished: true,
+      },
     };
+
+    if (status) {
+      whereConditions.status = status;
+    }
+
+    if (city) {
+      whereConditions.announcement = {
+        isPublished: true,
+        field: {
+          city: { contains: city, mode: "insensitive" },
+        },
+      };
+    }
 
     const [gleanings, total] = await Promise.all([
       prisma.gleaning.findMany({
-        where,
+        where: whereConditions,
         skip,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
           announcement: {
-            include: {
-              field: true,
-              cropType: true,
+            select: {
+              title: true,
+              startDate: true,
+              endDate: true,
+              quantityAvailable: true,
+              field: {
+                select: {
+                  name: true,
+                  city: true,
+                  postalCode: true,
+                  // Pas de coordonnées
+                },
+              },
+              cropType: {
+                select: {
+                  name: true,
+                  category: true,
+                },
+              },
               owner: {
                 select: {
-                  id: true,
                   name: true,
-                  image: true,
+                  // Pas d'ID ou d'image
                 },
               },
             },
           },
-          participations: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true,
-                },
-              },
+          _count: {
+            select: {
+              participations: true,
             },
           },
         },
@@ -56,11 +84,17 @@ export const GET = route
           createdAt: "desc",
         },
       }),
-      prisma.gleaning.count({ where }),
+      prisma.gleaning.count({ where: whereConditions }),
     ]);
 
+    // Anonymiser les IDs
+    const sanitizedGleanings = gleanings.map((gleaning) => ({
+      ...gleaning,
+      id: gleaning.id.slice(0, 8) + "...",
+    }));
+
     return NextResponse.json({
-      data: gleanings,
+      data: sanitizedGleanings,
       meta: {
         total,
         page,

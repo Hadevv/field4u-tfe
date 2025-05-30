@@ -8,6 +8,7 @@ import {
 } from "./onboarding.schema";
 import { prisma } from "@/lib/prisma";
 import { generateSlug } from "@/lib/format/id";
+import { cookies } from "next/headers";
 
 export const createFarmAction = authAction
   .schema(FarmFormSchema)
@@ -46,6 +47,13 @@ export const createFarmAction = authAction
         },
       });
 
+      // Mettre à jour le cache d'onboarding
+      const cookieStore = await cookies();
+      cookieStore.set("onboardingCompleted", "true", {
+        maxAge: 60 * 60 * 24 * 7, // 7 jours
+        path: "/",
+      });
+
       return { message: "inscription terminée" };
     } catch (error) {
       console.error(error);
@@ -74,6 +82,13 @@ export const createGleanerAction = authAction
           acceptGeolocation: input.acceptGeolocation,
           onboardingCompleted: true,
         },
+      });
+
+      // Mettre à jour le cache d'onboarding
+      const cookieStore = await cookies();
+      cookieStore.set("onboardingCompleted", "true", {
+        maxAge: 60 * 60 * 24 * 7, // 7 jours
+        path: "/",
       });
 
       return { message: "inscription terminée" };

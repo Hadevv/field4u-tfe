@@ -63,7 +63,7 @@ async function cleanDatabase() {
 
 async function seedUsers() {
   console.log("🌱 seeding users...");
-  const hashedPassword = await bcrypt.hash("password123", 10);
+  const hashedPassword = await bcrypt.hash("Password123!", 10);
 
   // admin
   const adminUser = { email: "admin@field4u.be", name: "Admin Field4u" };
@@ -209,7 +209,6 @@ async function seedCropTypes() {
   const cropTypes = [];
   const usedNames = new Set();
   while (cropTypes.length < CROPTYPE_COUNT) {
-
     const crop = faker.helpers.arrayElement(belgianCrops);
     const cropName = crop.name; // pas d'adjectif ni de numéro
     if (usedNames.has(cropName)) continue;
@@ -560,7 +559,6 @@ async function seedReviews() {
     for (const participant of participants) {
       if (count >= targetCount) break;
       if (faker.datatype.boolean({ probability: 0.8 }) || count < 50) {
-
         count++;
         reviews.push({
           id: nanoid(21),
