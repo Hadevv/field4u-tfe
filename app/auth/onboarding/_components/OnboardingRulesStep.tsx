@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { acceptRulesAction } from "../onboarding.action";
 import { UserRole } from "@prisma/client";
 import { SubmitButton } from "@/features/form/SubmitButton";
+import { LoadingButton } from "@/features/form/SubmitButton";
 import {
   Card,
   CardContent,
@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, ExternalLink, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
+import { resolveActionResult } from "@/lib/backend/actions-utils";
 
 type OnboardingRulesStepProps = {
   role: UserRole;
@@ -25,14 +27,23 @@ export function OnboardingRulesStep({ role }: OnboardingRulesStepProps) {
   const [accepted, setAccepted] = useState(false);
   const router = useRouter();
 
-  const handleAccept = async () => {
-    try {
-      await acceptRulesAction({ rulesAcceptedAt: new Date() });
+  const acceptRulesMutation = useMutation({
+    mutationFn: async () => {
+      return resolveActionResult(
+        acceptRulesAction({ rulesAcceptedAt: new Date() }),
+      );
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+    onSuccess: () => {
       toast.success("Règles acceptées avec succès");
       router.push("/");
-    } catch (error) {
-      toast.error("Échec de l'acceptation des règles");
-    }
+    },
+  });
+
+  const handleAccept = async () => {
+    acceptRulesMutation.mutate();
   };
 
   const roleLabel = role === "FARMER" ? "Agriculteur" : "Glaneur";
@@ -183,9 +194,15 @@ export function OnboardingRulesStep({ role }: OnboardingRulesStepProps) {
         </SubmitButton>
 
         {accepted && (
-          <SubmitButton onClick={handleAccept} className="w-full" size="lg">
+          <LoadingButton
+            onClick={handleAccept}
+            className="w-full"
+            size="lg"
+            loading={acceptRulesMutation.isPending}
+            disabled={acceptRulesMutation.isPending}
+          >
             Finaliser l'inscription
-          </SubmitButton>
+          </LoadingButton>
         )}
       </div>
     </div>

@@ -4,7 +4,6 @@ import type { PageParams } from "@/types/next";
 import { redirect } from "next/navigation";
 import { requiredAuth } from "@/lib/auth/helper";
 import { logger } from "@/lib/logger";
-import { cookies } from "next/headers";
 import OnboardingForm from "./_components/OnboardingForm";
 
 export default async function OnboardingPage(props: PageParams) {
@@ -23,14 +22,6 @@ export default async function OnboardingPage(props: PageParams) {
 
   if (user?.onboardingCompleted === true) {
     logger.info("User has completed onboarding");
-
-    // Mettre à jour le cache d'onboarding si pas encore fait
-    const cookieStore = await cookies();
-    cookieStore.set("onboardingCompleted", "true", {
-      maxAge: 60 * 60 * 24 * 7, // 7 jours
-      path: "/",
-    });
-
     redirect(callbackUrl);
   } else {
     logger.info("User has not completed onboarding");
