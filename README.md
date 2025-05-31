@@ -20,7 +20,8 @@ Field4u est une plateforme web moderne qui connecte les agriculteurs et les glan
 - pnpm (gestionnaire de packages)
 - PostgreSQL avec l'extension PostGIS
 - Compte UploadThing pour la gestion des fichiers
-- Compte Stripe pour les paiements (optionnel)
+- Compte Stripe pour les paiements
+- Compte Mapbox pour la carte interactive
 
 ### Étapes d'installation
 
