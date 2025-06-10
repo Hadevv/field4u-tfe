@@ -1,22 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_ERRORS } from "../../../auth/error/auth-error-mapping";
 
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await request.json();
+    const body = await request.json();
+    const { error: errorType, message } = body;
 
-    const errorMessage =
-      AUTH_ERRORS[error] ||
-      "une erreur inconnue s'est produite. veuillez réessayer plus tard.";
+    // Log l'erreur pour le debugging
+    console.error("Erreur d'authentification:", {
+      type: errorType,
+      message,
+      timestamp: new Date().toISOString(),
+    });
 
-    return NextResponse.json({ error, errorMessage });
+    // Retourner une réponse appropriée selon le type d'erreur
+    return NextResponse.json({
+      success: true,
+      handled: true,
+      errorType,
+    });
   } catch (error) {
+    console.error("Erreur lors du traitement de l'erreur d'auth:", error);
     return NextResponse.json(
-      {
-        error: "erreur lors du traitement",
-        errorMessage:
-          "une erreur s'est produite lors du traitement de votre demande",
-      },
+      { error: "Erreur lors du traitement" },
       { status: 500 },
     );
   }

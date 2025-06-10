@@ -1,10 +1,9 @@
 "use client";
 
+import { PieChart, Pie, Cell } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
-import { Pie, PieChart, Cell } from "recharts";
-import { useState } from "react";
 import { TooltipChart, TooltipChartItem } from "@/features/chart/TooltipChart";
 
 type DistributionData = {

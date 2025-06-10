@@ -62,6 +62,17 @@ export function BelgianPostalSearch({
     searchPostalData,
   } = useBelgianPostalData();
 
+  // Log des données pour le debugging
+  useEffect(() => {
+    if (data) {
+      console.log(
+        "Données postales chargées:",
+        Object.keys(data).length,
+        "codes postaux",
+      );
+    }
+  }, [data]);
+
   useEffect(() => {
     if (value !== selectedValue) {
       setSelectedValue(value);

@@ -1,5 +1,4 @@
-"use client";
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -33,9 +32,7 @@ import {
   Tag,
   CheckCircle,
   XCircle,
-  AlertCircle,
   CircleEllipsis,
-  CalendarClock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { dialogManager } from "@/features/dialog-manager/dialog-manager-store";
@@ -92,7 +89,8 @@ export function AnnouncementsTable({
       return resolveActionResult(deleteAnnouncementAction({ id }));
     },
     onError: (error) => {
-      toast.error(error.message);
+      console.error("Erreur lors de la suppression:", error);
+      toast.error("Erreur lors de la suppression de l'annonce");
     },
     onSuccess: () => {
       toast.success("annonce supprimée avec succès");

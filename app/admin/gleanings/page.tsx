@@ -9,7 +9,7 @@ import type { PageParams } from "@/types/next";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/auth/helper";
-import { Prisma, GleaningStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { GleaningsTableContainer } from "@/features/admin/gleanings/GleaningsTableContainer";
 
 export const metadata = {

@@ -2,7 +2,7 @@ import { authRoute } from "@/lib/safe-route";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { UserRole, Language } from "@prisma/client";
+import { Language } from "@prisma/client";
 
 // recuperer le profil PUBLIC de l'utilisateur (informations non sensibles)
 export const GET = authRoute.handler(async (req, { data }) => {

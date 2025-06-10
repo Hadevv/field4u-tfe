@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, MapPin } from "lucide-react";
@@ -65,9 +63,9 @@ export function LocationDetector({
       type="button"
     >
       {isLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+        <Loader2 className="h-4 w-4 animate-spin mr-2" size={size} />
       ) : (
-        <MapPin className="h-4 w-4 mr-2" />
+        <MapPin className="h-4 w-4 mr-2" size={size} />
       )}
       {isLoading ? "localisation..." : "ma position"}
     </Button>

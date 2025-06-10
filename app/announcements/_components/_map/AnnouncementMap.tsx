@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -5,7 +6,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Card } from "@/components/ui/card";
 import { MapAnnouncement } from "@/types/announcement";
-import { Loader2, LocateIcon, Navigation, HandHelping } from "lucide-react";
+import { Loader2, LocateIcon } from "lucide-react";
 import { dialogManager } from "@/features/dialog-manager/dialog-manager-store";
 import { Button } from "@/components/ui/button";
 

@@ -4,10 +4,7 @@ import { auth } from "@/lib/auth/helper";
 import { prisma } from "@/lib/prisma";
 import { pusherServer } from "@/lib/pusher/pusher-server";
 import { authAction } from "@/lib/backend/safe-actions";
-import {
-  SendMessageSchema,
-  SendMessageSchemaType,
-} from "./send-message.schema";
+import { SendMessageSchema } from "./send-message.schema";
 
 export const sendMessageAction = authAction
   .schema(SendMessageSchema)

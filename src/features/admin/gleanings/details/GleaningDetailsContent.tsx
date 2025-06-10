@@ -35,8 +35,8 @@ import {
   Leaf,
   Users,
 } from "lucide-react";
-import { Prisma, Review, User as UserType } from "@prisma/client";
 import Image from "next/image";
+import { Review, User as UserType } from "@prisma/client";
 
 type GleaningDetailsProps = {
   gleaning: any;
@@ -52,6 +52,21 @@ export function GleaningDetailsContent({ gleaning }: GleaningDetailsProps) {
     gleaning.announcement.startDate,
     gleaning.announcement.endDate,
     gleaning.status,
+  );
+
+  const renderImage = (image: string, index: number) => (
+    <div
+      key={index}
+      className="relative aspect-square h-auto w-full overflow-hidden rounded-md"
+    >
+      <Image
+        src={image}
+        alt={`Image ${index + 1} de l'annonce`}
+        fill
+        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        className="object-cover"
+      />
+    </div>
   );
 
   return (
@@ -201,22 +216,7 @@ export function GleaningDetailsContent({ gleaning }: GleaningDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {gleaning.announcement.images.map(
-                  (image: string, index: number) => (
-                    <div
-                      key={index}
-                      className="relative aspect-square h-auto w-full overflow-hidden rounded-md"
-                    >
-                      <Image
-                        src={image}
-                        alt={`Image ${index + 1} de l'annonce`}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  ),
-                )}
+                {gleaning.announcement.images.map(renderImage)}
               </div>
             </CardContent>
           </Card>

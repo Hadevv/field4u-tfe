@@ -14,18 +14,16 @@ import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { GleaningStatus } from "@prisma/client";
 import {
-  Eye,
-  Users,
   MoreHorizontal,
   Edit,
+  Eye,
   Star,
-  Calendar,
-  MapPin,
   CheckCircle,
   XCircle,
-  AlertCircle,
   CircleEllipsis,
-  CalendarClock,
+  Calendar,
+  MapPin,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -214,7 +212,7 @@ export function GleaningsTable({ gleanings }: GleaningsTableProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Users className="size-4 text-muted-foreground" />
+                      <User className="size-4 text-muted-foreground" />
                       <span>{gleaning._count.participations}</span>
 
                       {gleaning._count.participations > 0 && (

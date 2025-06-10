@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { AnnouncementList } from "./AnnouncementList";
 import { AnnouncementMap } from "./_map/AnnouncementMap";
 import { AnnouncementTabs } from "./AnnouncementTabs";
@@ -100,13 +100,13 @@ type ApiResponse = {
 
 export function DynamicAnnouncementResults() {
   const [isLoading, setIsLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<{
     announcements: Announcement[];
     mapAnnouncements: MapAnnouncement[];
   } | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const mapRef = useRef<any>(null);
 
   const convertAnnouncementDates = (
     apiData: ApiResponse,
@@ -166,7 +166,6 @@ export function DynamicAnnouncementResults() {
         console.error("Erreur de chargement:", err);
         setError(err instanceof Error ? err : new Error("Erreur inconnue"));
         setHasSearched(true);
-
         setData({ announcements: [], mapAnnouncements: [] });
       } finally {
         setIsLoading(false);

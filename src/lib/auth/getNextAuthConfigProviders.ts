@@ -15,10 +15,16 @@ export const getNextAuthConfigProviders = (): Providers => {
   const providers: Providers = [
     Resend({
       apiKey: env.RESEND_API_KEY || "re_mockkey_notvalid",
-      sendVerificationRequest: async ({ identifier: email, url, provider }) => {
+      sendVerificationRequest: async ({ identifier, url, provider }) => {
+        console.log(
+          "Envoi d'email de vérification via",
+          provider.name,
+          "pour",
+          identifier,
+        );
         const result = await sendEmail({
           from: SiteConfig.email.from,
-          to: email,
+          to: identifier,
           subject: `Connexion à ${SiteConfig.domain}`,
           react: MagicLinkMail({
             url,

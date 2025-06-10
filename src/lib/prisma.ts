@@ -26,7 +26,18 @@ function getMockPrismaClient() {
       }
       return Promise.resolve([]);
     },
-    $use: () => Promise.resolve(),
+    $use: async (params: any, next: any) => {
+      const before = Date.now();
+      const result = await next(params);
+      const after = Date.now();
+
+      console.log(
+        `Query ${params.model}.${params.action} took ${after - before}ms`,
+      );
+      console.log("Query args:", JSON.stringify(params.args, null, 2));
+
+      return result;
+    },
     $extends: () => getMockPrismaClient(),
     $queryRaw: () => Promise.resolve([]),
     $executeRaw: () => Promise.resolve({ count: 0 }),
@@ -51,6 +62,7 @@ function getMockPrismaClient() {
       {},
       {
         get: (target, method) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           return (...args: any[]) => {
             switch (method) {
               case "count":

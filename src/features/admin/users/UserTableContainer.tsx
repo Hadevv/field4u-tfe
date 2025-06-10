@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter, usePathname } from "next/navigation";
 import { CreateEditUserDialog } from "./CreateEditUserDialog";
-import { User, UserRole } from "@prisma/client";
+import { User } from "@prisma/client";
 import { exportToExcel } from "@/lib/export/table-export";
 import {
   Search,
@@ -15,7 +15,6 @@ import {
   Loader2,
   FileDown,
   RefreshCw,
-  Filter,
 } from "lucide-react";
 import {
   Card,
@@ -31,13 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const roleLabels: Record<UserRole | "ALL", string> = {
-  ALL: "tous les rôles",
-  ADMIN: "administrateur",
-  FARMER: "agriculteur",
-  GLEANER: "glaneur",
-};
 
 type UserTableContainerProps = {
   initialUsers: User[];

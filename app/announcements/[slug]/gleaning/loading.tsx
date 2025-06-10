@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, CreditCard, MessageSquare, Paperclip } from "lucide-react";
+import { MapPin, CreditCard } from "lucide-react";
 
 export default function GleaningLoading() {
   return (

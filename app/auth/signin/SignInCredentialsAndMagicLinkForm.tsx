@@ -20,6 +20,7 @@ import { z } from "zod";
 import { getSession } from "next-auth/react";
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 const LoginCredentialsFormScheme = z.object({
   email: z.string().email("veuillez saisir un email valide"),
@@ -73,6 +74,8 @@ export const SignInCredentialsAndMagicLinkForm = () => {
         });
       }
     } catch (error) {
+      console.error("Erreur lors de la connexion:", error);
+      toast.error("Erreur lors de la connexion");
       setAuthError(
         "une erreur s'est produite lors de la connexion, veuillez réessayer",
       );

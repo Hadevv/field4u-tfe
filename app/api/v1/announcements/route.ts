@@ -43,7 +43,8 @@ export const GET = route
     const { page, limit, cropType, search, city, lat, lng, radius } = query;
     const skip = (page - 1) * limit;
     const now = new Date();
-    const revealTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const revealTime = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h plus tard
+    console.log("Temps de révélation calculé:", revealTime);
 
     // Recherche standard (avec ou sans géolocalisation)
     const whereConditions: any = {
@@ -113,6 +114,8 @@ export const GET = route
       }),
       prisma.announcement.count({ where: whereConditions }),
     ]);
+
+    console.log("Nombre total d'annonces trouvées:", total);
 
     // Filtrage géographique côté application si coordonnées fournies
     let filteredAnnouncements = standardAnnouncements;

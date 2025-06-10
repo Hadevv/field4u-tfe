@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Calendar, Leaf, Star, ArrowRight } from "lucide-react";
 import { getGleaningStatusInfo } from "@/lib/format/gleaningStatus";
 import type { GleaningStatus } from "@prisma/client";
+import { Card } from "@/components/ui/card";
 
 type GleaningCardProps = {
   announcement: {
@@ -45,104 +46,120 @@ export function GleaningCard({
   const isCompletedGleaning =
     gleaningStatus === "COMPLETED" && type === "participation" && !hasReviewed;
 
+  const handleViewDetails = () => {
+    console.log("Affichage des détails pour le glanage:", gleaningId);
+    // Navigation ou action avec gleaningId
+  };
+
   return (
-    <div className="border rounded-lg overflow-hidden transition-all hover:shadow-md">
-      <div className="flex w-full">
-        {/* image */}
-        <div className="relative w-48 h-32 flex-shrink-0">
-          {announcement.images && announcement.images.length > 0 ? (
-            <Image
-              src={announcement.images[0]}
-              alt={announcement.title}
-              fill
-              sizes="192px"
-              className="object-cover"
-            />
-          ) : (
-            <div className="h-full w-full bg-muted flex items-center justify-center">
-              <Leaf className="h-8 w-8 text-muted-foreground/40" />
-            </div>
-          )}
-        </div>
-
-        {/* contenu */}
-        <div className="flex-1 p-4 flex flex-col">
-          <div className="flex justify-between items-start mb-1">
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium text-base truncate">
-                {announcement.title}
-              </h3>
-              {statusInfo && (
-                <Badge
-                  variant="outline"
-                  className={`${statusInfo.color} text-xs px-2 py-0 h-5`}
-                >
-                  {statusInfo.label}
-                </Badge>
-              )}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {type === "participation" && "participation "}
-              {type === "favorite" && "ajouté aux favoris "}
-              {type === "like" && "aimé "}
-              {type === "review" && "évalué "}
-              le{" "}
-              {new Date(createdAt).toLocaleDateString("fr-FR", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
-            </div>
-          </div>
-
-          <div className="flex items-center text-sm text-muted-foreground mb-2">
-            <div className="flex items-center gap-2">
-              <Leaf className="w-3.5 h-3.5" />
-              <span>{announcement.cropType.name}</span>
-            </div>
-            <span className="mx-2">•</span>
-            <div className="flex items-center gap-1">
-              <span>{announcement.field.city}</span>
-            </div>
-            <span className="mx-2">•</span>
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>
-                {announcement.startDate
-                  ? new Date(announcement.startDate).toLocaleDateString(
-                      "fr-FR",
-                      {
-                        day: "numeric",
-                        month: "short",
-                      },
-                    )
-                  : "date non définie"}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center mt-auto pt-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/announcements/${announcement.slug}`}>
-                voir l'annonce
-                <ArrowRight className="ml-2 h-3.5 w-3.5" />
-              </Link>
-            </Button>
-
-            {isCompletedGleaning && (
-              <Button asChild size="sm" variant="default" className="gap-1">
-                <Link
-                  href={`/announcements/${announcement.slug}/gleaning/review`}
-                  className="flex items-center"
-                >
-                  <Star className="w-3.5 h-3.5" />
-                  donner mon avis
-                </Link>
-              </Button>
+    <Card className="overflow-hidden">
+      <div className="relative">
+        <div className="flex w-full">
+          {/* image */}
+          <div className="relative w-48 h-32 flex-shrink-0">
+            {announcement.images && announcement.images.length > 0 ? (
+              <Image
+                src={announcement.images[0]}
+                alt={announcement.title}
+                fill
+                sizes="192px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-muted flex items-center justify-center">
+                <Leaf className="h-8 w-8 text-muted-foreground/40" />
+              </div>
             )}
           </div>
+
+          {/* contenu */}
+          <div className="flex-1 p-4 flex flex-col">
+            <div className="flex justify-between items-start mb-1">
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-base truncate">
+                  {announcement.title}
+                </h3>
+                {statusInfo && (
+                  <Badge
+                    variant="outline"
+                    className={`${statusInfo.color} text-xs px-2 py-0 h-5`}
+                  >
+                    {statusInfo.label}
+                  </Badge>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {type === "participation" && "participation "}
+                {type === "favorite" && "ajouté aux favoris "}
+                {type === "like" && "aimé "}
+                {type === "review" && "évalué "}
+                le{" "}
+                {new Date(createdAt).toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center text-sm text-muted-foreground mb-2">
+              <div className="flex items-center gap-2">
+                <Leaf className="w-3.5 h-3.5" />
+                <span>{announcement.cropType.name}</span>
+              </div>
+              <span className="mx-2">•</span>
+              <div className="flex items-center gap-1">
+                <span>{announcement.field.city}</span>
+              </div>
+              <span className="mx-2">•</span>
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>
+                  {announcement.startDate
+                    ? new Date(announcement.startDate).toLocaleDateString(
+                        "fr-FR",
+                        {
+                          day: "numeric",
+                          month: "short",
+                        },
+                      )
+                    : "date non définie"}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center mt-auto pt-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/announcements/${announcement.slug}`}>
+                  voir l'annonce
+                  <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+
+              {isCompletedGleaning && (
+                <Button asChild size="sm" variant="default" className="gap-1">
+                  <Link
+                    href={`/announcements/${announcement.slug}/gleaning/review`}
+                    className="flex items-center"
+                  >
+                    <Star className="w-3.5 h-3.5" />
+                    donner mon avis
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
+
+        <Button
+          onClick={handleViewDetails}
+          className="absolute top-2 right-2"
+          size="sm"
+          variant="secondary"
+        >
+          Détails
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -12,6 +12,11 @@ export const createAnnouncementAction = authAction
   .action(async ({ parsedInput: input, ctx }) => {
     await isAdmin();
 
+    // Vérifier que l'utilisateur est authentifié
+    if (!ctx.user.id) {
+      throw new ActionError("utilisateur non authentifié");
+    }
+
     try {
       // vérifier que le champ existe
       const field = await prisma.field.findUnique({
@@ -86,6 +91,11 @@ export const updateAnnouncementAction = authAction
   .schema(UpdateAnnouncementSchema)
   .action(async ({ parsedInput: input, ctx }) => {
     await isAdmin();
+
+    // Vérifier que l'utilisateur est authentifié
+    if (!ctx.user.id) {
+      throw new ActionError("utilisateur non authentifié");
+    }
 
     try {
       const announcementExists = await prisma.announcement.findUnique({
@@ -176,6 +186,11 @@ export const deleteAnnouncementAction = authAction
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput: input, ctx }) => {
     await isAdmin();
+
+    // Vérifier que l'utilisateur est authentifié
+    if (!ctx.user.id) {
+      throw new ActionError("utilisateur non authentifié");
+    }
 
     try {
       const announcementExists = await prisma.announcement.findUnique({
