@@ -69,7 +69,6 @@ export const SignInCredentialsAndMagicLinkForm = () => {
           email: values.email,
           redirect: true,
           callbackUrl: "/auth/onboarding",
-          // ajouter des paramètres pour la page verify-request
           verifyCallbackUrl: `/auth/verify-request?email=${encodeURIComponent(values.email)}`,
         });
       }
@@ -140,7 +139,11 @@ export const SignInCredentialsAndMagicLinkForm = () => {
               <FormItem className="flex-1">
                 <FormLabel>Mot de passe</FormLabel>
                 <FormControl>
-                  <Input type="password" {...field} />
+                  <Input
+                    placeholder="mot de passe"
+                    type="password"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
